@@ -196,6 +196,7 @@ class Flizpay_Public {
             'order_id' => $order->get_id(),
             'total' => $order->get_total(),
             'client_id' => $flizpay_setting['flizpay_client_id'],
+            'iban' => $flizpay_setting['flizpay_shop_iban'],
             'currency' => $order->get_currency(),
             'callback_url' => get_home_url().'/wp-json/flizpay/v1/payment'
         );

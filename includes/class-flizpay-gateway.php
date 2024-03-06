@@ -26,6 +26,8 @@ function flizpay_init_gateway_class() {
             $this->description = $this->get_option( 'description' );
             $this->enabled = $this->get_option( 'enabled' );
             $this->client_id = $this->get_option( 'flizpay_client_id' );
+            $this->iban = $this->get_option( 'flizpay_shop_iban' );
+
 
             // This action hook saves the settings
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
