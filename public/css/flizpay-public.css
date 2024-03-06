@@ -1,0 +1,77 @@
+.flizpay-container {
+    margin: 0px auto;
+    text-align: center;
+    max-width: 500px;
+}
+
+.flizpay-container .header{
+    width: 100%;
+    display: inline-block;
+}
+
+.flizpay-container .header .logo{
+    float: left;
+}
+
+.flizpay-container .header .cart-info{
+    /*width: 40%;*/
+    float: right;
+    margin: 25px 0px 0px 30px;
+}
+
+.flizpay-container .header .cart-info img{
+    display: inline-block;
+    vertical-align: baseline;
+}
+
+.flizpay-container h1 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 50px;
+}
+
+.flizpay-qr-code {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 50px;
+}
+
+.flizpay-container p {
+    font-size: 18px;
+    color: #666;
+    width: 80%;
+    margin: 30px;
+}
+
+.flizpay-container button {
+    font-size: 18px;
+    padding: 10px 20px;
+    background-color: #f8a41d;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.flizpay-container button:hover {
+    background-color: #e07f0a;
+}
+
+.confirmation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
