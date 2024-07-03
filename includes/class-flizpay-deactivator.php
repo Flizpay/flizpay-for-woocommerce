@@ -20,7 +20,8 @@
  * @subpackage Flizpay/includes
  * @author     Flizpay <roberto.ammirata@flizpay.de>
  */
-class Flizpay_Deactivator {
+class Flizpay_Deactivator
+{
 
 	/**
 	 * Short Description. (use period)
@@ -30,12 +31,12 @@ class Flizpay_Deactivator {
 	 * @since    1.0.0
 	 */
 	public static function deactivate()
-    {
-        $page_slug = 'flizpay-payment-fail';
-        $page = get_page_by_path($page_slug);
-        if ($page) {
-            wp_delete_post($page->ID, true);
-        }
-    }
+	{
+		$page_slug = 'flizpay-payment-fail';
+		$page = get_page_by_path($page_slug);
+		if ($page) {
+			wp_delete_post($page->ID, true);
+		}
+	}
 
 }

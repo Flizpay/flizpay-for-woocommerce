@@ -20,27 +20,29 @@
  * @subpackage Flizpay/includes
  * @author     Flizpay <roberto.ammirata@flizpay.de>
  */
-class Flizpay_Activator {
+class Flizpay_Activator
+{
 
-	/**
-	 * Short Description. (use period)
-	 *
-	 * Long Description.
-	 *
-	 * @since    1.0.0
-	 */
-	public static function activate() {
+    /**
+     * Short Description. (use period)
+     *
+     * Long Description.
+     *
+     * @since    1.0.0
+     */
+    public static function activate()
+    {
         // Create post object
         $flizpay_fail = array(
-            'post_title'    => wp_strip_all_tags( 'Flizpay Payment Fail' ),
-            'post_content'  => 'Your order has been cancelled due to unsuccessfull payment from Flizpay.',
-            'post_status'   => 'publish',
-            'post_author'   => 1,
-            'post_type'     => 'page',
+            'post_title' => wp_strip_all_tags('Flizpay Payment Fail'),
+            'post_content' => 'Your order has been cancelled due to unsuccessfull payment from Flizpay.',
+            'post_status' => 'publish',
+            'post_author' => 1,
+            'post_type' => 'page',
         );
 
         // Insert the post into the database
-        wp_insert_post( $flizpay_fail );
-	}
+        wp_insert_post($flizpay_fail);
+    }
 
 }
