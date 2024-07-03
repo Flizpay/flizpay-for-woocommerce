@@ -112,7 +112,7 @@ class Flizpay_Admin
 	{
 		$plugin_links = array(
 			'<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=flizpay') . '">' . __('Settings', 'flizpay-gateway') . '</a>',
-			'<a href="https://docs.flizpay.de/intro">' . __('Docs', 'flizpay-gateway') . '</a>'
+			'<a href="https://www.docs.flizpay.de/docs/intro/">' . __('Docs', 'flizpay-gateway') . '</a>'
 		);
 
 		return array_merge($plugin_links, $links);
