@@ -20,7 +20,8 @@
  * @subpackage Flizpay/admin
  * @author     Flizpay <roberto.ammirata@flizpay.de>
  */
-class Flizpay_Admin {
+class Flizpay_Admin
+{
 
 	/**
 	 * The ID of this plugin.
@@ -47,7 +48,8 @@ class Flizpay_Admin {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct($plugin_name, $version)
+	{
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
@@ -59,7 +61,8 @@ class Flizpay_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_styles() {
+	public function enqueue_styles()
+	{
 
 		/**
 		 * This function is provided for demonstration purposes only.
@@ -73,7 +76,7 @@ class Flizpay_Admin {
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/flizpay-admin.css', array(), $this->version, 'all' );
+		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/flizpay-admin.css', array(), $this->version, 'all');
 
 	}
 
@@ -82,7 +85,8 @@ class Flizpay_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_scripts()
+	{
 
 		/**
 		 * This function is provided for demonstration purposes only.
@@ -96,81 +100,92 @@ class Flizpay_Admin {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/flizpay-admin.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-admin.js', array('jquery'), $this->version, false);
 
 	}
 
-    /**
-     * @param $links
-     * @return array|string[]
-     */
-    public function flizpay_plugin_links($links) {
-        $plugin_links = array(
-            '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=flizpay' ) . '">' . __( 'Settings', 'flizpay-gateway' ) . '</a>'
-        );
+	/**
+	 * @param $links
+	 * @return array|string[]
+	 */
+	public function flizpay_plugin_links($links)
+	{
+		$plugin_links = array(
+			'<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=flizpay') . '">' . __('Settings', 'flizpay-gateway') . '</a>',
+			'<a href="https://docs.flizpay.de/intro">' . __('Docs', 'flizpay-gateway') . '</a>'
+		);
 
-        return array_merge( $plugin_links, $links );
-    }
+		return array_merge($plugin_links, $links);
+	}
 
-    /**
-     * @return array
-     */
-    public function load_form_fields() {
-        return array(
+	/**
+	 * @return array
+	 */
+	public function load_form_fields()
+	{
+		return array(
 			'description_banner' => array(
-                'title' => __('', 'flizpay'), // Empty title, used for HTML output
-                'type' => 'title', // Using 'title' as a workaround to insert HTML
-                'description' => $this->add_description_banner(), // Including HTML content via a method
-            ),
-            'enabled' => array(
-                'title'       => 'Enable/Disable',
-                'label'       => 'Enable Flizpay Gateway',
-                'type'        => 'checkbox',
-                'description' => '',
-                'default'     => 'no'
-            ),
-            'title' => array(
-                'title'       => 'Title',
-                'type'        => 'text',
-                'description' => 'This controls the title which the user sees during checkout.',
-                'default'     => 'Flizpay',
-                'desc_tip'    => true,
-            ),
-            'description' => array(
-                'title'       => 'Description',
-                'type'        => 'textarea',
-                'description' => 'This controls the description which the user sees during checkout.',
-                'default'     => 'Pay with Flizpay payment gateway.',
-                'desc_tip'    => true,
-            ),
-            'flizpay_client_id' => array(
-                'title'       => 'Client ID',
-                'label'       => 'Enter Client ID',
-                'type'        => 'text',
-                'description' => 'Enter you client ID.',
-                'desc_tip'    => true,
+				'title' => __('', 'flizpay'), // Empty title, used for HTML output
+				'type' => 'title', // Using 'title' as a workaround to insert HTML
+				'description' => $this->add_description_banner(), // Including HTML content via a method
 			),
-			'flizpay_shop_iban' => array(
-				'title'       => 'IBAN',
-				'type'        => 'text',
-				'description' => 'Enter your shop IBAN for receiving payments.',
-				'desc_tip'    => true,
-			)
-        );
-    }
-	
-	private function add_description_banner() {
-		// Directly return HTML content as a string
-		return '
-		<div style="background-color: #f7f7f7; margin-bottom: 20px; padding: 20px; border-left: 4px solid #007cba;">
-			<h2>Welcome to the Flizpay Gateway for Woocommerce plugin!</h2>
-			<p>To start accepting payments from your customers at free rates, you\'ll need to follow three simple steps:</p>
-			<ol>
-				<li><a href="https://www.flizpay.de" target="_blank">Sign up for Fliz Business</a> if you don\'t have an account already.</li>
-				<li>Once your Fliz Business has been approved get your clientId and paste it in the field below.</li>
-				<li>Place your shop IBAN in the field below to start receiving payments.</li>
-			</ol>
-		</div>
-		';
+			'enabled' => array(
+				'title' => 'Enable/Disable',
+				'label' => 'Enable Flizpay Gateway',
+				'type' => 'checkbox',
+				'description' => '',
+				'default' => 'no'
+			),
+			'title' => array(
+				'title' => 'Title',
+				'type' => 'text',
+				'description' => 'This controls the title which the user sees during checkout.',
+				'default' => 'Flizpay',
+				'desc_tip' => true,
+			),
+			'description' => array(
+				'title' => 'Description',
+				'type' => 'textarea',
+				'description' => 'This controls the description which the user sees during checkout.',
+				'default' => 'Pay with Flizpay payment gateway.',
+				'desc_tip' => true,
+			),
+			'flizpay_api_key' => array(
+				'title' => 'API KEY',
+				'label' => 'Enter API KEY',
+				'type' => 'text',
+				'description' => 'Enter you API KEY.',
+				'desc_tip' => true,
+			),
+		);
+	}
+
+	private function add_description_banner()
+	{
+		return <<<HTML
+			<h2>Flizpay</h2>
+			<div style="background-color: #f7f7f7; margin-bottom: 20px; padding: 20px; border-left: 4px solid #007cba;">
+				<div style="width: 100%; display: flex; justify-content: center; flex-wrap: wrap; text-align: center;">
+					<img
+						src="https://www.flizpay.de/assets/QRC-CnlMgZfh.svg"
+						alt="Flizpay Logo" style="max-width: 100px;">
+					<h2 style="width: 100%; text-align: center;">Welcome to the Flizpay Gateway for Woocommerce plugin!</h2>
+				</div>
+				<p>To start accepting payments from your customers at free rates, you'll need to follow three simple steps:</p>
+				<ol>
+					<li><a href="https://www.flizpay.de" target="_blank">Sign up for Fliz Business</a> if you don't have an account
+						yet.</li>
+					<li>Once your Fliz Business has been approved get your API KEY and paste it in the field below.</li>
+					<li>Click to test the connection and start enjoyning a free of charges payment method.</li>
+				</ol>
+				<p><a href="https://www.flizpay.de" target="_blank">Find out more</a> why Flizpay is the best payment solution for
+					your business and learn about the Cashback!</p>
+				<p>If you'd like to know more about how to configure this plugin for your needs, <a
+						href="https://www.docs.flizpay.de/docs/intro" target="_blank">check out
+						our documentation.</a></p>
+			</div>
+
+			<div id="woocommerce_flizpay_test_connection"></div>
+		HTML;
 	}
 }
