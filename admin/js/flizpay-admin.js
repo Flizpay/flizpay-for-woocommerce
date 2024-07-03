@@ -28,5 +28,30 @@
 	 * Although scripts in the WordPress core, Plugins and Themes may be
 	 * practising this, we should strive to set a better example in our own work.
 	 */
+	jQuery(document).ready(function($) {
+    $('#woocommerce_flizpay_test_connection').after('<button id="test_connection_button" type="button">Test Connection</button>');
 
-})( jQuery );
+    $('#test_connection_button').on('click', function() {
+        var apiKey = $('#woocommerce_flizpay_api_key').val();
+
+        $.ajax({
+            url: 'api.flizpay.de/test-connection',
+            method: 'POST',
+            data: {
+                action: 'test_gateway_connection',
+                api_key: apiKey,
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Connection successful: ' + response.data);
+                } else {
+                    alert('Connection failed: ' + response.data);
+                }
+            },
+            error: function() {
+                alert('An error occurred while testing the connection.');
+            }
+        });
+    });
+});
+})(jQuery);
