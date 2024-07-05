@@ -41,33 +41,43 @@
 		webhookURLInput.setAttribute('disabled', true);
 
 		$('#test_connection_button').on('click', function () {
-			var nonce = flizpayParams.nonce;
+			let proceed;
 
-			$.ajax({
-				url: ajaxurl,
-				method: 'POST',
-				data: {
-					action: 'test_gateway_connection',
-					api_key: apiKeyInput.value,
-					nonce: nonce,
-				},
-				success: function (response) {
-					if (response.success) {
-						resultField.classList.add('connection-success')
-						testButton.classList.add('hidden')
-						apiKeyInput.setAttribute('disabled', 'true')
-						resultField.innerHTML = 'Connected and ready to use!'
-						webhookURLInput.value = response.data.webhookUrl
-					} else {
+			if (webhookURLInput.value.length !== 0) {
+				proceed = confirm("Looks like you already have an integration settled up. By reconfiguring the integration you will invalidate all current ongoing payment responses. Proceed?")
+			} else {
+				proceed = true;
+			}
+
+			if (proceed) {
+				var nonce = flizpayParams.nonce;
+
+				$.ajax({
+					url: ajaxurl,
+					method: 'POST',
+					data: {
+						action: 'test_gateway_connection',
+						api_key: apiKeyInput.value,
+						nonce: nonce,
+					},
+					success: function (response) {
+						if (response.success) {
+							resultField.classList.add('connection-success')
+							testButton.classList.add('hidden')
+							apiKeyInput.setAttribute('disabled', 'true')
+							resultField.innerHTML = 'Connected and ready to use!'
+							webhookURLInput.value = response.data.webhookUrl
+						} else {
+							resultField.classList.add('connection-failed')
+							resultField.innerHTML = response.data;
+						}
+					},
+					error: function (e) {
 						resultField.classList.add('connection-failed')
-						resultField.innerHTML = response.data;
+						resultField.innerHTML = 'An error occurred while testing the connection. ' + JSON.stringify(e);
 					}
-				},
-				error: function (e) {
-					resultField.classList.add('connection-failed')
-					resultField.innerHTML = 'An error occurred while testing the connection. ' + JSON.stringify(e);
-				}
-			});
+				});
+			}
 		});
 	});
 
