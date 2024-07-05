@@ -100,7 +100,7 @@ function flizpay_init_gateway_class()
 
         public function generate_webhook_url(string $api_key): string
         {
-            $webhookUrl = home_url('/flizpay-webhook/index.php?flizpay-webhook=1&source=woocommerce');
+            $webhookUrl = home_url('/flizpay-webhook?flizpay-webhook=1&source=woocommerce');
 
             $result = wp_remote_post(
                 'http://localhost:8081/business/edit',
@@ -137,28 +137,61 @@ function flizpay_init_gateway_class()
 
         public function register_webhook_endpoint()
         {
-            add_rewrite_rule('^flizpay-webhook/?', 'index.php?flizpay-webhook=1&source=woocommerce', 'top');
             add_rewrite_tag('%flizpay-webhook%', '([^&]+)');
+            add_rewrite_rule('^flizpay-webhook/?', 'index.php?flizpay-webhook=1&source=woocommerce', 'top');
+
+            if (empty($this->get_option('flizpay_webhook_key'))) {
+                flush_rewrite_rules();
+            }
+
+        }
+        public function webhook_handshake()
+        {
+            $api_key = $this->get_option('flizpay_api_key');
+
+            if (empty($api_key)) {
+                wp_send_json_error('Unauthorized', 401);
+            }
+
+            $response = wp_remote_post(
+                'http://localhost:8081/business/webhook-handshake',
+                array(
+                    'headers' => array(
+                        'x-api-key: ' . $api_key,
+                        'Content-type: application/json'
+                    ),
+                    'body' => wp_json_encode(
+                        array('webhookKey' => $this->get_option('flizpay_webhook_key'))
+                    ),
+                )
+            );
+
+            if (is_wp_error($response)) {
+                wp_send_json_error('Couldnt Handshake: ' . $response->get_error_message(), 403);
+            }
+
+            return true;
         }
 
         public function handle_webhook_request()
         {
             global $wp;
 
-            if (
-                isset($wp->query_vars['flizpay-webhook']) &&
-                isset($wp->query_vars['source'])
-            ) {
+            if (isset($wp->query_vars['flizpay-webhook']) && $this->webhook_handshake()) {
                 $body = file_get_contents('php://input');
                 $data = json_decode($body, true);
 
-                if (json_last_error() === JSON_ERROR_NONE || $data['key'] !== $this->get_option('flizpay_webhook_key')) {
+                if (json_last_error() === JSON_ERROR_NONE) {
                     // Process the webhook data
                     $this->process_webhook_data($data);
+                    // Respond with success
+                    wp_send_json_success('Order updated successfully', 200);
                 } else {
-                    wp_send_json_error('Invalid JSON', 400);
+                    wp_send_json_error('Invalid Request', 400);
                 }
             }
+
+            wp_send_json_error('Invalid Operation', 400);
         }
 
         public function process_webhook_data($data)
@@ -189,9 +222,6 @@ function flizpay_init_gateway_class()
 
             // Save the order
             $order->save();
-
-            // Respond with success
-            wp_send_json_success('Order updated successfully', 200);
         }
 
         public function payment_fields()
