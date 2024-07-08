@@ -3,16 +3,48 @@
  * included in this file.
  */
 
- #test_connection_button {
+#test_connection_button {
     background-color: #80ED99;
     border: none;
     color: #001F3F;
-    padding: 10px 20px;
+    padding: 4px 8px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
+    font-size: 12px;
     cursor: pointer;
     border-radius: 5px;
+}
+
+#test_connection_button .hidden {
+    display: none;
+}
+
+#test_connection_button:hover {
+    padding: 3px 7px;
+    border: 1px solid #001F3F;
+}
+
+#test_connection_button:active {
+    background-color: #80ED37;
+    padding: 2px 6px;
+    border: 2px solid #001F3F;
+}
+#woocommerce_flizpay_connection_result {
+    text-align: center;
+    padding: 6px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    display: inline-block;
+    margin-left: 4px;
+}
+
+.connection-success {
+    background-color: #80ED37E9;
+    color: #001F3F;
+}
+
+.connection-failed {
+    color: aliceblue;
+    background-color: rgb(210, 63, 30, .7);
 }

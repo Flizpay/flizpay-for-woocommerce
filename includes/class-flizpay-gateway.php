@@ -15,7 +15,7 @@ function flizpay_init_gateway_class()
         public function __construct()
         {
             $this->id = 'flizpay';
-            $this->icon = '';
+            $this->icon = apply_filters('woocommerce_flizpay_icon', plugin_dir_url(__FILE__) . '../public/images/logo.png');
             $this->has_fields = true;
             $this->method_title = 'Flizpay Gateway';
             $this->method_description = 'Flizpay payment gateway for WooCommerce';
@@ -23,16 +23,190 @@ function flizpay_init_gateway_class()
             // Method with all the options fields
             $this->init_form_fields();
 
-            // Load the settings.
+            // Load the setting.
             $this->init_settings();
             $this->title = $this->get_option('title');
             $this->description = $this->get_option('description');
-            $this->enabled = $this->get_option('enabled');
+            $this->enabled = $this->get_option('flizpay_enabled');
             $this->api_key = $this->get_option('flizpay_api_key');
+            $this->webhook_key = $this->get_option('flizpay_webhook_key');
+            $this->webhook_url = $this->get_option('flizpay_webhook_url');
+            $this->flizpay_webhook_alive = $this->get_option('flizpay_webhook_alive');
 
 
             // This action hook saves the settings
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+
+            add_action('wp_ajax_test_gateway_connection', array($this, 'test_gateway_connection'));
+
+            // Webhook handler
+            add_action('init', array($this, 'register_webhook_endpoint'));
+            add_action('template_redirect', array($this, 'handle_webhook_request'));
+
+            // Payment form handler
+            add_action('woocommerce_receipt_' . $this->id, array($this, 'receipt_page'));
+        }
+
+        public function test_gateway_connection()
+        {
+            check_ajax_referer('test_connection_nonce', 'nonce');
+
+            $api_key = sanitize_text_field($_POST['api_key']);
+
+            $this->update_option('enabled', 'no');
+            $this->update_option('flizpay_webhook_alive', 'no');
+            $this->update_option('flizpay_webhook_key', $this->get_webhook_key($api_key));
+            $this->update_option('flizpay_webhook_url', $this->generate_webhook_url($api_key));
+            $this->update_option('flizpay_api_key', $api_key);
+
+            wp_send_json_success(array('webhookUrl' => $this->get_option('flizpay_webhook_url')));
+
+        }
+        public function get_webhook_key(string $api_key): string
+        {
+            $client = WC_Flizpay_API::get_instance($api_key);
+
+            $response = $client->dispatch('generate_webhook_key');
+
+            $webhookKey = $response['webhookKey'];
+
+            return $webhookKey;
+        }
+
+        public function generate_webhook_url(string $api_key): string
+        {
+            $webhookUrl = home_url('/flizpay-webhook?flizpay-webhook=1&source=woocommerce');
+            # $webhookUrl = 'http://0.0.0.0/flizpay-webhook?flizpay-webhook=1&source=woocommerce';
+
+            $client = WC_Flizpay_API::get_instance($api_key);
+
+            $response = $client->dispatch('save_webhook_url', array('webhookUrl' => $webhookUrl));
+
+            $webhookUrlResponse = $response['webhookUrl'];
+
+            if (strcmp($webhookUrlResponse, $webhookUrl) !== 0) {
+                return wp_send_json_error('Incorrect WebhookURL: ' . $webhookUrlResponse);
+            }
+
+            return $webhookUrlResponse;
+        }
+
+        public function webhook_handshake()
+        {
+            $api_key = $this->get_option('flizpay_api_key');
+
+            $webhook_key = $this->get_option('flizpay_webhook_key');
+
+            $client = WC_Flizpay_API::get_instance($api_key);
+
+            $client->dispatch('webhook_handshake', array('webhookKey' => $webhook_key));
+
+            return true;
+        }
+
+        public function register_webhook_endpoint()
+        {
+            add_rewrite_tag('%flizpay-webhook%', '([^&]+)');
+            add_rewrite_rule('^flizpay-webhook/?', 'index.php?flizpay-webhook=1&source=woocommerce', 'top');
+
+            if (empty($this->get_option('flizpay_webhook_key'))) {
+                flush_rewrite_rules();
+            }
+
+        }
+
+        public function handle_webhook_request()
+        {
+            global $wp;
+
+            if (isset($wp->query_vars['flizpay-webhook'])) {
+                $body = file_get_contents('php://input');
+                $data = json_decode($body, true);
+
+                if (json_last_error() === JSON_ERROR_NONE && $this->webhook_handshake()) {
+                    if (isset($data['test'])) {
+                        $this->update_option('flizpay_webhook_alive', 'yes');
+                        $this->update_option('flizpay_enabled', 'yes');
+                        wp_send_json_success(array('alive' => true), 200);
+                    }
+                    // Process the webhook data
+                    $this->process_webhook_data($data);
+                    // Respond with success
+                    wp_send_json_success('Order updated successfully', 200);
+                } else {
+                    wp_send_json_error('Invalid Request', 400);
+                }
+            }
+
+            return; // Do not process the request
+        }
+
+        public function process_webhook_data($data)
+        {
+            // Ensure the necessary data is available
+            if (!isset($data['order_id']) || !isset($data['status'])) {
+                wp_send_json_error('Missing order_id or status', 400);
+            }
+
+            // Get the WooCommerce order ID
+            $order_id = intval($data['order_id']);
+            $status = sanitize_text_field($data['status']);
+
+            // Load the WooCommerce order
+            $order = wc_get_order($order_id);
+
+            if (!$order) {
+                wp_send_json_error('Order not found', 404);
+            }
+
+            // Update the order status
+            $order->update_status($status, 'Order updated via Flizpay webhook', true);
+
+            // Optionally add additional data to the order
+            if (isset($data['additional_info'])) {
+                $order->add_order_note('Additional Info: ' . sanitize_text_field($data['additional_info']));
+            }
+
+            // Save the order
+            $order->save();
+        }
+
+        public function is_available()
+        {
+            $available = $this->get_option('flizpay_enabled');
+
+            return $available;
+        }
+
+        public function payment_fields()
+        {
+            if ($this->description) {
+                echo wpautop(wp_kses_post($this->description));
+            }
+            echo '<img src="' . esc_url($this->icon) . '" alt="Flizpay Logo" style="max-width: 100px;">';
+        }
+
+        public function process_payment($order_id)
+        {
+            $order = wc_get_order($order_id);
+
+            // Mark as on-hold (we're awaiting the payment)
+            $order->update_status('on-hold', __('Awaiting Flizpay payment', 'flizpay'));
+
+            // Reduce stock levels
+            wc_reduce_stock_levels($order_id);
+
+            // Return thank you page redirect
+            return array(
+                'result' => 'success',
+                'redirect' => $this->get_return_url($order),
+            );
+        }
+
+        public function receipt_page($order)
+        {
+            echo '<p>' . __('Thank you for your order, please click the button below to pay with Flizpay.', 'flizpay') . '</p>';
+            echo '<a class="button alt" href="https://checkout.flizpay.com/?order_id=' . esc_attr($order->get_id()) . '" target="_blank">' . __('Pay with Flizpay', 'flizpay') . '</a>';
         }
 
         /**
@@ -41,14 +215,6 @@ function flizpay_init_gateway_class()
         public function init_form_fields()
         {
             $this->form_fields = apply_filters('flizpay_load_settings', true);
-        }
-
-        /**
-         * You will need it if you want your custom credit card form, Step 4 is about it
-         */
-        public function payment_fields()
-        {
-
         }
 
         /**
@@ -63,26 +229,6 @@ function flizpay_init_gateway_class()
          * Fields validation, more in Step 5
          */
         public function validate_fields()
-        {
-
-        }
-
-        /**
-         * We're processing the payments here, everything about it is in Step 5
-         */
-        public function process_payment($order_id)
-        {
-            $order = wc_get_order($order_id);
-            return array(
-                'result' => 'success',
-                'redirect' => $this->get_return_url($order),
-            );
-        }
-
-        /**
-         * In case you need a webhook, like PayPal IPN etc
-         */
-        public function webhook()
         {
 
         }
