@@ -2,9 +2,6 @@
 /**
  * The class itself, please note that it is inside plugins_loaded action hook
  */
-add_filter('https_local_ssl_verify', '__return_false');
-add_filter('https_ssl_verify', '__return_false');
-add_filter('block_local_requests', '__return_false');
 add_action('plugins_loaded', 'flizpay_init_gateway_class');
 function flizpay_init_gateway_class()
 {
@@ -30,10 +27,11 @@ function flizpay_init_gateway_class()
             $this->init_settings();
             $this->title = $this->get_option('title');
             $this->description = $this->get_option('description');
-            $this->enabled = $this->get_option('enabled');
+            $this->enabled = $this->get_option('flizpay_enabled');
             $this->api_key = $this->get_option('flizpay_api_key');
             $this->webhook_key = $this->get_option('flizpay_webhook_key');
             $this->webhook_url = $this->get_option('flizpay_webhook_url');
+            $this->flizpay_webhook_alive = $this->get_option('flizpay_webhook_alive');
 
 
             // This action hook saves the settings
@@ -55,45 +53,22 @@ function flizpay_init_gateway_class()
 
             $api_key = sanitize_text_field($_POST['api_key']);
 
-            $webhookKey = $this->get_webhook_key($api_key);
-
-            $webhookUrl = $this->generate_webhook_url($api_key);
-
-            $this->update_option('flizpay_webhook_url', $webhookUrl);
-            $this->update_option('flizpay_webhook_key', $webhookKey);
+            $this->update_option('enabled', 'no');
+            $this->update_option('flizpay_webhook_alive', 'no');
+            $this->update_option('flizpay_webhook_key', $this->get_webhook_key($api_key));
+            $this->update_option('flizpay_webhook_url', $this->generate_webhook_url($api_key));
             $this->update_option('flizpay_api_key', $api_key);
 
-            wp_send_json_success(array('webhookUrl' => $webhookUrl));
+            wp_send_json_success(array('webhookUrl' => $this->get_option('flizpay_webhook_url')));
 
         }
         public function get_webhook_key(string $api_key): string
         {
-            $result = wp_remote_get(
-                'http://localhost:8081/business/generate-webhook-key',
-                array('headers' => array('x-api-key' => $api_key))
-            );
+            $client = WC_Flizpay_API::get_instance($api_key);
 
-            $result = wp_remote_retrieve_body($result);
+            $response = $client->dispatch('generate_webhook_key');
 
-            if (is_wp_error($result)) {
-                return wp_send_json_error('Connection failed. ' . wp_remote_retrieve_response_message($result));
-            }
-
-            $body = json_decode($result, true);
-
-            if (empty($body)) {
-                return wp_send_json_error('Empty WebhookKey body.' . $body);
-            }
-
-            if (!json_last_error() === JSON_ERROR_NONE) {
-                return wp_send_json_error('JSON ERROR. ' . json_last_error());
-            }
-
-            if (empty($body['data']) || empty($body['data']['webhookKey'])) {
-                return wp_send_json_error('Empty webhook key. ' . $body['message']);
-            }
-
-            $webhookKey = $body['data']['webhookKey'];
+            $webhookKey = $response['webhookKey'];
 
             return $webhookKey;
         }
@@ -101,38 +76,32 @@ function flizpay_init_gateway_class()
         public function generate_webhook_url(string $api_key): string
         {
             $webhookUrl = home_url('/flizpay-webhook?flizpay-webhook=1&source=woocommerce');
+            # $webhookUrl = 'http://0.0.0.0/flizpay-webhook?flizpay-webhook=1&source=woocommerce';
 
-            $result = wp_remote_post(
-                'http://localhost:8081/business/edit',
-                array(
-                    'headers' => array(
-                        'x-api-key' => $api_key,
-                        'Content-Type' => 'application/json'
-                    ),
-                    'body' => wp_json_encode(array('webhookUrl' => $webhookUrl)),
-                    'data_format' => 'body',
-                )
-            );
+            $client = WC_Flizpay_API::get_instance($api_key);
 
+            $response = $client->dispatch('save_webhook_url', array('webhookUrl' => $webhookUrl));
 
-            if (is_wp_error($result)) {
-                return wp_send_json_error('Connection failed. ' . wp_remote_retrieve_result_message($result));
+            $webhookUrlResponse = $response['webhookUrl'];
+
+            if (strcmp($webhookUrlResponse, $webhookUrl) !== 0) {
+                return wp_send_json_error('Incorrect WebhookURL: ' . $webhookUrlResponse);
             }
 
-            $body = $result['body'];
+            return $webhookUrlResponse;
+        }
 
-            if (empty($body)) {
-                return wp_send_json_error('Empty WebhookURL result.' . $result);
-            }
+        public function webhook_handshake()
+        {
+            $api_key = $this->get_option('flizpay_api_key');
 
-            if (
-                empty(json_decode($body, true)['data']['webhookUrl']) ||
-                strcmp(json_decode($body, true)['data']['webhookUrl'], $webhookUrl) !== 0
-            ) {
-                return wp_send_json_error('Incorrect WebhookURL: ' . $body);
-            }
+            $webhook_key = $this->get_option('flizpay_webhook_key');
 
-            return $webhookUrl;
+            $client = WC_Flizpay_API::get_instance($api_key);
+
+            $client->dispatch('webhook_handshake', array('webhookKey' => $webhook_key));
+
+            return true;
         }
 
         public function register_webhook_endpoint()
@@ -145,43 +114,21 @@ function flizpay_init_gateway_class()
             }
 
         }
-        public function webhook_handshake()
-        {
-            $api_key = $this->get_option('flizpay_api_key');
-
-            if (empty($api_key)) {
-                wp_send_json_error('Unauthorized', 401);
-            }
-
-            $response = wp_remote_post(
-                'http://localhost:8081/business/webhook-handshake',
-                array(
-                    'headers' => array(
-                        'x-api-key: ' . $api_key,
-                        'Content-type: application/json'
-                    ),
-                    'body' => wp_json_encode(
-                        array('webhookKey' => $this->get_option('flizpay_webhook_key'))
-                    ),
-                )
-            );
-
-            if (is_wp_error($response)) {
-                wp_send_json_error('Couldnt Handshake: ' . $response->get_error_message(), 403);
-            }
-
-            return true;
-        }
 
         public function handle_webhook_request()
         {
             global $wp;
 
-            if (isset($wp->query_vars['flizpay-webhook']) && $this->webhook_handshake()) {
+            if (isset($wp->query_vars['flizpay-webhook'])) {
                 $body = file_get_contents('php://input');
                 $data = json_decode($body, true);
 
-                if (json_last_error() === JSON_ERROR_NONE) {
+                if (json_last_error() === JSON_ERROR_NONE && $this->webhook_handshake()) {
+                    if (isset($data['test'])) {
+                        $this->update_option('flizpay_webhook_alive', 'yes');
+                        $this->update_option('flizpay_enabled', 'yes');
+                        wp_send_json_success(array('alive' => true), 200);
+                    }
                     // Process the webhook data
                     $this->process_webhook_data($data);
                     // Respond with success
@@ -191,7 +138,7 @@ function flizpay_init_gateway_class()
                 }
             }
 
-            wp_send_json_error('Invalid Operation', 400);
+            return; // Do not process the request
         }
 
         public function process_webhook_data($data)
@@ -222,6 +169,13 @@ function flizpay_init_gateway_class()
 
             // Save the order
             $order->save();
+        }
+
+        public function is_available()
+        {
+            $available = $this->get_option('flizpay_enabled');
+
+            return $available;
         }
 
         public function payment_fields()
