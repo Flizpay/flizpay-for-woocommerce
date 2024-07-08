@@ -33,12 +33,17 @@
 		const resultField = document.createElement('div');
 		const apiKeyInput = document.querySelector('#woocommerce_flizpay_flizpay_api_key');
 		const webhookURLInput = document.querySelector('#woocommerce_flizpay_flizpay_webhook_url');
+		const enabledCheckbox = document.querySelector('#woocommerce_flizpay_flizpay_enabled');
+		const webhookAlive = document.querySelector('#woocommerce_flizpay_flizpay_webhook_alive');
 		testButton.setAttribute('id', 'woocommerce_flizpay_test_connection');
 		resultField.setAttribute('id', 'woocommerce_flizpay_connection_result')
 		apiKeyInput.parentNode.appendChild(testButton);
 		apiKeyInput.parentNode.appendChild(resultField);
-		testButton.innerHTML = '<button id="test_connection_button" type="button">Test Connection</button>'
+		testButton.innerHTML = `<button id="test_connection_button" type="button">${webhookAlive.getAttribute('checked') ? 'Reconfigure' : 'Configure'} Connection</button>`;
 		webhookURLInput.setAttribute('disabled', true);
+		enabledCheckbox.setAttribute('disabled', true);
+		webhookAlive.setAttribute('disabled', true);
+		apiKeyInput.setAttribute('type', 'password');
 
 		$('#test_connection_button').on('click', function () {
 			let proceed;
