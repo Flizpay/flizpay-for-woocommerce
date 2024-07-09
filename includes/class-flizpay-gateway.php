@@ -91,17 +91,15 @@ function flizpay_init_gateway_class()
             return $webhookUrlResponse;
         }
 
-        public function webhook_handshake()
+        public function webhook_authenticate($data)
         {
-            $api_key = $this->get_option('flizpay_api_key');
+            $key = $this->get_option('flizpay_webhook_key');
 
-            $webhook_key = $this->get_option('flizpay_webhook_key');
+            $signature = $_SERVER['HTTP_X_FLIZ_SIGNATURE'];
 
-            $client = WC_Flizpay_API::get_instance($api_key);
+            $signedData = hash_hmac('sha256', json_encode($data), $key);
 
-            $client->dispatch('webhook_handshake', array('webhookKey' => $webhook_key));
-
-            return true;
+            return hash_equals($signedData, $signature);
         }
 
         public function register_webhook_endpoint()
@@ -120,10 +118,9 @@ function flizpay_init_gateway_class()
             global $wp;
 
             if (isset($wp->query_vars['flizpay-webhook'])) {
-                $body = file_get_contents('php://input');
-                $data = json_decode($body, true);
+                $data = json_decode(file_get_contents('php://input'), true);
 
-                if (json_last_error() === JSON_ERROR_NONE && $this->webhook_handshake()) {
+                if (json_last_error() === JSON_ERROR_NONE && $this->webhook_authenticate($data)) {
                     if (isset($data['test'])) {
                         $this->update_option('flizpay_webhook_alive', 'yes');
                         $this->update_option('flizpay_enabled', 'yes');
