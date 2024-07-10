@@ -45,6 +45,12 @@
 		webhookAlive.setAttribute('disabled', true);
 		apiKeyInput.setAttribute('type', 'password');
 
+		if (webhookAlive.getAttribute('checked')) {
+			const description = webhookAlive.parentElement.nextElementSibling.nextElementSibling;
+			description.setAttribute('style', 'color: white; background-color: green; padding: 10px; font-weight: bold;')
+			description.innerHTML = "Our servers communicated successfully with your site. You're ready to go free of charges!"
+		}
+
 		$('#test_connection_button').on('click', function () {
 			let proceed;
 
@@ -70,7 +76,7 @@
 							resultField.classList.add('connection-success')
 							testButton.classList.add('hidden')
 							apiKeyInput.setAttribute('disabled', 'true')
-							resultField.innerHTML = 'Connected and ready to use!'
+							resultField.innerHTML = 'Connected! Waiting for the webhook confirmation.'
 							webhookURLInput.value = response.data.webhookUrl
 						} else {
 							resultField.classList.add('connection-failed')
