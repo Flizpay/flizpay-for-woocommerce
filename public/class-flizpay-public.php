@@ -144,7 +144,6 @@ class Flizpay_Public
         $order->add_item($item);
 
         $order->calculate_totals();
-        $order->payment_complete();
         $cart->empty_cart();
         $order->update_status('pending');
 
@@ -199,103 +198,20 @@ class Flizpay_Public
     public function get_order_payment_data($order)
     {
         $flizpay_setting = get_option('woocommerce_flizpay_settings');
-
-        return array(
-            'order_id' => $order->get_id(),
-            'total' => $order->get_total(),
-            'api_key' => $flizpay_setting['flizpay_api_key'],
+        $api_key = $flizpay_setting['flizpay_api_key'];
+        $body = array(
+            'amount' => $order->get_total(),
             'currency' => $order->get_currency(),
-            'callback_url' => get_home_url() . '/wp-json/flizpay/v1/payment'
+            'externalId' => $order->get_id(),
+            'successUrl' => '/success',
+            'failureUrl' => '/success'
         );
-    }
 
-    /**
-     * @return void
-     */
-    public function flizpay_payment_register_routes()
-    {
-        register_rest_route(
-            'flizpay/v1',
-            '/payment/',
-            array(
-                'methods' => 'POST',
-                'callback' => array($this, 'flizpay_payment_status'),
-                'permission_callback' => '__return_true'
-            )
-        );
-    }
+        $client = WC_Flizpay_API::get_instance($api_key);
 
-    /**
-     * @param $request
-     * @return false|string
-     */
-    public function flizpay_payment_status($request)
-    {
-        $order_id = $request['order_id'];
-        $status = $request['payment'];
-        $order = wc_get_order($order_id);
+        $response = $client->dispatch('create_transaction', $body);
 
-        if ($order && ($status == 'success' || $status == 'fail')) {
-            if ($status == 'success') {
-                $response = $this->flizpay_load_success($order, $order_id, $status);
-            } else {
-                $response = $this->flizpay_load_failure($order, $order_id, $status);
-            }
-        } else {
-            $response = $this->flizpay_enpoint_response($order_id, 'error');
-        }
-
-        return json_encode($response);
-    }
-
-    /**
-     * @param $order
-     * @param $order_id
-     * @param $status
-     * @return array
-     */
-    public function flizpay_load_success($order, $order_id, $status)
-    {
-        $order->update_status('completed');
-        return $this->flizpay_enpoint_response($order_id, $status);
-    }
-
-    /**
-     * @param $order
-     * @param $order_id
-     * @param $status
-     * @return array
-     */
-    public function flizpay_load_failure($order, $order_id, $status)
-    {
-        $order->update_status('cancelled');
-        return $this->flizpay_enpoint_response($order_id, $status);
-    }
-
-    /**
-     * @param $order_id
-     * @param $status
-     * @return array
-     */
-    public function flizpay_enpoint_response($order_id, $status)
-    {
-        $msg = '';
-        switch ($status) {
-            case "success":
-                $msg = 'Your order has been paid successfully.';
-                break;
-            case "fail":
-                $msg = 'Your order has been cancelled.';
-                break;
-            case "error":
-                $msg = 'There is an error with posted data, order cannot be processed further.';
-                break;
-        }
-
-        return array(
-            'order_id' => $order_id,
-            'message' => $msg
-        );
+        return array('callback_url' => $response['redirectUrl'], 'order_id' => $order->get_id());
     }
 
     /**
@@ -304,11 +220,11 @@ class Flizpay_Public
     public function flizpay_order_finish()
     {
         $order_id = $_POST['order_id'];
-        $order = new WC_Order($order_id);
+        $order = wc_get_order($order_id);
+        $status = 'pending';
+        $url = null;
 
-        if ($order->get_status() == 'pending') {
-            $status = 'pending';
-        } else if ($order->get_status() == 'completed') {
+        if ($order->get_status() == 'processing') {
             $status = 'completed';
             $url = $order->get_checkout_order_received_url();
         } else if ($order->get_status() == 'cancelled') {
@@ -319,7 +235,7 @@ class Flizpay_Public
         echo json_encode(
             array(
                 'status' => $status,
-                'url' => $url
+                'url' => $url,
             )
         );
         die;
