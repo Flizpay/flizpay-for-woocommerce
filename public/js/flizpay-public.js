@@ -1,4 +1,4 @@
-(function( $ ) {
+(function ($) {
 	'use strict';
 
 	/**
@@ -12,28 +12,31 @@
 	 * This enables you to define handlers, for when the DOM is ready:
 	 */
 
-	$(function() {
-		$(document).ready(function (){
-			if( document.querySelector( '.wc-block-checkout__form' ) ) {
-				var fc = "form.wc-block-checkout__form",
-					pl = '.wc-block-components-checkout-place-order-button',
-					payment_sel = 'input[name="radio-control-wc-payment-method-options"]',
+	$(function () {
+		$(document).ready(function () {
+			if (document.querySelector('.wc-block-checkout__form')) {
+				const form = "form.wc-block-checkout__form",
+					placeOrderButton = '.wc-block-components-checkout-place-order-button',
+					paymentMethodSelector = 'input[name="radio-control-wc-payment-method-options"]',
 					is_block = 'yes';
+
+				initilize_flizpay_payment_process(form, placeOrderButton, paymentMethodSelector, is_block);
 			} else {
-				var fc = "form.woocommerce-checkout",
-					pl = 'button[type="submit"][name="woocommerce_checkout_place_order"]',
-					payment_sel = 'input[name="payment_method"]',
+				const form = "form.woocommerce-checkout",
+					placeOrderButton = 'button[type="submit"][name="woocommerce_checkout_place_order"]',
+					paymentMethodSelector = 'input[name="payment_method"]',
 					is_block = 'no';
+				initilize_flizpay_payment_process(form, placeOrderButton, paymentMethodSelector, is_block);
 			}
 
-			initilize_flizpay_payment_process(fc, pl, payment_sel, is_block)
+
 		})
 
 		// Hide payment fail menu item
 		$('ul li a').each(
-			function(key, item){
-				if( item.text === 'Flizpay Payment Fail' ) {
-					$( this ).closest( 'li' ).remove()
+			function (_, item) {
+				if (item.text === 'Flizpay Payment Fail') {
+					$(this).closest('li').remove()
 				}
 			}
 		)
@@ -41,9 +44,9 @@
 	/**
 	 * When the window is loaded:
 	 *
-	  $( window ).load(function() {
-		  // initilize_flizpay_payment_process()
-	  });
+		$( window ).load(function() {
+			// initilize_flizpay_payment_process()
+		});
 	 *
 	 * ...and/or other possibilities.
 	 *
@@ -53,14 +56,15 @@
 	 * practising this, we should strive to set a better example in our own work.
 	 */
 
-	function initilize_flizpay_payment_process(fc, pl, payment_sel, is_block) {
-		$(fc).on("click", pl, function (e) {
-			var chosen_payment = $(payment_sel+':checked').val();
-			if( chosen_payment === 'flizpay' ) {
+	function initilize_flizpay_payment_process(form, placeOrderButton, paymentMethodSelector, is_block) {
+		$(form).on("click", placeOrderButton, function (e) {
+			var chosen_payment = $(paymentMethodSelector + ':checked').val();
+			console.log(chosen_payment);
+			if (chosen_payment === 'flizpay') {
 				e.preventDefault();
 				e.stopImmediatePropagation()
 
-				if( is_block === 'yes') {
+				if (is_block === 'yes') {
 					$(this).addClass('wc-block-components-button--loading')
 					$('.wc-block-components-button__text').before(
 						'<span class="wc-block-components-spinner" aria-hidden="true"></span>'
@@ -69,10 +73,10 @@
 					$(this).text('Please Wait...')
 				}
 
-				payment_gateway_function(fc, pl, chosen_payment )
+				payment_gateway_function(form, placeOrderButton, chosen_payment)
 			} else {
-				jQuery(fc).off();
-				jQuery(pl).trigger("click");
+				jQuery(form).off();
+				jQuery(placeOrderButton).trigger("click");
 			}
 
 		});
@@ -80,120 +84,139 @@
 
 	/**
 	 *
-	 * @param fc
-	 * @param pl
-	 * @param is_block
+	 * @param {String} form
+	 * @param {String} placeOrderButton
+	 * @param {String} chosen_payment
 	 */
-	function payment_gateway_function( fc, pl, chosen_payment ) {
+	function payment_gateway_function(form, placeOrderButton, chosen_payment) {
 		let validation = 'pass'
-		$( fc+' input' ).not(':hidden').each( function() {
-			if( ( $(this).is('[required]') || $(this).parent().closest('#'+$(this).attr('id')+'_field').hasClass('validate-required') )
-				&& $(this).val().length === 0 ) {
-				validation = 'fail'
+		$(form + ' input').not(':hidden').each(function () {
+			try {
+				const currentInput = $(this);
+				const closestInput = $(this).parent().closest(`#${$(this).attr('id')}_field`);
+				if (currentInput.is('[required]') || closestInput.hasClass('validate-required')
+					&& currentInput.val().length === 0) {
+					validation = 'fail';
+					currentInput.parent().addClass('has-error');
+				}
+			} catch (e) {
+				console.log(e);
+				validation = 'pass';
 			}
-		} )
+		})
 
 		if (validation === 'pass') {
 			get_order_data(chosen_payment)
 		} else {
-			jQuery(fc).off();
-			jQuery(pl).trigger("click");
-			initilize_flizpay_payment_process()
+			jQuery(form).off();
+			jQuery(placeOrderButton).trigger("click");
+			initilize_flizpay_payment_process();
 		}
 	}
 
 	/**
-	 *
+	 * @param {String} chosen_payment
 	 */
 	function get_order_data(chosen_payment) {
 		$(document.body).trigger('update_checkout');
 
-		var data = {
+		const data = {
 			'action': 'flizpay_get_payment_data'
 		};
 
 		jQuery.ajax({
 			url: flizpay_frontend.ajaxurl,
 			type: 'POST',
-			data: data,
+			data,
 			success: function (response) {
 				load_flizpay_modal(chosen_payment, response)
-				flizpay_load_order_finish_page(response)
+			},
+			error: function (error) {
+				console.log(error);
 			}
 		});
 	}
 
 	/**
 	 *
-	 * @param chosen_payment
+	 * @param {String} chosen_payment
+	 * @param {JSON} json
 	 */
 	function load_flizpay_modal(chosen_payment, json) {
-		var returned_data = JSON.parse(json)
-		// var url = 'https://chart.googleapis.com/chart?cht=qr&chl='+json+'&chs=160x160&chld=L|0'
-		if ($('.confirmation-modal').length === 0 ) {
-			var confirmation_modal   = '<div class="confirmation-modal">' +
-				'<div class="modal-content">' +
-				'<div class="flizpay-container">' +
-				'<div class="header">' +
-				'<div class="logo">' +
-				'<img src="'+flizpay_frontend.public_dir_path+'/image/logo.png">' +
-				'</div>' +
-				'<div class="cart-info">' +
-				'<img src="'+flizpay_frontend.public_dir_path+'/image/trolley.png" width="20"><span>'+returned_data.total+returned_data.currency+'</span>' +
-				'</div>' +
-				'</div>' +
-				'<p><i>ⓘ Please scan the QR-Code with your Fliz app in order to pay.</i></p>' +
-				// '<img src='+url+' width="300" alt="QR Code" class="flizpay-qr-code">' +
-				'<div id="flizpay_payment_qrcode"></div>' +
-				'</div>' +
-				'</div>' +
-				'</div>';
-
-			if ( chosen_payment === 'flizpay' ) {
-
-				$('body').append(confirmation_modal);
-				generate_qrcode(200, 200, json );
+		const returned_data = JSON.parse(json)
+		if ($('.confirmation-modal').length === 0) {
+			console.log(json);
+			if (chosen_payment === 'flizpay') {
+				openModalWithIframe(returned_data['callback_url'], returned_data['order_id']);
 			}
+
 		}
 	}
 
 	/**
-	 *
-	 * @param width
-	 * @param height
-	 * @param text
+	 * 
+	 * @param {String} url 
+	 * @param {String} order_id 
 	 */
-	function generate_qrcode(width, height, text) {
-		jQuery('#flizpay_payment_qrcode').qrcode({width: width,height: height,text: text});
+
+	function openModalWithIframe(url, order_id) {
+		// Create the modal container
+		const modal = $(`<div class="confirmation-modal"></div>`);
+		const modalContent = $(`<div class="modal-content"></div>`);
+		const flizpayContainer = $(`<div class="flizpay-container"></div>`);
+
+		modalContent.append(flizpayContainer);
+		modal.append(modalContent)
+
+		// Create the iframe element
+		const iframe = $('<iframe></iframe>').attr('src', url).css({
+			'width': '100%',
+			'height': '100%',
+			'border': 'none',
+			'border-radius': '10px'
+		});
+
+		// Append the iframe to the modal
+		flizpayContainer.append(iframe);
+
+		// Append the modal to the body
+		$('body').append(modal);
+
+		// Close modal on click outside iframe
+		modal.on('click', function (e) {
+			if (e.target === this) {
+				$(this).remove();
+			}
+		});
+
+		flizpay_load_order_finish_page(order_id);
 	}
 
 	/**
 	 *
-	 * @param json
+	 * @param {String} order_id
 	 */
-	function flizpay_load_order_finish_page(json) {
-
-		var returned_data = JSON.parse(json)
-		var data = {
+	function flizpay_load_order_finish_page(order_id) {
+		const data = {
 			'action': 'flizpay_order_finish',
-			'order_id': returned_data.order_id
+			'order_id': order_id
 		};
 
 		jQuery.ajax({
 			url: flizpay_frontend.ajaxurl,
 			type: 'POST',
-			data: data,
+			data,
 			success: function (response) {
-				window.setTimeout(function() {
-					var load = JSON.parse(response)
-					if( load.status == 'pending' ) {
-						flizpay_load_order_finish_page(json)
+				window.setTimeout(function () {
+					const order = JSON.parse(response)
+					if (order.status == 'pending') {
+						flizpay_load_order_finish_page(order_id)
 					} else {
-						window.location.href = load.url
+						window.location.href = order.url
 					}
 				}, 5000);
 			}
 		});
 	}
-})( jQuery );
+})(jQuery);
 
