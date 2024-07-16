@@ -191,7 +191,6 @@ class Flizpay
 		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_scripts');
 		$this->loader->add_action("wp_ajax_flizpay_get_payment_data", $plugin_public, "flizpay_get_payment_data");
 		$this->loader->add_action("wp_ajax_nopriv_flizpay_get_payment_data", $plugin_public, "flizpay_get_payment_data");
-		$this->loader->add_action('rest_api_init', $plugin_public, 'flizpay_payment_register_routes');
 		$this->loader->add_action("wp_ajax_flizpay_order_finish", $plugin_public, "flizpay_order_finish");
 		$this->loader->add_action("wp_ajax_nopriv_flizpay_order_finish", $plugin_public, "flizpay_order_finish");
 
