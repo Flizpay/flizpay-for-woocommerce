@@ -115,6 +115,11 @@ class Flizpay
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-i18n.php';
 
 		/**
+		 * The class responsible for defining all api calls to flizpay
+		 */
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-api.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-flizpay-admin.php';

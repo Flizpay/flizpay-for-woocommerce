@@ -15,7 +15,7 @@ function flizpay_init_gateway_class()
         public function __construct()
         {
             $this->id = 'flizpay';
-            $this->icon = '';
+            $this->icon = apply_filters('woocommerce_flizpay_icon', plugin_dir_url(__FILE__) . '../public/images/logo.png');
             $this->has_fields = true;
             $this->method_title = 'Flizpay Gateway';
             $this->method_description = 'Flizpay payment gateway for WooCommerce';
@@ -23,12 +23,15 @@ function flizpay_init_gateway_class()
             // Method with all the options fields
             $this->init_form_fields();
 
-            // Load the settings.
+            // Load the setting.
             $this->init_settings();
             $this->title = $this->get_option('title');
             $this->description = $this->get_option('description');
-            $this->enabled = $this->get_option('enabled');
+            $this->enabled = $this->get_option('flizpay_enabled');
             $this->api_key = $this->get_option('flizpay_api_key');
+            $this->webhook_key = $this->get_option('flizpay_webhook_key');
+            $this->webhook_url = $this->get_option('flizpay_webhook_url');
+            $this->flizpay_webhook_alive = $this->get_option('flizpay_webhook_alive');
 
 
             // This action hook saves the settings
@@ -205,9 +208,20 @@ function flizpay_init_gateway_class()
             );
         }
 
+        public function receipt_page($order)
+        {
+            echo '<p>' . __('Thank you for your order, please click the button below to pay with Flizpay.', 'flizpay') . '</p>';
+            echo '<a class="button alt" href="https://checkout.flizpay.com/?order_id=' . esc_attr($order->get_id()) . '" target="_blank">' . __('Pay with Flizpay', 'flizpay') . '</a>';
+        }
+
         /**
          * Plugin options, we deal with it in Step 3 too
          */
+        public function init_form_fields()
+        {
+            $this->form_fields = apply_filters('flizpay_load_settings', true);
+        }
+
         public function init_form_fields()
         {
             $this->form_fields = apply_filters('flizpay_load_settings', true);
