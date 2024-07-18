@@ -43,7 +43,4 @@ class Flizpay_i18n
 		);
 
 	}
-
-
-
 }
