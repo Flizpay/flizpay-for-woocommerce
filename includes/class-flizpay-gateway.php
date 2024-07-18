@@ -42,9 +42,6 @@ function flizpay_init_gateway_class()
             add_action('init', array($this, 'register_webhook_endpoint'));
             add_action('template_redirect', array($this, 'handle_webhook_request'));
 
-            // Payment form handler
-            add_action('woocommerce_receipt_' . $this->id, array($this, 'receipt_page'));
-
             // One page checkout, express checkout fields
             // wp-block-woocommerce-checkout-express-payment-block - Class of the express checkout block
             // add_action('woocommerce_one_page_checkout_order_review', array($this, 'payment_fields'), 10, 1);
@@ -162,7 +159,7 @@ function flizpay_init_gateway_class()
 
             if ($status === 'completed') {
                 $order->payment_complete($data['transactionId']);
-
+                WC()->cart->empty_cart();
                 if (isset($data['transactionId'])) {
                     $order->add_order_note('FLIZ transaction ID: ' . sanitize_text_field($data['transactionId']));
                 }
@@ -183,45 +180,9 @@ function flizpay_init_gateway_class()
             return $available;
         }
 
-        public function payment_fields()
-        {
-            if ($this->description) {
-                echo wpautop(wp_kses_post($this->description));
-            }
-            echo '<img src="' . esc_url($this->icon) . '" alt="Flizpay Logo" style="max-width: 100px;">';
-        }
-
-        public function process_payment($order_id)
-        {
-            $order = wc_get_order($order_id);
-
-            // Mark as on-hold (we're awaiting the payment)
-            $order->update_status('on-hold', __('Awaiting Flizpay payment', 'flizpay'));
-
-            // Reduce stock levels
-            wc_reduce_stock_levels($order_id);
-
-            // Return thank you page redirect
-            return array(
-                'result' => 'success',
-                'redirect' => $this->get_return_url($order),
-            );
-        }
-
-        public function receipt_page($order)
-        {
-            echo '<p>' . __('Thank you for your order, please click the button below to pay with Flizpay.', 'flizpay') . '</p>';
-            echo '<a class="button alt" href="https://checkout.flizpay.com/?order_id=' . esc_attr($order->get_id()) . '" target="_blank">' . __('Pay with Flizpay', 'flizpay') . '</a>';
-        }
-
         /**
          * Plugin options, we deal with it in Step 3 too
          */
-        public function init_form_fields()
-        {
-            $this->form_fields = apply_filters('flizpay_load_settings', true);
-        }
-
         public function init_form_fields()
         {
             $this->form_fields = apply_filters('flizpay_load_settings', true);
