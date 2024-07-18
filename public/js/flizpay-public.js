@@ -40,6 +40,23 @@
 				}
 			}
 		)
+
+		const observer = new MutationObserver(function () {
+			const flizpayLabel = document.querySelector('#radio-control-wc-payment-method-options-flizpay__label');
+			// const expressCheckoutBlock = document.querySelector('.wc-block-components-express-payment__content');
+			if (flizpayLabel) {
+				flizpayLabel.innerHTML = `
+					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1615 1614" fill="none">
+						<path d="M1320.75 1043.12H983.253L1362.93 407.156H253.575V1210.19H439.348V887.181H729.532V731.241H441.075V572.589H732.245H1044.13L678.005 1208.55H1320.75V1043.12Z" fill="#001F3F"></path>
+						<path d="M806.822 0.355469C360.697 0.355469 0 362.408 0 807.178C0 1253.3 362.053 1614 806.822 1614C1252.95 1614 1615 1251.95 1615 807.178C1615 361.052 1252.95 0.355469 806.822 0.355469ZM678.002 1208.55L1045.48 572.589H733.598H440.701V731.241H729.53V887.181H439.345V1209.91H253.573V407.157H1362.78L983.103 1043.12H1320.75V1208.55H678.002Z" fill="#80ED99"></path>
+					</svg>
+					<p style='padding-left: 8px;'>FLIZpay</p>
+				`;
+				observer.disconnect();
+			}
+		});
+
+		observer.observe(document, { attributes: false, childList: true, characterData: false, subtree: true });
 	});
 	/**
 	 * When the window is loaded:
@@ -219,4 +236,3 @@
 		});
 	}
 })(jQuery);
-
