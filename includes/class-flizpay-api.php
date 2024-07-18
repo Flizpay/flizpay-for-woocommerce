@@ -27,7 +27,7 @@ class WC_Flizpay_API
     add_filter('https_local_ssl_verify', '__return_false');
     add_filter('https_ssl_verify', '__return_false');
     add_filter('block_local_requests', '__return_false');
-    $this->base_url = 'http://localhost:8081';
+    $this->base_url = 'http://localhost:8080';
     $this->routes = array(
       'generate_webhook_key' => function ($body) {
         return array(
