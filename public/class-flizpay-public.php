@@ -124,7 +124,6 @@ class Flizpay_Public
         $chosen_shipping_methods = WC()->session->get("chosen_shipping_methods");
         $shipping_method = $this->get_shipping_method($chosen_shipping_methods[0]);
 
-        $cart = WC()->cart;
         $checkout = WC()->checkout();
         $order_id = $checkout->create_order(array());
         $order = wc_get_order($order_id);
@@ -144,7 +143,6 @@ class Flizpay_Public
         $order->add_item($item);
 
         $order->calculate_totals();
-        $cart->empty_cart();
         $order->update_status('pending');
 
         $payment_info = $this->get_order_payment_data($order);
@@ -203,8 +201,8 @@ class Flizpay_Public
             'amount' => $order->get_total(),
             'currency' => $order->get_currency(),
             'externalId' => $order->get_id(),
-            'successUrl' => '/success',
-            'failureUrl' => '/success'
+            'successUrl' => null,
+            'failureUrl' => null,
         );
 
         $client = WC_Flizpay_API::get_instance($api_key);
@@ -221,21 +219,11 @@ class Flizpay_Public
     {
         $order_id = $_POST['order_id'];
         $order = wc_get_order($order_id);
-        $status = 'pending';
-        $url = null;
-
-        if ($order->get_status() == 'processing') {
-            $status = 'completed';
-            $url = $order->get_checkout_order_received_url();
-        } else if ($order->get_status() == 'cancelled') {
-            $status = 'cancelled';
-            $url = get_home_url() . '/flizpay-payment-fail';
-        }
-
+        $status = $order->get_status();
         echo json_encode(
             array(
                 'status' => $status,
-                'url' => $url,
+                'url' => $status === 'processing' ? $order->get_checkout_order_received_url() : get_home_url() . '/flizpay-payment-fail',
             )
         );
         die;
