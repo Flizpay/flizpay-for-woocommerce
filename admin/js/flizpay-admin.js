@@ -35,6 +35,8 @@
 		const webhookURLInput = document.querySelector('#woocommerce_flizpay_flizpay_webhook_url');
 		const enabledCheckbox = document.querySelector('#woocommerce_flizpay_flizpay_enabled');
 		const webhookAlive = document.querySelector('#woocommerce_flizpay_flizpay_webhook_alive');
+		const titleInput = document.querySelector('#woocommerce_flizpay_title');
+		const descriptionInput = document.querySelector('#woocommerce_flizpay_description');
 		testButton.setAttribute('id', 'woocommerce_flizpay_test_connection');
 		resultField.setAttribute('id', 'woocommerce_flizpay_connection_result')
 		apiKeyInput.parentNode.appendChild(testButton);
@@ -43,6 +45,8 @@
 		webhookURLInput.setAttribute('disabled', true);
 		enabledCheckbox.setAttribute('disabled', true);
 		webhookAlive.setAttribute('disabled', true);
+		titleInput.setAttribute('disabled', true);
+		descriptionInput.setAttribute('disabled', true);
 		apiKeyInput.setAttribute('type', 'password');
 
 		if (webhookAlive.getAttribute('checked')) {
