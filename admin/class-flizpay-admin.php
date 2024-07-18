@@ -141,14 +141,14 @@ class Flizpay_Admin
 				'title' => 'Title',
 				'type' => 'text',
 				'description' => 'This controls the title which the user sees during checkout.',
-				'default' => 'Flizpay',
+				'default' => 'FLIZpay',
 				'desc_tip' => true,
 			),
 			'description' => array(
 				'title' => 'Description',
 				'type' => 'textarea',
 				'description' => 'This controls the description which the user sees during checkout.',
-				'default' => 'Scan, Tap, Pay, Cashback!',
+				'default' => 'Pay securely with your bank account via the FLIZ app.',
 				'desc_tip' => true,
 			),
 			'flizpay_api_key' => array(
@@ -181,21 +181,19 @@ class Flizpay_Admin
 			<h2>Flizpay</h2>
 			<div style="background-color: #f7f7f7; margin-bottom: 20px; padding: 20px; border-left: 4px solid #007cba;">
 				<div style="width: 100%; display: flex; justify-content: center; flex-wrap: wrap; text-align: center;">
-					<img
-						src="https://www.flizpay.de/assets/QRC-CnlMgZfh.svg"
-						alt="Flizpay Logo" style="max-width: 100px;">
-					<h2 style="width: 100%; text-align: center;">Welcome to the Flizpay Gateway for Woocommerce plugin!</h2>
+					<h2 style="width: 100%; text-align: center;">Welcome to the FLIZpay WooCommerce plugin!</h2>
 				</div>
-				<p>To start accepting payments from your customers at free rates, you'll need to follow three simple steps:</p>
+				<p>Instructions:</p>
 				<ol>
-					<li><a href="https://www.flizpay.de" target="_blank">Sign up for Fliz Business</a> if you don't have an account
-						yet.</li>
-					<li>Once your Fliz Business has been approved get your API KEY and paste it in the field below.</li>
+					<li>If you haven’t signed up for a FLIZ company account, please <a href="https://www.flizpay.de/signup" target="_blank">click here</a> and sign up.</li>
+					<li>Once you signed up, please generate a new API Key in your FLIZ company account and paste it in the “API KEY” field below.</li>
 					<li>Click to configure the connection</li>
-					<li>Reload the page after a few seconds to verify the connection and start enjoyning a free of charges payment method.</li>
+					<li>Wait about 10 seconds and reload the page to check the connection status.</li>
+					<li>After you reloaded this page, a green box is shown at the bottom, indicating the successful configuration of the FLIZpay plugin. You are now ready to receive fee-free payments.</li>
+					<li>Click on “Save changes” on the bottom left.</li>
+					<li>Make sure you save as many fees as possible with our fee-free payments. So, don’t forget to put FLIZpay first in the list of payment methods presented to customers. To do so, click on “Payments” at the top of this page. There, you can drag and drop or use the arrows to fix the position of a payment method in the list of available methods.</li>
 				</ol>
-				<p><a href="https://www.flizpay.de" target="_blank">Find out more</a> why Flizpay is the best payment solution for
-					your business and learn about the Cashback!</p>
+				
 				<p>If you'd like to know more about how to configure this plugin for your needs, <a
 						href="https://www.docs.flizpay.de/docs/intro" target="_blank">check out
 						our documentation.</a></p>
