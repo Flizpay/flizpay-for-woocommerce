@@ -76,59 +76,49 @@
 	function initilize_flizpay_payment_process(form, placeOrderButton, paymentMethodSelector, is_block) {
 		$(form).on("click", placeOrderButton, function (e) {
 			var chosen_payment = $(paymentMethodSelector + ':checked').val();
-			console.log(chosen_payment);
 			if (chosen_payment === 'flizpay') {
 				e.preventDefault();
 				e.stopImmediatePropagation()
 
-				if (is_block === 'yes') {
-					$(this).addClass('wc-block-components-button--loading')
-					$('.wc-block-components-button__text').before(
-						'<span class="wc-block-components-spinner" aria-hidden="true"></span>'
-					)
-				} else {
-					$(this).text('Please Wait...')
-				}
+				let validation = 'pass';
+				$(form + ' input').not(':hidden').each(function () {
+					if (`#${$(this).attr('id')}_field`.includes(':')) return;
+					try {
+						const currentInput = $(this);
+						const closestInput = $(this).parent().closest(`#${$(this).attr('id')}_field`);
+						if ((currentInput.is('[required]') || closestInput.hasClass('validate-required'))
+							&& currentInput.val().length === 0) {
+							console.log(currentInput.val().length === 0);
+							currentInput.parent().addClass('has-error');
+							validation = 'fail';
+						}
+					} catch (e) {
+						console.log(e);
+						validation = 'pass';
+					}
+				})
 
-				payment_gateway_function(form, placeOrderButton, chosen_payment)
+				if (validation === 'pass') {
+					if (is_block === 'yes') {
+						$(this).addClass('wc-block-components-button--loading')
+						$('.wc-block-components-button__text').before(
+							'<span class="wc-block-components-spinner" aria-hidden="true"></span>'
+						)
+					} else {
+						$(this).text('Please Wait...')
+					}
+
+					get_order_data(chosen_payment)
+				} else {
+					jQuery(form).off();
+					initilize_flizpay_payment_process();
+				}
 			} else {
 				jQuery(form).off();
 				jQuery(placeOrderButton).trigger("click");
 			}
 
 		});
-	}
-
-	/**
-	 *
-	 * @param {String} form
-	 * @param {String} placeOrderButton
-	 * @param {String} chosen_payment
-	 */
-	function payment_gateway_function(form, placeOrderButton, chosen_payment) {
-		let validation = 'pass'
-		$(form + ' input').not(':hidden').each(function () {
-			try {
-				const currentInput = $(this);
-				const closestInput = $(this).parent().closest(`#${$(this).attr('id')}_field`);
-				if (currentInput.is('[required]') || closestInput.hasClass('validate-required')
-					&& currentInput.val().length === 0) {
-					validation = 'fail';
-					currentInput.parent().addClass('has-error');
-				}
-			} catch (e) {
-				console.log(e);
-				validation = 'pass';
-			}
-		})
-
-		if (validation === 'pass') {
-			get_order_data(chosen_payment)
-		} else {
-			jQuery(form).off();
-			jQuery(placeOrderButton).trigger("click");
-			initilize_flizpay_payment_process();
-		}
 	}
 
 	/**
@@ -161,12 +151,8 @@
 	 */
 	function load_flizpay_modal(chosen_payment, json) {
 		const returned_data = JSON.parse(json)
-		if ($('.confirmation-modal').length === 0) {
-			console.log(json);
-			if (chosen_payment === 'flizpay') {
-				openModalWithIframe(returned_data['callback_url'], returned_data['order_id']);
-			}
-
+		if ($('.confirmation-modal').length === 0 && chosen_payment === 'flizpay') {
+			openModalWithIframe(returned_data['callback_url'], returned_data['order_id']);
 		}
 	}
 
@@ -231,7 +217,7 @@
 					} else {
 						window.location.href = order.url
 					}
-				}, 5000);
+				}, 2000);
 			}
 		});
 	}
