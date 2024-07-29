@@ -15,7 +15,6 @@ function flizpay_init_gateway_class()
         public function __construct()
         {
             $this->id = 'flizpay';
-            $this->icon = apply_filters('woocommerce_flizpay_icon', plugin_dir_url(__FILE__) . '../public/images/logo.png');
             $this->has_fields = true;
             $this->method_title = 'Flizpay Gateway';
             $this->method_description = 'Flizpay payment gateway for WooCommerce';
@@ -25,14 +24,29 @@ function flizpay_init_gateway_class()
 
             // Load the setting.
             $this->init_settings();
-            $this->title = $this->get_option('title');
-            $this->description = $this->get_option('description');
+            $this->description = 'Pay securely with your bank account via the FLIZ app.';
+            $this->update_option("description", $this->description);
+
             $this->enabled = $this->get_option('flizpay_enabled');
             $this->api_key = $this->get_option('flizpay_api_key');
             $this->webhook_key = $this->get_option('flizpay_webhook_key');
             $this->webhook_url = $this->get_option('flizpay_webhook_url');
             $this->flizpay_webhook_alive = $this->get_option('flizpay_webhook_alive');
+            $this->cashback = $this->get_cashback_data($this->api_key);
 
+            if (
+                isset($this->webhook_key) &&
+                isset($this->webhook_url) &&
+                isset($this->flizpay_webhook_alive) &&
+                !is_null($this->cashback)
+            ) {
+                $this->update_option('flizpay_cashback', $this->cashback);
+                $this->title = "FLIZpay - {$this->cashback}% Cashback";
+                $this->update_option('title', $this->title);
+            } else {
+                $this->title = "FLIZpay";
+                $this->update_option('title', $this->title);
+            }
 
             // This action hook saves the settings
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
@@ -41,11 +55,6 @@ function flizpay_init_gateway_class()
             // Webhook handler
             add_action('init', array($this, 'register_webhook_endpoint'));
             add_action('template_redirect', array($this, 'handle_webhook_request'));
-
-            // One page checkout, express checkout fields
-            // wp-block-woocommerce-checkout-express-payment-block - Class of the express checkout block
-            // add_action('woocommerce_one_page_checkout_order_review', array($this, 'payment_fields'), 10, 1);
-            // add_action('woocommerce_before_checkout_form', array($this, 'payment_fields'), 10, 1);
         }
 
         public function test_gateway_connection()
@@ -53,7 +62,6 @@ function flizpay_init_gateway_class()
             check_ajax_referer('test_connection_nonce', 'nonce');
 
             $api_key = sanitize_text_field($_POST['api_key']);
-
             $this->update_option('enabled', 'no');
             $this->update_option('flizpay_webhook_alive', 'no');
             $this->update_option('flizpay_webhook_key', $this->get_webhook_key($api_key));
@@ -91,6 +99,25 @@ function flizpay_init_gateway_class()
             return $webhookUrlResponse;
         }
 
+        public function get_cashback_data(string $api_key)
+        {
+            $client = WC_Flizpay_API::get_instance($api_key);
+
+            $response = $client->dispatch('fetch_cashback_data');
+
+            $active_cashback = null;
+
+            if (isset($response['cashbacks'])) {
+                foreach ($response['cashbacks'] as $cashback) {
+                    if ($cashback['active']) {
+                        $active_cashback = $cashback;
+                    }
+                }
+            }
+
+            return $active_cashback['amount'] ?? null;
+        }
+
         public function webhook_authenticate($data)
         {
             $key = $this->get_option('flizpay_webhook_key');
@@ -99,7 +126,7 @@ function flizpay_init_gateway_class()
 
             $signedData = hash_hmac('sha256', json_encode($data), $key);
 
-            return hash_equals($signedData, $signature);
+            return hash_equals($signature, $signedData);
         }
 
         public function register_webhook_endpoint()
@@ -132,7 +159,7 @@ function flizpay_init_gateway_class()
                         wp_send_json_success('Order updated successfully', 200);
                     }
                 } else {
-                    wp_send_json_error('Invalid Request', 400);
+                    wp_send_json_error('Invalid Request', 422);
                 }
             }
 
@@ -159,7 +186,16 @@ function flizpay_init_gateway_class()
 
             if ($status === 'completed') {
                 $order->payment_complete($data['transactionId']);
+                $discount = (float) $data['originalAmount'] - (float) $data['amount'];
+                if ($discount > 0.0) {
+                    $order->set_discount_total((float) $order->get_discount_total()
+                        + $discount);
+                    $order->set_total($data['amount']);
+                    $order->add_order_note('FLIZ Cashback Applied: ' . $data['currency'] . sanitize_text_field($discount));
+                }
+
                 WC()->cart->empty_cart();
+
                 if (isset($data['transactionId'])) {
                     $order->add_order_note('FLIZ transaction ID: ' . sanitize_text_field($data['transactionId']));
                 }

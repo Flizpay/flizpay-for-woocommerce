@@ -194,9 +194,12 @@ class Flizpay_Admin
 					<li>Make sure you save as many fees as possible with our fee-free payments. So, don’t forget to put FLIZpay first in the list of payment methods presented to customers. To do so, click on “Payments” at the top of this page. There, you can drag and drop or use the arrows to fix the position of a payment method in the list of available methods.</li>
 				</ol>
 				
-				<p>If you'd like to know more about how to configure this plugin for your needs, <a
-						href="https://www.docs.flizpay.de/docs/intro" target="_blank">check out
-						our documentation.</a></p>
+				<p>
+					If you'd like to know more about how to configure this plugin for your needs, <a 
+						href="https://www.docs.flizpay.de/docs/intro"
+						target="_blank"
+						>check out our documentation.</a>
+				</p>
 			</div>
 		HTML;
 	}

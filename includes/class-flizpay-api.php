@@ -10,7 +10,7 @@ class WC_Flizpay_API
 
   public static function get_instance($api_key)
   {
-    if (!isset(self::$instance)) {
+    if (!isset(self::$instance) || self::$instance->api_key !== $api_key) {
       self::$instance = new WC_Flizpay_API($api_key);
     }
     return self::$instance;
@@ -68,6 +68,18 @@ class WC_Flizpay_API
             'data_format' => 'body',
           )
         );
+      },
+      'fetch_cashback_data' => function ($body) {
+        return array(
+          'path' => $this->base_url . '/business/cashback',
+          'method' => 'get',
+          'options' => array(
+            'headers' => array(
+              'Content-type' => 'application/json',
+              'x-api-key' => $this->api_key
+            )
+          )
+        );
       }
     );
   }
@@ -105,10 +117,10 @@ class WC_Flizpay_API
       return wp_send_json_error('API Error: Empty ' . $body, 400);
     }
 
-    if (empty($body['data'])) {
+    if (empty($body['data']) && $route !== 'fetch_cashback_data') {
       return wp_send_json_error('API Error: ' . $body['message'], 400);
     }
 
-    return $body['data'];
+    return $body['data'] ?? $body;
   }
 }
