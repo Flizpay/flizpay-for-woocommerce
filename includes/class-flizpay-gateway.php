@@ -186,10 +186,12 @@ function flizpay_init_gateway_class()
 
             if ($status === 'completed') {
                 $order->payment_complete($data['transactionId']);
-                if ($data['originalAmount'] !== $data['amount']) {
-                    $order->set_discount_total($data['originalAmount'] - $data['amount']);
+                $discount = (float) $data['originalAmount'] - (float) $data['amount'];
+                if ($discount > 0.0) {
+                    $order->set_discount_total((float) $order->get_discount_total()
+                        + $discount);
                     $order->set_total($data['amount']);
-                    $order->add_order_note('FLIZ Cashback Applied: ' . $data['currency'] . sanitize_text_field($data['originalAmount'] - $data['amount']));
+                    $order->add_order_note('FLIZ Cashback Applied: ' . $data['currency'] . sanitize_text_field($discount));
                 }
 
                 WC()->cart->empty_cart();
