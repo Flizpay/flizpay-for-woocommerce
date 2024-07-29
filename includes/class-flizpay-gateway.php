@@ -187,7 +187,7 @@ function flizpay_init_gateway_class()
             if ($status === 'completed') {
                 $order->payment_complete($data['transactionId']);
                 $discount = (float) $data['originalAmount'] - (float) $data['amount'];
-                if ($discount > 0.0) {
+                if ($discount > 0) {
                     $order->set_discount_total((float) $order->get_discount_total()
                         + $discount);
                     $order->set_total($data['amount']);
