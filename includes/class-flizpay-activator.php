@@ -39,10 +39,40 @@ class Flizpay_Activator
             'post_status' => 'publish',
             'post_author' => 1,
             'post_type' => 'page',
+            'meta_input' => array(
+                '_flizpay_system_page' => true // Custom meta key to identify the page
+            ),
         );
 
         // Insert the post into the database
         wp_insert_post($flizpay_fail);
+
+        add_filter('wp_get_nav_menu_items', 'flizpay_exclude_menu_items', 10, 3);
+        add_action('pre_get_posts', 'flizpay_exclude_pages_from_search');
+
     }
 
+    function flizpay_exclude_menu_items($items, $menu, $args)
+    {
+        foreach ($items as $key => $item) {
+            if (get_post_meta($item->object_id, '_flizpay_system_page', true)) {
+                unset($items[$key]);
+            }
+        }
+        return $items;
+    }
+
+    function flizpay_exclude_pages_from_search($query)
+    {
+        if ($query->is_search && !is_admin()) {
+            $meta_query = array(
+                array(
+                    'key' => '_flizpay_system_page',
+                    'compare' => 'NOT EXISTS',
+                ),
+            );
+            $query->set('meta_query', $meta_query);
+        }
+        return $query;
+    }
 }
