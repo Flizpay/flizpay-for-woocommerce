@@ -102,29 +102,7 @@
         e.preventDefault();
         e.stopImmediatePropagation();
 
-        let validation = "pass";
-        $(form + " input")
-          .not(":hidden")
-          .each(function () {
-            if (`#${$(this).attr("id")}_field`.includes(":")) return;
-            try {
-              const currentInput = $(this);
-              const closestInput = $(this)
-                .parent()
-                .closest(`#${$(this).attr("id")}_field`);
-              if (
-                (currentInput.is("[required]") ||
-                  closestInput.hasClass("validate-required")) &&
-                currentInput.val().length === 0
-              ) {
-                currentInput.parent().addClass("has-error");
-                validation = "fail";
-              }
-            } catch (e) {
-              console.log(e);
-              validation = "pass";
-            }
-          });
+        const validation = validateForm(form);
 
         if (validation === "pass") {
           if (is_block === "yes") {
@@ -142,8 +120,7 @@
           initilize_flizpay_payment_process();
         }
       } else {
-        jQuery(form).off();
-        jQuery(placeOrderButton).trigger("click");
+        return;
       }
     });
   }
@@ -167,6 +144,7 @@
       },
       error: function (error) {
         console.log(error);
+        $("wc-block-components-spinner").hide();
       },
     });
   }
@@ -219,6 +197,7 @@
     modal.on("click", function (e) {
       if (e.target === this) {
         $(this).remove();
+        $("wc-block-components-spinner").hide();
       }
     });
 
@@ -256,5 +235,33 @@
         }, 2000);
       },
     });
+  }
+
+  function validateForm(form) {
+    let validation = "pass";
+    $(form + " input")
+      .not(":hidden")
+      .each(function () {
+        if (!`#${$(this).attr("id")}_field`.includes(":"))
+          try {
+            const currentInput = $(this);
+            const closestInput = $(this)
+              .parent()
+              .closest(`#${$(this).attr("id")}_field`);
+            if (
+              (currentInput.is("[required]") ||
+                closestInput.hasClass("validate-required")) &&
+              currentInput.val().length === 0
+            ) {
+              currentInput.parent().addClass("has-error");
+              validation = "fail";
+            }
+          } catch (e) {
+            console.log(e);
+            validation = "pass";
+          }
+      });
+
+    return validation;
   }
 })(jQuery);
