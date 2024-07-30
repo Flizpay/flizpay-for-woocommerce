@@ -103,7 +103,7 @@ function flizpay_init_gateway_class()
         {
             $client = WC_Flizpay_API::get_instance($api_key);
 
-            $response = $client->dispatch('fetch_cashback_data');
+            $response = $client->dispatch('fetch_cashback_data', null, false);
 
             $active_cashback = null;
 
