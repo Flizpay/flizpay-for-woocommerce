@@ -84,11 +84,11 @@ class WC_Flizpay_API
     );
   }
 
-  public function dispatch($route, $request_body = null)
+  public function dispatch($route, $request_body = null, $api_mode = true)
   {
     $handler = $this->routes[$route];
 
-    if (empty($handler)) {
+    if (empty($handler) && $api_mode) {
       wp_send_json_error('API Error: No Handler', 400);
     }
 
@@ -100,24 +100,28 @@ class WC_Flizpay_API
       $response = wp_remote_get($route_data['path'], $route_data['options']);
     }
 
-    if (is_wp_error($response)) {
+    if ($response && is_wp_error($response) && $api_mode) {
       wp_send_json_error('API Error: ' . $response->get_error_message(), $response->get_error_code());
     }
     try {
-      $body = json_decode($response['body'], true);
+      if (is_array($response)) {
+        $body = json_decode($response['body'], true);
+      } else {
+        $body = null;
+      }
     } catch (Exception $e) {
       $body = json_decode($response, true);
     }
 
-    if (!json_last_error() === JSON_ERROR_NONE) {
+    if (!json_last_error() === JSON_ERROR_NONE && $api_mode) {
       return wp_send_json_error('API JSON ERROR: ' . json_last_error(), 400);
     }
 
-    if (empty($body)) {
+    if (empty($body) && $api_mode) {
       return wp_send_json_error('API Error: Empty ' . $body, 400);
     }
 
-    if (empty($body['data']) && $route !== 'fetch_cashback_data') {
+    if (empty($body['data']) && $api_mode) {
       return wp_send_json_error('API Error: ' . $body['message'], 400);
     }
 
