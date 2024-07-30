@@ -128,6 +128,10 @@ class Flizpay_Public
         $order_id = $checkout->create_order(array());
         $order = wc_get_order($order_id);
 
+        if (!$order) {
+            wp_send_json_error(['message' => 'Cant create order'], 422);
+        }
+
         $order->set_address($this->get_order_address('billing', $form));
         $order->set_address($this->get_order_address('shipping', $form), 'shipping');
 
