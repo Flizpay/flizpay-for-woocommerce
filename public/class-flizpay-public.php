@@ -100,7 +100,13 @@ class Flizpay_Public
          * class.
          */
 
-        wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-public.js', array('jquery'), $this->version, false);
+        wp_enqueue_script(
+            $this->plugin_name,
+            plugin_dir_url(__FILE__) . 'js/flizpay-public.js',
+            array('jquery', 'woocommerce', 'wc-cart-fragments', 'wc-checkout'),
+            $this->version,
+            false
+        );
 
         $ajaxurl = array(
             'ajaxurl' => admin_url('admin-ajax.php'),
@@ -109,7 +115,6 @@ class Flizpay_Public
         wp_localize_script($this->plugin_name, "flizpay_frontend", $ajaxurl);
 
         wp_enqueue_script($this->plugin_name . '_jquerymin', plugin_dir_url(__FILE__) . 'js/googleapi.jquery.min.js', array('jquery'), $this->version, false);
-        wp_enqueue_script($this->plugin_name . '_qrcode', plugin_dir_url(__FILE__) . 'js/jquery.qrcode.min.js', array('jquery'), $this->version, false);
 
     }
 
