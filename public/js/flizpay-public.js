@@ -97,7 +97,7 @@
     is_block
   ) {
     $(form).on("click", placeOrderButton, function (e) {
-      var chosen_payment = $(paymentMethodSelector + ":checked").val();
+      const chosen_payment = $(paymentMethodSelector + ":checked").val();
       if (chosen_payment === "flizpay") {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -144,7 +144,7 @@
       },
       error: function (error) {
         console.log(error);
-        $("wc-block-components-spinner").hide();
+        $(".wc-block-components-spinner").remove();
       },
     });
   }
@@ -197,7 +197,7 @@
     modal.on("click", function (e) {
       if (e.target === this) {
         $(this).remove();
-        $("wc-block-components-spinner").hide();
+        $(".wc-block-components-spinner").remove();
       }
     });
 
