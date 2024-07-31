@@ -4,14 +4,14 @@
  */
 
 #test_connection_button {
-    background-color: #80ED99;
+    background-color: #001F3F;
     border: none;
-    color: #001F3F;
-    padding: 4px 8px;
+    color: white;
+    padding: 14px 28px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 12px;
+    font-size: 16px;
     cursor: pointer;
     border-radius: 5px;
 }
@@ -21,18 +21,19 @@
 }
 
 #test_connection_button:hover {
-    padding: 3px 7px;
-    border: 1px solid #001F3F;
+    padding: 13px 27px;
+    border: 1px solid #80ED99;
 }
 
 #test_connection_button:active {
     background-color: #80ED37;
-    padding: 2px 6px;
+    color:  #001F3F;
+    padding: 12px 26px;
     border: 2px solid #001F3F;
 }
 #woocommerce_flizpay_connection_result {
     text-align: center;
-    padding: 6px 8px;
+    padding: 14px 28px;
     border-radius: 5px;
     font-size: 12px;
     display: inline-block;
