@@ -53,9 +53,10 @@
     apiKeyInput.parentNode.appendChild(testButton);
     apiKeyInput.parentNode.appendChild(resultField);
     testButton.innerHTML = `<button id="test_connection_button" type="button">${
-      webhookAlive.getAttribute("checked") ? "Reconfigure" : "Configure"
-    } Connection</button>`;
+      webhookAlive.getAttribute("checked") ? "Reconnect" : "Connect"
+    } to FLIZpay</button>`;
     webhookURLInput.setAttribute("disabled", true);
+    webhookURLInput.setAttribute("type", "hidden");
     enabledCheckbox.setAttribute("disabled", true);
     webhookAlive.setAttribute("disabled", true);
     titleInput.setAttribute("disabled", true);
@@ -95,24 +96,38 @@
             api_key: apiKeyInput.value,
             nonce: nonce,
           },
-          success: function (response) {
+          success: async function (response) {
             if (response.success) {
               resultField.classList.add("connection-success");
               testButton.classList.add("hidden");
               apiKeyInput.setAttribute("disabled", "true");
-              resultField.innerHTML =
-                "Connected! Waiting for the webhook confirmation.";
+              resultField.innerHTML = `Connected! Waiting for the webhook confirmation. <br />
+              Page will reload automatically in 5 seconds...
+              <image src='https://raw.githubusercontent.com/n3r4zzurr0/svg-spinners/main/svg-css/12-dots-scale-rotate.svg' />`;
               webhookURLInput.value = response.data.webhookUrl;
+              setTimeout(() => {
+                window.location.reload();
+              }, 5000);
             } else {
               resultField.classList.add("connection-failed");
-              resultField.innerHTML = response.data;
+              resultField.innerHTML = `An error occurred while testing the connection. <br />
+              ${response.data} <br />
+              Page will reload automatically in 5 seconds...
+              <image src='https://raw.githubusercontent.com/n3r4zzurr0/svg-spinners/main/svg-css/12-dots-scale-rotate.svg' />`;
+              setTimeout(() => {
+                window.location.reload();
+              }, 5000);
             }
           },
-          error: function (e) {
+          error: async function (e) {
             resultField.classList.add("connection-failed");
-            resultField.innerHTML =
-              "An error occurred while testing the connection. " +
-              JSON.stringify(e);
+            resultField.innerHTML = `An error occurred while testing the connection. <br />
+              ${e.responseJSON.data} <br />
+              Page will reload automatically in 5 seconds...
+              <image src='https://raw.githubusercontent.com/n3r4zzurr0/svg-spinners/main/svg-css/12-dots-scale-rotate.svg' />`;
+            setTimeout(() => {
+              window.location.reload();
+            }, 5000);
           },
         });
       }
