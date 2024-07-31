@@ -14,43 +14,52 @@
 
   $(function () {
     $(document).ready(function () {
-      const settings =
-        window.wc.wcSettings.allSettings.paymentMethodData.flizpay;
-      if (document.querySelector(".wc-block-checkout__form")) {
-        const form = "form.wc-block-checkout__form",
-          placeOrderButton = ".wc-block-components-checkout-place-order-button",
-          paymentMethodSelector =
-            'input[name="radio-control-wc-payment-method-options"]',
-          is_block = "yes";
+      const initFlizpayObserver = new MutationObserver(function () {
+        const settings =
+          window.wc.wcSettings.allSettings.paymentMethodData.flizpay;
+        if (document.querySelector(".wc-block-checkout__form")) {
+          const form = "form.wc-block-checkout__form",
+            placeOrderButton =
+              ".wc-block-components-checkout-place-order-button",
+            paymentMethodSelector =
+              'input[name="radio-control-wc-payment-method-options"]',
+            is_block = "yes";
 
-        setTimeout(
-          () =>
-            initilize_flizpay_payment_process(
-              form,
-              placeOrderButton,
-              paymentMethodSelector,
-              is_block
-            ),
-          1500
-        );
-      } else {
-        const form = "form.woocommerce-checkout",
-          placeOrderButton =
-            'button[type="submit"][name="woocommerce_checkout_place_order"]',
-          paymentMethodSelector = 'input[name="payment_method"]',
-          is_block = "no";
-        setTimeout(
-          () =>
-            initilize_flizpay_payment_process(
-              form,
-              placeOrderButton,
-              paymentMethodSelector,
-              is_block
-            ),
-          1500
-        );
-      }
+          setTimeout(
+            () =>
+              initilize_flizpay_payment_process(
+                form,
+                placeOrderButton,
+                paymentMethodSelector,
+                is_block
+              ),
+            1500
+          );
+        } else {
+          const form = "form.woocommerce-checkout",
+            placeOrderButton =
+              'button[type="submit"][name="woocommerce_checkout_place_order"]',
+            paymentMethodSelector = 'input[name="payment_method"]',
+            is_block = "no";
+          setTimeout(
+            () =>
+              initilize_flizpay_payment_process(
+                form,
+                placeOrderButton,
+                paymentMethodSelector,
+                is_block
+              ),
+            1500
+          );
+        }
+      });
 
+      initFlizpayObserver.observe(document, {
+        attributes: false,
+        childList: true,
+        characterData: false,
+        subtree: true,
+      });
       /**
 	 * When the window is loaded:
 	 *
