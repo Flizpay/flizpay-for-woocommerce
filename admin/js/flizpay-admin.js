@@ -68,7 +68,7 @@
         webhookAlive.parentElement.nextElementSibling.nextElementSibling;
       description.setAttribute(
         "style",
-        "color: white; background-color: green; padding: 10px; font-weight: bold;"
+        "color: white; background-color: green; padding: 10px; font-weight: bold; width: 50%;"
       );
       description.innerHTML =
         "Our servers communicated successfully with your site. You're ready to go free of charges!";
