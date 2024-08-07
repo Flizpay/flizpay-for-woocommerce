@@ -18,7 +18,7 @@
  * @since      1.0.0
  * @package    Flizpay
  * @subpackage Flizpay/includes
- * @author     Flizpay <roberto.ammirata@flizpay.de>
+ * @author     Flizpay <carlos.cunha@flizpay.de>
  */
 class Flizpay_Deactivator
 {

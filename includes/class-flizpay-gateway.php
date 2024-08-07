@@ -14,18 +14,19 @@ function flizpay_init_gateway_class()
          */
         public function __construct()
         {
+            $this->i18n = new Flizpay_i18n();
             $this->id = 'flizpay';
             $this->has_fields = true;
-            $this->method_title = 'Flizpay Gateway';
-            $this->method_description = 'Flizpay payment gateway for WooCommerce';
+            $this->method_title = 'FLIZpay Plugin';
+            $this->method_description = 'FLIZpay Plugin for WooCommerce';
+            $this->icon = 'https://woocommerce-plugin-assets.s3.eu-central-1.amazonaws.com/fliz-checkout-logo.png';
 
             // Method with all the options fields
             $this->init_form_fields();
-
             // Load the setting.
             $this->init_settings();
-            $this->description = 'Pay securely with your bank account via the FLIZ app.';
-            $this->update_option("description", $this->description);
+            // Ensure text domain is loaded
+            $this->i18n->load_plugin_textdomain();
 
             $this->enabled = $this->get_option('flizpay_enabled');
             $this->api_key = $this->get_option('flizpay_api_key');
@@ -34,22 +35,8 @@ function flizpay_init_gateway_class()
             $this->flizpay_webhook_alive = $this->get_option('flizpay_webhook_alive');
             $this->cashback = $this->get_cashback_data($this->api_key);
 
-            if (
-                isset($this->webhook_key) &&
-                isset($this->webhook_url) &&
-                isset($this->flizpay_webhook_alive) &&
-                !is_null($this->cashback)
-            ) {
-                $this->update_option('flizpay_cashback', $this->cashback);
-                $this->title = "FLIZpay - {$this->cashback}% Cashback";
-                $this->update_option('title', $this->title);
-            } else {
-                $this->title = "FLIZpay";
-                $this->update_option('title', $this->title);
-            }
+            $this->init_gateway_info();
 
-            // This action hook saves the settings
-            add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
             add_action('wp_ajax_test_gateway_connection', array($this, 'test_gateway_connection'));
 
             // Webhook handler
@@ -57,11 +44,37 @@ function flizpay_init_gateway_class()
             add_action('template_redirect', array($this, 'handle_webhook_request'));
         }
 
+        public function init_gateway_info()
+        {
+            if (
+                isset($this->webhook_key) &&
+                isset($this->webhook_url) &&
+                isset($this->flizpay_webhook_alive) &&
+                !is_null($this->cashback)
+            ) {
+                $title = sprintf(__('cashback-title', 'flizpay-gateway'), $this->cashback);
+                $description = sprintf(__('cashback-description', 'flizpay-gateway'), $this->cashback);
+                $this->update_option('flizpay_cashback', $this->cashback);
+            } else {
+                $title = __('title', 'flizpay-gateway');
+                $description = __('description', 'flizpay-gateway');
+            }
+
+            // Ensure these are not set to the fallback strings before updating
+            if ($title !== 'cashback-title' && $description !== 'cashback-description') {
+                $this->title = $title;
+                $this->description = $description;
+                $this->update_option('title', $this->title);
+                $this->update_option('description', $this->description);
+            }
+        }
+
         public function test_gateway_connection()
         {
             check_ajax_referer('test_connection_nonce', 'nonce');
 
             $api_key = sanitize_text_field($_POST['api_key']);
+
             $this->update_option('enabled', 'no');
             $this->update_option('flizpay_webhook_alive', 'no');
             $this->update_option('flizpay_webhook_key', $this->get_webhook_key($api_key));
@@ -71,6 +84,7 @@ function flizpay_init_gateway_class()
             wp_send_json_success(array('webhookUrl' => $this->get_option('flizpay_webhook_url')));
 
         }
+
         public function get_webhook_key(string $api_key): string
         {
             $client = WC_Flizpay_API::get_instance($api_key);

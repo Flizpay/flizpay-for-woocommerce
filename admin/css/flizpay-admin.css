@@ -49,3 +49,42 @@
     color: aliceblue;
     background-color: rgb(210, 63, 30, .7);
 }
+
+.flizpay-description-banner {
+    display: flex!important;
+    width: 100%; 
+    flex-wrap: wrap; 
+    padding: 0;
+    justify-content: space-between;
+}
+
+.flizpay-german-banner {
+    background-color: #f7f7f7;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-left: 4px solid #007cba;
+    width: 46%;
+}
+
+.flizpay-english-banner {
+    background-color: #f7f7f7;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-right: 4px solid #007cba;
+    width: 46%;
+}
+
+.flizpay-banner-header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    text-align: center;
+}
+
+.flizpay-header-text {
+    font-weight: bold;
+    font-size: large;
+    width: 100%;
+    text-align: center;
+}

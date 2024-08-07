@@ -21,7 +21,7 @@
  * Author URI:        https://www.flizpay.de/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       flizpay
+ * Text Domain:       flizpay-gateway
  * Domain Path:       /languages
  */
 
@@ -86,6 +86,7 @@ run_flizpay();
 
 /**
  * This action hook registers Flizpay class as a WooCommerce payment gateway
+ * We can use unshift to reorder it as first
  */
 add_filter('woocommerce_payment_gateways', 'flizpay_add_gateway_class');
 function flizpay_add_gateway_class($gateways)

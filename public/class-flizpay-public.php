@@ -18,7 +18,7 @@
  *
  * @package    Flizpay
  * @subpackage Flizpay/public
- * @author     Flizpay <roberto.ammirata@flizpay.de>
+ * @author     Flizpay <carlos.cunha@flizpay.de>
  */
 class Flizpay_Public
 {

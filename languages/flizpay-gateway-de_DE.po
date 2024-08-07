@@ -1,0 +1,36 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: FlizPay 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-30 10:00+0000\n"
+"PO-Revision-Date: 2024-07-30 10:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: de_DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: admin/class-flizpay-admin.php:115
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: admin/class-flizpay-admin.php:116
+msgid "Docs"
+msgstr "Dokumentation"
+
+#: includes/class-flizpay-gateway.php:42
+msgid "cashback-title"
+msgstr "FLIZpay - erhalte %s%% zurück"
+
+#: includes/class-flizpay-gateway.php:44
+msgid "cashback-description"
+msgstr "Mit FLIZ erhältst du %s%% Cashback für diese Zahlung. Nutze die FLIZpay App für sichere Zahlungen."
+
+#: includes/class-flizpay-gateway.php:47
+msgid "title"
+msgstr "FLIZpay"
+
+#: includes/class-flizpay-gateway.php:49
+msgid "description"
+msgstr "Nutze die FLIZpay App für sichere Zahlungen."
