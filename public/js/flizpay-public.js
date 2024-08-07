@@ -15,8 +15,6 @@
   $(function () {
     $(document).ready(function () {
       const initFlizpayObserver = new MutationObserver(function () {
-        const settings =
-          window.wc.wcSettings.allSettings.paymentMethodData.flizpay;
         if (document.querySelector(".wc-block-checkout__form")) {
           const form = "form.wc-block-checkout__form",
             placeOrderButton =
@@ -159,44 +157,24 @@
        */
 
       function openModalWithIframe(url, order_id) {
-        // Create the modal container
-        const modal = $(`<div class="confirmation-modal"></div>`);
-        const modalContent = $(`<div class="modal-content"></div>`);
-        const flizpayContainer = $(`<div class="flizpay-container"></div>`);
+        const checkoutWindow = window.open(
+          url,
+          null,
+          "scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no"
+        );
 
-        modalContent.append(flizpayContainer);
-        modal.append(modalContent);
+        checkoutWindow.onbeforeunload = function () {
+          $(".wc-block-components-spinner").remove();
+        };
 
-        // Create the iframe element
-        const iframe = $("<iframe></iframe>").attr("src", url).css({
-          width: "100%",
-          height: "100%",
-          border: "none",
-          "border-radius": "10px",
-        });
-
-        // Append the iframe to the modal
-        flizpayContainer.append(iframe);
-
-        // Append the modal to the body
-        $("body").append(modal);
-
-        // Close modal on click outside iframe
-        modal.on("click", function (e) {
-          if (e.target === this) {
-            $(this).remove();
-            $(".wc-block-components-spinner").remove();
-          }
-        });
-
-        flizpay_load_order_finish_page(order_id);
+        flizpay_load_order_finish_page(order_id, checkoutWindow);
       }
 
       /**
        *
        * @param {String} order_id
        */
-      function flizpay_load_order_finish_page(order_id) {
+      function flizpay_load_order_finish_page(order_id, checkoutWindow) {
         const data = {
           action: "flizpay_order_finish",
           order_id: order_id,
@@ -216,8 +194,9 @@
                 order = response;
               }
               if (order.status == "pending") {
-                flizpay_load_order_finish_page(order_id);
+                flizpay_load_order_finish_page(order_id, checkoutWindow);
               } else {
+                checkoutWindow.close();
                 window.location.href = order.url;
               }
             }, 2000);
@@ -267,10 +246,10 @@
       );
       // const expressCheckoutBlock = document.querySelector('.wc-block-components-express-payment__content');
       if (flizpayLabel) {
-        flizpayLabel.innerHTML = `
+        flizpayLabel.innerHTML = `<div style="display: flex; justify-content: space-between; flex-wrap: wrap; width: 100%; align-items: center;">
+          <p style='padding-left: 4px;'>${Flizpay_Gateway.label}</p>
 					<image src='https://woocommerce-plugin-assets.s3.eu-central-1.amazonaws.com/fliz-checkout-logo.png' />
-					<p style='padding-left: 4px;'>${settings.title.split("-")[1] ?? ""}</p>
-				`;
+				</div>`;
         observer.disconnect();
       }
     });
