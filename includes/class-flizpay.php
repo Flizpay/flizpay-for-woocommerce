@@ -25,7 +25,7 @@
  * @since      1.0.0
  * @package    Flizpay
  * @subpackage Flizpay/includes
- * @author     Flizpay <roberto.ammirata@flizpay.de>
+ * @author     Flizpay <carlos.cunha@flizpay.de>
  */
 class Flizpay
 {
@@ -152,7 +152,7 @@ class Flizpay
 
 		$plugin_i18n = new Flizpay_i18n();
 
-		$this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
+		$this->loader->add_action('init', $plugin_i18n, 'load_plugin_textdomain');
 
 	}
 
