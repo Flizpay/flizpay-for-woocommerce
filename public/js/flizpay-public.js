@@ -82,7 +82,10 @@
         $(form).on("click", placeOrderButton, function (e) {
           const chosen_payment = $(paymentMethodSelector + ":checked").val();
           if (chosen_payment === "flizpay") {
-            const checkoutWindow = window.open("", "_blank");
+            const checkoutWindow = window.open(
+              "https://checkout-staging.flizpay.de/loading",
+              "_blank"
+            );
             e.preventDefault();
             e.stopImmediatePropagation();
 
