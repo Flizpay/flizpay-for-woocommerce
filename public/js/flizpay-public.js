@@ -157,16 +157,13 @@
        */
 
       function openModalWithIframe(url, order_id) {
-        const checkoutWindow = window.open(
-          url,
-          null,
-          "scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no"
-        );
-
-        checkoutWindow.onbeforeunload = function () {
-          $(".wc-block-components-spinner").remove();
-        };
-
+        // const link = document.createElement("a");
+        // link.setAttribute("href", url);
+        // link.setAttribute("target", "_blank");
+        // document.body.appendChild(link);
+        const checkoutWindow = window.open(url, "_blank");
+        //document.body.removeChild(link);
+        $(".wc-block-components-spinner").remove();
         flizpay_load_order_finish_page(order_id, checkoutWindow);
       }
 
@@ -196,7 +193,7 @@
               if (order.status == "pending") {
                 flizpay_load_order_finish_page(order_id, checkoutWindow);
               } else {
-                checkoutWindow.close();
+                checkoutWindow?.close();
                 window.location.href = order.url;
               }
             }, 2000);
