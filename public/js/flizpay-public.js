@@ -82,6 +82,7 @@
         $(form).on("click", placeOrderButton, function (e) {
           const chosen_payment = $(paymentMethodSelector + ":checked").val();
           if (chosen_payment === "flizpay") {
+            const checkoutWindow = window.open("", "_blank");
             e.preventDefault();
             e.stopImmediatePropagation();
 
@@ -97,8 +98,9 @@
                 $(this).text("Please Wait...");
               }
 
-              get_order_data(chosen_payment);
+              get_order_data(chosen_payment, checkoutWindow);
             } else {
+              checkoutWindow.close();
               jQuery(form).off();
               initilize_flizpay_payment_process();
             }
@@ -111,7 +113,7 @@
       /**
        * @param {String} chosen_payment
        */
-      function get_order_data(chosen_payment) {
+      function get_order_data(chosen_payment, checkoutWindow) {
         $(document.body).trigger("update_checkout");
 
         const data = {
@@ -123,9 +125,10 @@
           type: "POST",
           data,
           success: function (response) {
-            load_flizpay_modal(chosen_payment, response);
+            load_flizpay_modal(chosen_payment, response, checkoutWindow);
           },
           error: function (error) {
+            checkoutWindow?.close();
             console.log(error);
             $(".wc-block-components-spinner").remove();
           },
@@ -137,16 +140,16 @@
        * @param {String} chosen_payment
        * @param {JSON} json
        */
-      function load_flizpay_modal(chosen_payment, json) {
+      function load_flizpay_modal(chosen_payment, json, checkoutWindow) {
         const returned_data = JSON.parse(json);
-        if (
-          $(".confirmation-modal").length === 0 &&
-          chosen_payment === "flizpay"
-        ) {
+        if (chosen_payment === "flizpay") {
           openModalWithIframe(
             returned_data["callback_url"],
-            returned_data["order_id"]
+            returned_data["order_id"],
+            checkoutWindow
           );
+        } else {
+          checkoutWindow?.close();
         }
       }
 
@@ -156,14 +159,8 @@
        * @param {String} order_id
        */
 
-      function openModalWithIframe(url, order_id) {
-        // const link = document.createElement("a");
-        // link.setAttribute("href", url);
-        // link.setAttribute("target", "_blank");
-        // document.body.appendChild(link);
-        const checkoutWindow = window.open(url, "_blank");
-        //document.body.removeChild(link);
-        $(".wc-block-components-spinner").remove();
+      function openModalWithIframe(url, order_id, checkoutWindow) {
+        checkoutWindow.location = url;
         flizpay_load_order_finish_page(order_id, checkoutWindow);
       }
 
