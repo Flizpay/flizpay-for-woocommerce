@@ -157,12 +157,12 @@
        */
 
       function openModalWithIframe(url, order_id) {
-        // const link = document.createElement("a");
-        // link.setAttribute("href", url);
-        // link.setAttribute("target", "_blank");
-        // document.body.appendChild(link);
-        const checkoutWindow = window.open(url, "_blank");
-        //document.body.removeChild(link);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("target", "_blank");
+        document.body.appendChild(link);
+        const checkoutWindow = link.click();
+        document.body.removeChild(link);
         $(".wc-block-components-spinner").remove();
         flizpay_load_order_finish_page(order_id, checkoutWindow);
       }
