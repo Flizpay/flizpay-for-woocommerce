@@ -83,7 +83,7 @@
           const chosen_payment = $(paymentMethodSelector + ":checked").val();
           if (chosen_payment === "flizpay") {
             const checkoutWindow = window.open(
-              "https://checkout-staging.flizpay.de/loading",
+              "https://woocommerce-plugin-assets.s3.eu-central-1.amazonaws.com/checkout-loading.htm",
               "_blank"
             );
             e.preventDefault();
@@ -133,9 +133,9 @@
           error: function (error) {
             checkoutWindow?.close();
             console.log(error);
-            $(".wc-block-components-spinner").remove();
           },
         });
+        $(".wc-block-components-spinner").remove();
       }
 
       /**
@@ -163,7 +163,7 @@
        */
 
       function openModalWithIframe(url, order_id, checkoutWindow) {
-        checkoutWindow.location = url;
+        setTimeout(() => (checkoutWindow.location = url), 500);
         flizpay_load_order_finish_page(order_id, checkoutWindow);
       }
 
