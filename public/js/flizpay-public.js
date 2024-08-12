@@ -146,25 +146,14 @@
       function load_flizpay_modal(chosen_payment, json, checkoutWindow) {
         const returned_data = JSON.parse(json);
         if (chosen_payment === "flizpay") {
-          openModalWithIframe(
-            returned_data["callback_url"],
+          checkoutWindow.location = returned_data["callback_url"];
+          flizpay_load_order_finish_page(
             returned_data["order_id"],
             checkoutWindow
           );
         } else {
           checkoutWindow?.close();
         }
-      }
-
-      /**
-       *
-       * @param {String} url
-       * @param {String} order_id
-       */
-
-      function openModalWithIframe(url, order_id, checkoutWindow) {
-        setTimeout(() => (checkoutWindow.location = url), 500);
-        flizpay_load_order_finish_page(order_id, checkoutWindow);
       }
 
       /**
