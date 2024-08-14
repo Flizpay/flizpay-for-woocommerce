@@ -59,10 +59,10 @@
     if (webhookAlive.getAttribute("checked")) {
       description.setAttribute(
         "style",
-        "color: white; background-color: green; padding: 10px; font-weight: bold;"
+        "color: white; background-color: green; padding: 10px; font-weight: bold; margin-top: 30px;"
       );
-      description.innerHTML = `Unsere Server haben erfolgreich mit Ihrer Site kommuniziert. Sie können jetzt kostenlos loslegen!<br>
-      <p style='font-style: italic;'>Our servers communicated successfully with your site. You're ready to go free of charges!</p>`;
+      description.innerHTML = `Unsere Server haben erfolgreich mit deiner Website kommuniziert. Du kannst jetzt gebührenfreie Zahlungen erhalten!<br>
+      <p style='font-style: italic;'>Our servers have successfully communicated with your site. You're now ready to accept fee-free payments!</p>`;
     }
 
     $(".woocommerce-save-button").on("click", function (e) {

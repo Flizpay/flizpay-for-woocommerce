@@ -18,7 +18,7 @@ function flizpay_init_gateway_class()
             $this->id = 'flizpay';
             $this->has_fields = true;
             $this->method_title = 'FLIZpay Plugin';
-            $this->method_description = 'FLIZpay Plugin for WooCommerce';
+            $this->method_description = 'FLIZpay Plugin WooCommerce';
             $this->icon = 'https://woocommerce-plugin-assets.s3.eu-central-1.amazonaws.com/fliz-checkout-logo.png';
 
             // Method with all the options fields
