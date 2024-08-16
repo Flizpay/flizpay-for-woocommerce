@@ -34,3 +34,7 @@ msgstr "FLIZpay"
 #: includes/class-flizpay-gateway.php:49
 msgid "description"
 msgstr "Use the FLIZpay app to make safe payments."
+
+#: flizpay.php:18
+msgid "accept_payments"
+msgstr "Accept payments via FLIZpay, its 100% free."
