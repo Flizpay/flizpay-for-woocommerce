@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       Flizpay
  * Plugin URI:        https://www.flizpay.de
- * Description:       Accept payments via FLIZpay, its 100% free.
+ * Description:       FLIZpay: 100% free!
  * Version:           1.0.0
  * Author:            Flizpay
  * Author URI:        https://www.flizpay.de/
