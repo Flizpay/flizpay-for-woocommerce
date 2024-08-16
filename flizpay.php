@@ -91,7 +91,7 @@ run_flizpay();
 add_filter('woocommerce_payment_gateways', 'flizpay_add_gateway_class');
 function flizpay_add_gateway_class($gateways)
 {
-	$gateways[] = 'WC_Flizpay_Gateway';
+	array_unshift($gateways, 'WC_Flizpay_Gateway');
 	return $gateways;
 }
 
