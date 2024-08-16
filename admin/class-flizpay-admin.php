@@ -153,7 +153,7 @@ class Flizpay_Admin
 				'desc_tip' => false,
 			),
 			'flizpay_webhook_alive' => array(
-				'title' => 'Verbindung hergestellt.<br><p style="font-style: italic;">Connection Established</p>',
+				'title' => 'Verbindung hergestellt<br><p style="font-style: italic;">Connection Established</p>',
 				'type' => 'checkbox',
 				'label' => '<div id="connection-stablished-description">Dies zeigt an, wann unsere Server über die Webhook-URL mit Ihrer Site kommunizieren können. Laden Sie die Seite einige Sekunden nach dem Testen der Verbindung neu.<br>
 				<p style="font-style: italic;">This indicates when our servers manage to communicate with your site via the webhook URL. Reload the page a few seconds after testing the connection.</p></div>',
@@ -180,7 +180,7 @@ class Flizpay_Admin
 						<li>Warte etwa 5 Sekunden, bis die Seite automatisch neu lädt.</li>
 						<li>Nach dem Neuladen der Seite erscheint unten eine grüne Box, die die erfolgreiche Konfiguration des FLIZpay-Plugins anzeigt. Du bist jetzt bereit, gebührenfreie Zahlungen zu empfangen.</li>
 						<li>Stelle sicher, dass du mit FLIZ so viele Gebühren wie möglich sparst. Vergiss also nicht, FLIZpay in der für Kunden zur Auswahl stehenden Liste an Zahlungsmethoden an die erste Stelle zu setzen. Klicke im linken Menü auf “WooCommerce”, dann im Untermenü auf “Einstellungen”. Klicke anschließend im Menü oben auf den Tab “Zahlungen”. Auf dieser Seite kannst du per Drag-and-Drop oder mit den Pfeilen die Position von FLIZpay in der Liste der verfügbaren Zahlungsmethoden anpassen. Klicke zum Schluss unten links auf “Änderungen speichern”.</li>
-						<li>Darüber hinaus empfehlen wir dir, Cashback für deine Kunden zu aktivieren. Ändere das Zahlungsverhalten deiner Kunden, damit sie FLIZ nutzen - denn FLIZ ist gebührenfrei. Um das zu erreichen, kannst du einen prozentualen Cashback festlegen, der als Rabatt von jedem Einkauf abgezogen wird, den deine Kunden mit FLIZ tätigen. Je mehr Cashback du gibst, desto höher wird der Anteil von FLIZ an deiner Kasse, was bedeutet, dass deine Kundenbasis zu einer gebührenfreien Zahlungsmethode gewechselt ist. Du kannst Cashback in deinem FLIZ-Firmenkonto aktivieren, <a href='https://app.flizpay.de' target='_blank'>klicke hier.</a></li>
+						<li>Darüber hinaus empfehlen wir dir, Cashback für deine Kunden zu aktivieren. Ändere das Zahlungsverhalten deiner Kunden, damit sie FLIZ nutzen - denn FLIZ ist gebührenfrei. Um das zu erreichen, kannst du einen prozentualen Cashback festlegen, der als Rabatt von jedem Einkauf abgezogen wird, den deine Kunden mit FLIZ tätigen. Je mehr Cashback du gibst, desto höher wird der Anteil von FLIZ an deiner Kasse, was bedeutet, dass deine Kundenbasis zu einer gebührenfreien Zahlungsmethode gewechselt ist. Du kannst Cashback in deinem FLIZ-Firmenkonto aktivieren, <a href='https://app.flizpay.de/cashback' target='_blank'>klicke hier.</a></li>
 					</ol>
 					
 					<p>
@@ -202,7 +202,7 @@ class Flizpay_Admin
 						<li>Wait about 5 seconds and the page will reload automatically.</li>
 						<li>After the page reloaded, a green box will appear at the bottom, indicating the successful configuration of the FLIZpay plugin. You are now ready to receive fee-free payments.</li>
 						<li>Make sure you save as many fees as possible with fee-free FLIZ. Don’t forget to put FLIZpay first in the list of payment methods presented to customers. To do this go to the left menu and click on “WooCommerce”, then click on the sub-menu “Settings”. Now click on the tab “Payments” in the menu at the top of the page. Here, you can drag and drop or use the arrows to adjust the position of FLIZpay in the list of available payment methods. When you are finished, go to the bottom left of that page and click “Save changes”.</li>
-						<li>Moreover, we advise you to activate cashback for your customers. With cashback, you change your customers’ payment behavior to ensure they use fee-free payment method FLIZ. This way, customers support your bottom line and optimize their own finances at the same time. You can activate cashback in your FLIZ company account, <a href='https://app.flizpay.de' target='_blank'>click here.</a></li>
+						<li>Moreover, we advise you to activate cashback for your customers. With cashback, you change your customers’ payment behavior to ensure they use fee-free payment method FLIZ. This way, customers support your bottom line and optimize their own finances at the same time. You can activate cashback in your FLIZ company account, <a href='https://app.flizpay.de/cashback' target='_blank'>click here.</a></li>
 					</ol>
 					
 					<p>
