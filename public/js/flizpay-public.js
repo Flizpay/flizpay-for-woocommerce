@@ -83,7 +83,7 @@
           const chosen_payment = $(paymentMethodSelector + ":checked").val();
           if (chosen_payment === "flizpay") {
             const checkoutWindow = window.open(
-              "https://woocommerce-plugin-assets.s3.eu-central-1.amazonaws.com/checkout-loading.htm",
+              "https://loading.flizpay.de",
               "_blank"
             );
             e.preventDefault();
@@ -135,7 +135,7 @@
             console.log(error);
           },
         });
-        $(".wc-block-components-spinner").remove();
+        $(".wc-block-components-spinner")?.remove();
       }
 
       /**
@@ -144,14 +144,20 @@
        * @param {JSON} json
        */
       function load_flizpay_modal(chosen_payment, json, checkoutWindow) {
-        const returned_data = JSON.parse(json);
-        if (chosen_payment === "flizpay") {
-          checkoutWindow.location = returned_data["callback_url"];
-          flizpay_load_order_finish_page(
-            returned_data["order_id"],
-            checkoutWindow
-          );
-        } else {
+        try {
+          const returned_data = JSON.parse(json);
+          if (chosen_payment === "flizpay") {
+            checkoutWindow.location = returned_data["callback_url"];
+            flizpay_load_order_finish_page(
+              returned_data["order_id"],
+              checkoutWindow
+            );
+          } else {
+            checkoutWindow?.close();
+          }
+        } catch (e) {
+          console.log(json);
+          console.log(e);
           checkoutWindow?.close();
         }
       }
@@ -182,6 +188,12 @@
               if (order.status == "pending") {
                 flizpay_load_order_finish_page(order_id, checkoutWindow);
               } else {
+                $(".wc-block-components-checkout-place-order-button")?.addClass(
+                  "wc-block-components-button--loading"
+                );
+                $(".wc-block-components-button__text")?.before(
+                  '<span class="wc-block-components-spinner" aria-hidden="true"></span>'
+                );
                 checkoutWindow?.close();
                 window.location.href = order.url;
               }
