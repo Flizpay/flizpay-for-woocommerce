@@ -1,6 +1,6 @@
 === Flizpay Gateway for WooCommerce ===
 Contributors: Flizpay
-Tags: flizpay, flizpay business, flizpay pay, payments, gateway, cashback, no fee
+Tags: flizpay, payments, gateway, cashback, no fee
 Requires at least: 4.4
 Tested up to: 6.5
 Stable tag: 1.0.0
