@@ -83,7 +83,7 @@
           const chosen_payment = $(paymentMethodSelector + ":checked").val();
           if (chosen_payment === "flizpay") {
             const checkoutWindow = window.open(
-              "https://woocommerce-plugin-assets.s3.eu-central-1.amazonaws.com/checkout-loading.htm",
+              "https://loading.flizpay.de",
               "_blank"
             );
             e.preventDefault();
