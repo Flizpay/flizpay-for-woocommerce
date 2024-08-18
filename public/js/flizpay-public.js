@@ -121,13 +121,13 @@
 
         const data = {
           action: "flizpay_get_payment_data",
+          nonce: flizpay_frontend.order_data_nonce,
         };
 
         jQuery.ajax({
           url: flizpay_frontend.ajaxurl,
           type: "POST",
           data,
-          nonce: flizpay_frontend.order_data_nonce,
           success: function (response) {
             load_flizpay_modal(chosen_payment, response, checkoutWindow);
           },
@@ -171,13 +171,13 @@
         const data = {
           action: "flizpay_order_finish",
           order_id: order_id,
+          nonce: flizpay_frontend.order_finish_nonce,
         };
 
         jQuery.ajax({
           url: flizpay_frontend.ajaxurl,
           type: "POST",
           data,
-          nonce: flizpay_frontend.order_finish_nonce,
           success: function (response) {
             window.setTimeout(function () {
               let order = null;
