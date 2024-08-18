@@ -110,7 +110,9 @@ class Flizpay_Public
 
         $ajaxurl = array(
             'ajaxurl' => admin_url('admin-ajax.php'),
-            'public_dir_path' => plugin_dir_url(__FILE__)
+            'public_dir_path' => plugin_dir_url(__FILE__),
+            'order_finish_nonce' => wp_create_nonce('order_finish_nonce'),
+            'order_data_nonce' => wp_create_nonce('order_data_nonce')
         );
         wp_localize_script($this->plugin_name, "flizpay_frontend", $ajaxurl);
 
@@ -124,6 +126,8 @@ class Flizpay_Public
      */
     public function flizpay_get_payment_data()
     {
+        check_ajax_referer('order_data_nonce', 'nonce');
+
         $form = WC()->session->get('customer');
 
         $chosen_shipping_methods = WC()->session->get("chosen_shipping_methods");
@@ -155,7 +159,7 @@ class Flizpay_Public
         $order->update_status('pending');
 
         $payment_info = $this->get_order_payment_data($order);
-        echo json_encode($payment_info);
+        echo wp_json_encode($payment_info);
         wp_die();
     }
 
@@ -226,10 +230,12 @@ class Flizpay_Public
      */
     public function flizpay_order_finish()
     {
+        check_ajax_referer('order_finish_nonce', 'nonce');
+
         $order_id = $_POST['order_id'];
         $order = wc_get_order($order_id);
         $status = $order->get_status();
-        echo json_encode(
+        echo wp_json_encode(
             array(
                 'status' => $status,
                 'url' => $status === 'processing' ? $order->get_checkout_order_received_url() : get_home_url() . '/flizpay-payment-fail',
