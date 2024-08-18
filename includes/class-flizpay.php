@@ -171,7 +171,7 @@ class Flizpay
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
 		$this->loader->add_filter('flizpay_load_settings', $plugin_admin, 'load_form_fields');
-		$this->loader->add_filter('plugin_action_links_flizpay-woocommerce/flizpay.php', $plugin_admin, 'flizpay_plugin_links');
+		$this->loader->add_filter('plugin_action_links_flizpay-for-woocommerce/flizpay.php', $plugin_admin, 'flizpay_plugin_links');
 
 	}
 

@@ -31,7 +31,7 @@
                 paymentMethodSelector,
                 is_block
               ),
-            1500
+            300
           );
         } else {
           const form = "form.woocommerce-checkout",
@@ -47,13 +47,13 @@
                 paymentMethodSelector,
                 is_block
               ),
-            1500
+            300
           );
         }
       });
 
       initFlizpayObserver.observe(document, {
-        attributes: false,
+        attributes: true,
         childList: true,
         characterData: false,
         subtree: true,
@@ -127,6 +127,7 @@
           url: flizpay_frontend.ajaxurl,
           type: "POST",
           data,
+          nonce: flizpay_frontend.order_data_nonce,
           success: function (response) {
             load_flizpay_modal(chosen_payment, response, checkoutWindow);
           },
@@ -176,6 +177,7 @@
           url: flizpay_frontend.ajaxurl,
           type: "POST",
           data,
+          nonce: flizpay_frontend.order_finish_nonce,
           success: function (response) {
             window.setTimeout(function () {
               let order = null;
@@ -253,7 +255,7 @@
     });
 
     observer.observe(document, {
-      attributes: false,
+      attributes: true,
       childList: true,
       characterData: false,
       subtree: true,

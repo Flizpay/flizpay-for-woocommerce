@@ -37,7 +37,7 @@ class Flizpay_i18n
 	{
 
 		load_plugin_textdomain(
-			'flizpay-gateway',
+			'flizpay-for-woocommerce',
 			false,
 			dirname(dirname(plugin_basename(__FILE__))) . '/languages/'
 		);

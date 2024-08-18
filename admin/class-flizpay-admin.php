@@ -112,8 +112,8 @@ class Flizpay_Admin
 	public function flizpay_plugin_links($links)
 	{
 		$plugin_links = array(
-			'<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=flizpay') . '">' . __('Settings', 'flizpay-gateway') . '</a>',
-			'<a href="https://www.docs.flizpay.de/docs/intro/">' . __('Docs', 'flizpay-gateway') . '</a>'
+			'<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=flizpay') . '">' . __('Settings', 'flizpay-for-woocommerce') . '</a>',
+			'<a href="https://www.docs.flizpay.de/docs/intro/">' . __('Docs', 'flizpay-for-woocommerce') . '</a>'
 		);
 
 		return array_merge($plugin_links, $links);

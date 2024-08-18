@@ -2,7 +2,7 @@
 Contributors: Flizpay
 Tags: flizpay, payments, gateway, cashback, no fee
 Requires at least: 4.4
-Tested up to: 6.5
+Tested up to: 6.6.1
 Stable tag: 1.0.0
 Requires PHP: 7.0
 License: GPLv2 or later

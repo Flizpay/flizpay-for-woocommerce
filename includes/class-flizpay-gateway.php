@@ -8,6 +8,7 @@ function flizpay_init_gateway_class()
 
     class WC_Flizpay_Gateway extends WC_Payment_Gateway
     {
+        static $VERSION = "1.0.0";
 
         /**
          * Class constructor, more about it in Step 3
@@ -52,12 +53,12 @@ function flizpay_init_gateway_class()
                 isset($this->flizpay_webhook_alive) &&
                 !is_null($this->cashback)
             ) {
-                $title = sprintf(__('cashback-title', 'flizpay-gateway'), $this->cashback);
-                $description = sprintf(__('cashback-description', 'flizpay-gateway'), $this->cashback);
+                $title = sprintf(__('cashback-title', 'flizpay-for-woocommerce'), $this->cashback);
+                $description = sprintf(__('cashback-description', 'flizpay-for-woocommerce'), $this->cashback);
                 $this->update_option('flizpay_cashback', $this->cashback);
             } else {
-                $title = __('title', 'flizpay-gateway');
-                $description = __('description', 'flizpay-gateway');
+                $title = __('title', 'flizpay-for-woocommerce');
+                $description = __('description', 'flizpay-for-woocommerce');
             }
 
             // Ensure these are not set to the fallback strings before updating
@@ -138,7 +139,7 @@ function flizpay_init_gateway_class()
 
             $signature = $_SERVER['HTTP_X_FLIZ_SIGNATURE'];
 
-            $signedData = hash_hmac('sha256', json_encode($data), $key);
+            $signedData = hash_hmac('sha256', wp_json_encode($data), $key);
 
             return hash_equals($signature, $signedData);
         }
