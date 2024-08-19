@@ -1,7 +1,10 @@
 == Changelog ==
 
-= 1.0.0 =
-* Added: Initial release of the Flizpay Gateway for WooCommerce plugin.
-  - Implemented basic payment gateway integration
-  - Implemented Cashback info on Checkout
-  - Implemented Order management for cashback
+= 1.0.0 19-08-2024 =
+
+** FLIZpay **
+
+* Added - Initial release of the Flizpay Gateway for WooCommerce plugin.
+* Added - Implemented basic payment gateway integration
+* Added - Implemented Cashback info on Checkout
+* Added - Implemented Order management for cashback
