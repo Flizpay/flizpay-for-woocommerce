@@ -1,8 +1,6 @@
-== Changelog ==
+== FLIZpay for WooCommerce Changelog ==
 
-= 1.0.0 19-08-2024 =
-
-** FLIZpay **
+2024-08-19 - version 1.0.0
 
 * Added - Initial release of the Flizpay Gateway for WooCommerce plugin.
 * Added - Implemented basic payment gateway integration
