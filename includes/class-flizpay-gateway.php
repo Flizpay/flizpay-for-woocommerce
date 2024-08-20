@@ -137,7 +137,7 @@ function flizpay_init_gateway_class()
         {
             $key = $this->get_option('flizpay_webhook_key');
 
-            $signature = $_SERVER['HTTP_X_FLIZ_SIGNATURE'];
+            $signature = sanitize_text_field($_SERVER['HTTP_X_FLIZ_SIGNATURE']);
 
             $signedData = hash_hmac('sha256', wp_json_encode($data), $key);
 
@@ -224,8 +224,22 @@ function flizpay_init_gateway_class()
             $order->save();
         }
 
+        /**
+         * Check if we are on the order-pay (Customer Payment Page) page.
+         */
+        private function is_order_pay_page()
+        {
+            global $wp;
+
+            return isset($wp->query_vars['order-pay']);
+        }
+
         public function is_available()
         {
+            if ($this->is_order_pay_page()) {
+                return false; // Do not display in admin order management
+            }
+
             $available = $this->get_option('flizpay_enabled');
 
             return $available;

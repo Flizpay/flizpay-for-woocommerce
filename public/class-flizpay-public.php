@@ -232,7 +232,7 @@ class Flizpay_Public
     {
         check_ajax_referer('order_finish_nonce', 'nonce');
 
-        $order_id = $_POST['order_id'];
+        $order_id = sanitize_text_field($_POST['order_id']);
         $order = wc_get_order($order_id);
         $status = $order->get_status();
         echo wp_json_encode(
