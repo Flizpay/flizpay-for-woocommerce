@@ -24,10 +24,7 @@ class WC_Flizpay_API
 
   private function init()
   {
-    add_filter('https_local_ssl_verify', '__return_false');
-    add_filter('https_ssl_verify', '__return_false');
-    add_filter('block_local_requests', '__return_false');
-    $this->base_url = 'https://api-staging.flizpay.de';
+    $this->base_url = 'https://api.flizpay.de';
     $this->routes = array(
       'generate_webhook_key' => function ($body) {
         return array(
