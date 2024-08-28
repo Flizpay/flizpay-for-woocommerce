@@ -252,5 +252,42 @@ function flizpay_init_gateway_class()
         {
             $this->form_fields = apply_filters('flizpay_load_settings', true);
         }
+
+        public function process_payment($order_id)
+        {
+            $order = wc_get_order($order_id);
+
+            $redirectUrl = $this->create_transaction($order);
+
+            if ($redirectUrl) {
+                return array('result' => 'success', 'redirect' => $redirectUrl);
+            } else {
+                wc_add_notice('Error creating FLIZpay transaction. Please try again later.');
+                return array(
+                    'result' => 'failure',
+                    'redirect' => ''
+                );
+            }
+
+        }
+
+        public function create_transaction($order)
+        {
+            $flizpay_setting = get_option('woocommerce_flizpay_settings');
+            $api_key = $flizpay_setting['flizpay_api_key'];
+            $body = array(
+                'amount' => $order->get_total(),
+                'currency' => $order->get_currency(),
+                'externalId' => $order->get_id(),
+                'successUrl' => $order->get_checkout_order_received_url(),
+                'failureUrl' => get_home_url() . '/flizpay-payment-fail',
+            );
+
+            $client = WC_Flizpay_API::get_instance($api_key);
+
+            $response = $client->dispatch('create_transaction', $body);
+
+            return $response['redirectUrl'];
+        }
     }
 }
