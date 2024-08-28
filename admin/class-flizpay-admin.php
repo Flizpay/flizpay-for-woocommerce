@@ -174,7 +174,7 @@ class Flizpay_Admin
 					</div>
 					<p>Anleitung:</p>
 					<ol>
-						<li>Wenn du noch kein FLIZ-Firmenkonto hast, klicke bitte <a href='https://app.flizpay.de' target='_blank'>hier</a> und registriere dich jetzt.</li>
+						<li>Wenn du noch kein FLIZ-Firmenkonto hast, klicke bitte <a href='https://app.flizpay.de/auth/signup' target='_blank'>hier</a> und registriere dich jetzt.</li>
 						<li>Nachdem du dich registriert hast, generiere bitte einen neuen API Key in deinem FLIZ-Firmenkonto und füge ihn in das unten stehende Feld “API KEY” ein. Du findest den API-Schlüssel im Abschnitt “Installation” deines FLIZ-Firmenkontos.</li>
 						<li>Klicke anschließend auf den Button “Änderungen speichern”.</li>
 						<li>Warte etwa 5 Sekunden, bis die Seite automatisch neu lädt.</li>
@@ -196,7 +196,7 @@ class Flizpay_Admin
 					</div>
 					<p>Instructions:</p>
 					<ol>
-						<li>If you haven’t signed up for a FLIZ company account, please <a href='https://app.flizpay.de' target='_blank'>click here</a> and sign up.</li>
+						<li>If you haven’t signed up for a FLIZ company account, please <a href='https://app.flizpay.de/auth/signup' target='_blank'>click here</a> and sign up.</li>
 						<li>Once you have signed up, please generate a new API Key in your FLIZ company account and paste it in the “API KEY” field below. You will find the API KEY in the “Installation” section of your company account.</li>
 						<li>Afterwards, click the button “Save changes”.</li>
 						<li>Wait about 5 seconds and the page will reload automatically.</li>
