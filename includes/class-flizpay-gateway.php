@@ -50,7 +50,7 @@ function flizpay_init_gateway_class()
             if (
                 isset($this->webhook_key) &&
                 isset($this->webhook_url) &&
-                isset($this->flizpay_webhook_alive) &&
+                $this->flizpay_webhook_alive === 'yes' &&
                 !is_null($this->cashback)
             ) {
                 $title = sprintf(__('cashback-title', 'flizpay-for-woocommerce'), $this->cashback);
@@ -240,7 +240,8 @@ function flizpay_init_gateway_class()
                 return false; // Do not display in admin order management
             }
 
-            $available = $this->get_option('flizpay_enabled');
+            $available = $this->get_option('flizpay_enabled') === 'yes' &&
+                $this->get_option('flizpay_webhook_alive') === 'yes';
 
             return $available;
         }
