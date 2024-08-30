@@ -103,7 +103,7 @@ class Flizpay_Public
         wp_enqueue_script(
             $this->plugin_name,
             plugin_dir_url(__FILE__) . 'js/flizpay-public.js',
-            array('jquery', 'woocommerce', 'wc-cart-fragments', 'wc-checkout'),
+            array('jquery', 'wp-element', 'wp-data'),
             $this->version,
             false
         );
@@ -124,6 +124,7 @@ class Flizpay_Public
     public function flizpay_order_finish()
     {
         check_ajax_referer('order_finish_nonce', 'nonce');
+
         $order_id = sanitize_text_field($_POST['order_id']);
         $order = wc_get_order($order_id);
         $status = $order->get_status();
