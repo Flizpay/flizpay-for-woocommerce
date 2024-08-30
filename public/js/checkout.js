@@ -16,7 +16,7 @@ function LabelElement() {
         alignItems: "center",
       },
     },
-    React.createElement("p", { style: { paddingLeft: "4px" } }, label),
+    label,
     React.createElement("img", {
       width: "68",
       height: "36",
