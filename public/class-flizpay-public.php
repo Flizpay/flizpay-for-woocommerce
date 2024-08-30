@@ -112,11 +112,28 @@ class Flizpay_Public
             'ajaxurl' => admin_url('admin-ajax.php'),
             'public_dir_path' => plugin_dir_url(__FILE__),
             'order_finish_nonce' => wp_create_nonce('order_finish_nonce'),
-            'order_data_nonce' => wp_create_nonce('order_data_nonce')
         );
         wp_localize_script($this->plugin_name, "flizpay_frontend", $ajaxurl);
 
         wp_enqueue_script($this->plugin_name . '_jquerymin', plugin_dir_url(__FILE__) . 'js/googleapi.jquery.min.js', array('jquery'), $this->version, false);
+    }
+
+    /**
+     * @return void
+     */
+    public function flizpay_order_finish()
+    {
+        check_ajax_referer('order_finish_nonce', 'nonce');
+        $order_id = sanitize_text_field($_POST['order_id']);
+        $order = wc_get_order($order_id);
+        $status = $order->get_status();
+        echo json_encode(
+            array(
+                'status' => $status,
+                'url' => $status === 'processing' ? $order->get_checkout_order_received_url() : get_home_url() . '/flizpay-payment-fail',
+            )
+        );
+        die;
     }
 
     /**

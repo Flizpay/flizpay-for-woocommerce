@@ -26,8 +26,39 @@
           chosen_payment === "flizpay"
         ) {
           window.location.href = data.redirect;
+          mobile_redirect_when_order_finished(data.order_id);
         }
       });
     });
+
+    function mobile_redirect_when_order_finished(order_id) {
+      const data = {
+        action: "flizpay_order_finish",
+        order_id: order_id,
+        nonce: flizpay_frontend.order_finish_nonce,
+      };
+
+      jQuery.ajax({
+        url: flizpay_frontend.ajaxurl,
+        type: "POST",
+        data,
+        success: function (response) {
+          window.setTimeout(function () {
+            let order = null;
+            try {
+              order = JSON.parse(response);
+            } catch (err) {
+              console.log(err);
+              order = response;
+            }
+            if (order.status == "pending") {
+              mobile_redirect_when_order_finished(order_id);
+            } else {
+              window.location.href = order.url;
+            }
+          }, 2000);
+        },
+      });
+    }
   });
 })(jQuery);
