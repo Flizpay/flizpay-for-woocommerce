@@ -44,7 +44,7 @@ jQuery(function ($) {
           ) {
             mobile_redirect_when_order_finished(order_id);
           } else {
-            $(document.body).block({
+            $.blockUI({
               message: FLIZ_LOADING,
               overlayCSS: {
                 background: "#000",
