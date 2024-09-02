@@ -96,23 +96,24 @@ class Flizpay_Public
          * between the defined hooks and the functions defined in this
          * class.
          */
+        if (is_checkout()) {
+            wp_enqueue_script(
+                $this->plugin_name,
+                plugin_dir_url(__FILE__) . 'js/flizpay-public.js',
+                array('jquery', 'wp-element', 'wp-data'),
+                $this->version,
+                false
+            );
 
-        wp_enqueue_script(
-            $this->plugin_name,
-            plugin_dir_url(__FILE__) . 'js/flizpay-public.js',
-            array('jquery', 'wp-element', 'wp-data'),
-            $this->version,
-            false
-        );
+            $ajaxurl = array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'public_dir_path' => plugin_dir_url(__FILE__),
+                'order_finish_nonce' => wp_create_nonce('order_finish_nonce'),
+            );
+            wp_localize_script($this->plugin_name, "flizpay_frontend", $ajaxurl);
 
-        $ajaxurl = array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'public_dir_path' => plugin_dir_url(__FILE__),
-            'order_finish_nonce' => wp_create_nonce('order_finish_nonce'),
-        );
-        wp_localize_script($this->plugin_name, "flizpay_frontend", $ajaxurl);
-
-        wp_enqueue_script($this->plugin_name . '_jquerymin', plugin_dir_url(__FILE__) . 'js/googleapi.jquery.min.js', array('jquery'), $this->version, false);
+            wp_enqueue_script($this->plugin_name . '_jquerymin', plugin_dir_url(__FILE__) . 'js/googleapi.jquery.min.js', array('jquery'), $this->version, false);
+        }
     }
 
     /**
