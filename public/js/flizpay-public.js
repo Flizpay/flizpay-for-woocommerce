@@ -10,19 +10,10 @@ jQuery(function ($) {
             document.querySelector(
               "#radio-control-wc-payment-method-options-flizpay"
             ).checked === true
-          ) {
-            $.blockUI({
-              message: FLIZ_LOADING,
-              overlayCSS: {
-                background: "#000",
-                opacity: 0.6,
-                cursor: "wait",
-              },
-            });
+          )
             mobile_redirect_when_order_finished(
               wp.data.select("wc/store/checkout").getOrderId()
             );
-          }
         };
       }, 1700);
 
@@ -48,7 +39,7 @@ jQuery(function ($) {
                 order = response;
               }
               if (
-                order.status === "processing" ||
+                order.status === "pending" ||
                 order.status === "checkout-draft"
               ) {
                 mobile_redirect_when_order_finished(order_id);
