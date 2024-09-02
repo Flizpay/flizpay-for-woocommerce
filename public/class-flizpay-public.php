@@ -122,16 +122,17 @@ class Flizpay_Public
     public function flizpay_order_finish()
     {
         check_ajax_referer('order_finish_nonce', 'nonce');
-
-        $order_id = sanitize_text_field($_POST['order_id']);
-        $order = wc_get_order($order_id);
-        $status = $order->get_status();
-        echo json_encode(
-            array(
-                'status' => $status,
-                'url' => $status === 'processing' ? $order->get_checkout_order_received_url() : get_home_url() . '/flizpay-payment-fail',
-            )
-        );
+        if (isset($_POST['order_id'])) {
+            $order_id = sanitize_text_field(wp_unslash($_POST['order_id']));
+            $order = wc_get_order($order_id);
+            $status = $order->get_status();
+            echo wp_json_encode(
+                array(
+                    'status' => $status,
+                    'url' => $status === 'processing' ? $order->get_checkout_order_received_url() : get_home_url() . '/flizpay-payment-fail',
+                )
+            );
+        }
         die;
     }
 
