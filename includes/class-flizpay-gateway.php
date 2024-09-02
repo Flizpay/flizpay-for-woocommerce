@@ -73,16 +73,17 @@ function flizpay_init_gateway_class()
         public function test_gateway_connection()
         {
             check_ajax_referer('test_connection_nonce', 'nonce');
+            if (isset($_POST['api_key'])) {
+                $api_key = sanitize_text_field(wp_unslash($_POST['api_key']));
 
-            $api_key = sanitize_text_field($_POST['api_key']);
+                $this->update_option('enabled', 'no');
+                $this->update_option('flizpay_webhook_alive', 'no');
+                $this->update_option('flizpay_webhook_key', $this->get_webhook_key($api_key));
+                $this->update_option('flizpay_webhook_url', $this->generate_webhook_url($api_key));
+                $this->update_option('flizpay_api_key', $api_key);
 
-            $this->update_option('enabled', 'no');
-            $this->update_option('flizpay_webhook_alive', 'no');
-            $this->update_option('flizpay_webhook_key', $this->get_webhook_key($api_key));
-            $this->update_option('flizpay_webhook_url', $this->generate_webhook_url($api_key));
-            $this->update_option('flizpay_api_key', $api_key);
-
-            wp_send_json_success(array('webhookUrl' => $this->get_option('flizpay_webhook_url')));
+                wp_send_json_success(array('webhookUrl' => $this->get_option('flizpay_webhook_url')));
+            }
 
         }
 
@@ -137,11 +138,13 @@ function flizpay_init_gateway_class()
         {
             $key = $this->get_option('flizpay_webhook_key');
 
-            $signature = sanitize_text_field($_SERVER['HTTP_X_FLIZ_SIGNATURE']);
+            if (isset($_SERVER['HTTP_X_FLIZ_SIGNATURE'])) {
+                $signature = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FLIZ_SIGNATURE']));
 
-            $signedData = hash_hmac('sha256', wp_json_encode($data), $key);
+                $signedData = hash_hmac('sha256', wp_json_encode($data), $key);
 
-            return hash_equals($signature, $signedData);
+                return hash_equals($signature, $signedData);
+            }
         }
 
         public function register_webhook_endpoint()
