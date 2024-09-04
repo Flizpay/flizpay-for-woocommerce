@@ -20,7 +20,7 @@ function flizpay_init_gateway_class()
             $this->has_fields = true;
             $this->method_title = 'FLIZpay Plugin';
             $this->method_description = 'FLIZpay Plugin WooCommerce';
-            $this->icon = 'https://woocommerce-plugin-assets.s3.eu-central-1.amazonaws.com/fliz-checkout-logo.png';
+            $this->icon = home_url() . '/wp-content/plugins/flizpay-for-woocommerce/assets/images/fliz-checkout-logo.svg';
 
             // Method with all the options fields
             $this->init_form_fields();
