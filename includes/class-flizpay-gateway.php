@@ -35,7 +35,7 @@ function flizpay_init_gateway_class()
             $this->webhook_url = $this->get_option('flizpay_webhook_url');
             $this->flizpay_webhook_alive = $this->get_option('flizpay_webhook_alive');
 
-            $this->get_cashback_data();
+            $this->cashback = $this->get_cashback_data();
 
             $this->init_gateway_info();
 
@@ -129,15 +129,14 @@ function flizpay_init_gateway_class()
                 if (isset($response['cashbacks'])) {
                     foreach ($response['cashbacks'] as $cashback) {
                         if ($cashback['active']) {
-                            $this->cashback = $cashback['amount'] ?? null;
-                            set_transient('flizpay_cashback_transient', $this->cashback, 300);
-                            break;
+                            set_transient('flizpay_cashback_transient', $cashback['amount'], 300);
+                            return $cashback['amount'];
                         }
                     }
                 }
-            } else {
-                $this->cashback = $cashback_data;
             }
+
+            return !empty($cashback_data) ? $cashback_data : null;
         }
 
         public function webhook_authenticate($data)
@@ -295,7 +294,7 @@ function flizpay_init_gateway_class()
 
             $client = WC_Flizpay_API::get_instance($api_key);
 
-            $response = $client->dispatch('create_transaction', $body);
+            $response = $client->dispatch('create_transaction', $body, false);
 
             return $response['redirectUrl'];
         }
