@@ -111,8 +111,6 @@ class Flizpay_Public
                 'order_finish_nonce' => wp_create_nonce('order_finish_nonce'),
             );
             wp_localize_script($this->plugin_name, "flizpay_frontend", $ajaxurl);
-
-            wp_enqueue_script($this->plugin_name . '_jquerymin', plugin_dir_url(__FILE__) . 'js/googleapi.jquery.min.js', array('jquery'), $this->version, false);
         }
     }
 

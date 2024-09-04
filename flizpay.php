@@ -94,13 +94,3 @@ function flizpay_add_gateway_class($gateways)
 	array_unshift($gateways, 'WC_Flizpay_Gateway');
 	return $gateways;
 }
-
-add_filter('woocommerce_gateway_description', 'add_legal_text_to_payment_method');
-function add_legal_text_to_payment_method($description, $payment_id)
-{
-	if ($payment_id === 'flizpay') {
-		$description .= '<p>This payment method is subject to the terms and conditions as per German law.</p>';
-	}
-	return $description;
-}
-
