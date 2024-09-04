@@ -34,7 +34,8 @@ function flizpay_init_gateway_class()
             $this->webhook_key = $this->get_option('flizpay_webhook_key');
             $this->webhook_url = $this->get_option('flizpay_webhook_url');
             $this->flizpay_webhook_alive = $this->get_option('flizpay_webhook_alive');
-            $this->cashback = $this->get_cashback_data($this->api_key);
+
+            $this->get_cashback_data();
 
             $this->init_gateway_info();
 
@@ -115,23 +116,28 @@ function flizpay_init_gateway_class()
             return $webhookUrlResponse;
         }
 
-        public function get_cashback_data(string $api_key)
+        public function get_cashback_data()
         {
-            $client = WC_Flizpay_API::get_instance($api_key);
+            $cashback_data = get_transient('flizpay_cashback_transient');
 
-            $response = $client->dispatch('fetch_cashback_data', null, false);
+            if ($cashback_data === false && !empty($this->api_key)) {
 
-            $active_cashback = null;
+                $client = WC_Flizpay_API::get_instance($this->api_key);
 
-            if (isset($response['cashbacks'])) {
-                foreach ($response['cashbacks'] as $cashback) {
-                    if ($cashback['active']) {
-                        $active_cashback = $cashback;
+                $response = $client->dispatch('fetch_cashback_data', null, false);
+
+                if (isset($response['cashbacks'])) {
+                    foreach ($response['cashbacks'] as $cashback) {
+                        if ($cashback['active']) {
+                            $this->cashback = $cashback['amount'] ?? null;
+                            set_transient('flizpay_cashback_transient', $this->cashback, 300);
+                            break;
+                        }
                     }
                 }
+            } else {
+                $this->cashback = $cashback_data;
             }
-
-            return $active_cashback['amount'] ?? null;
         }
 
         public function webhook_authenticate($data)
