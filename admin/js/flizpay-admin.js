@@ -100,7 +100,7 @@
               Die Seite wird in 5 Sekunden automatisch neu geladen ...<p>
               <p style="font-style: italic;">Connected! Waiting for the webhook confirmation. <br />
               Page will reload automatically in 5 seconds...</p>
-              <image src='https://raw.githubusercontent.com/n3r4zzurr0/svg-spinners/main/svg-css/12-dots-scale-rotate.svg' />`;
+              <image src='/wp-content/plugins/flizpay-for-woocommerce/assets/images/loading.svg' />`;
               webhookURLInput.value = response.data.webhookUrl;
               setTimeout(() => {
                 $("form").submit();
@@ -109,14 +109,14 @@
               resultField.classList.add("connection-failed");
               resultField.innerHTML = `An error occurred while testing the connection. <br />
               ${response.data} <br />
-              <image src='https://raw.githubusercontent.com/n3r4zzurr0/svg-spinners/main/svg-css/12-dots-scale-rotate.svg' />`;
+              <image src='/wp-content/plugins/flizpay-for-woocommerce/assets/images/loading.svg' />`;
             }
           },
           error: async function (e) {
             resultField.classList.add("connection-failed");
             resultField.innerHTML = `An error occurred while testing the connection. <br />
               ${e.responseJSON.data} <br />
-              <image src='https://raw.githubusercontent.com/n3r4zzurr0/svg-spinners/main/svg-css/12-dots-scale-rotate.svg' />`;
+              <image src='/wp-content/plugins/flizpay-for-woocommerce/assets/images/loading.svg' />`;
           },
         });
       }
