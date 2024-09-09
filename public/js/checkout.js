@@ -1,3 +1,10 @@
+/**
+ * Checkout Blocks definition.
+ * Implements the FLIZ label and its icon as well as registering the payment method when enabled
+ *
+ * @since 1.0.0
+ */
+
 const settings = window.wc.wcSettings.allSettings.paymentMethodData.flizpay;
 
 const label = window.wp.htmlEntities.decodeEntities(settings.title);

@@ -1,3 +1,13 @@
+/**
+ * This JS snipped is uniquely responsible for handling the redirect to the success/failure page after the payment on mobile devices.
+ * The FLIZ Checkout page is also a universal link that opens the FLIZ App straight away.
+ * So for mobile devices the customer remains in the page on their browsers after clicking to pay and being redirected to the app.
+ * This JS implements a simple loading screen compatible with blocks and classic checkout.
+ * By doing a polling of the order status via ajax, it will then know when the webhook communication happened and redirect the customer accordingly.
+ *
+ * @since 1.0.0
+ */
+
 jQuery(function ($) {
   $(document).ready(function () {
     let stopPolling = false;

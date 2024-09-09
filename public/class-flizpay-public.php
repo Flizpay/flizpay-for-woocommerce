@@ -13,8 +13,8 @@
 /**
  * The public-facing functionality of the plugin.
  *
- * Defines the plugin name, version, and two examples hooks for how to
- * enqueue the public-facing stylesheet and JavaScript.
+ * Defines the plugin name, version, and 
+ * enqueue the public-facing JavaScript.
  *
  * @package    Flizpay
  * @subpackage Flizpay/public
@@ -64,38 +64,16 @@ class Flizpay_Public
     public function enqueue_styles()
     {
 
-        /**
-         * This function is provided for demonstration purposes only.
-         *
-         * An instance of this class should be passed to the run() function
-         * defined in Flizpay_Loader as all of the hooks are defined
-         * in that particular class.
-         *
-         * The Flizpay_Loader will then create the relationship
-         * between the defined hooks and the functions defined in this
-         * class.
-         */
     }
 
     /**
      * Register the JavaScript for the public-facing side of the site.
+     * Only registers it on the checkout page
      *
      * @since    1.0.0
      */
     public function enqueue_scripts()
     {
-
-        /**
-         * This function is provided for demonstration purposes only.
-         *
-         * An instance of this class should be passed to the run() function
-         * defined in Flizpay_Loader as all of the hooks are defined
-         * in that particular class.
-         *
-         * The Flizpay_Loader will then create the relationship
-         * between the defined hooks and the functions defined in this
-         * class.
-         */
         if (is_checkout()) {
             wp_enqueue_script(
                 $this->plugin_name,
@@ -115,7 +93,12 @@ class Flizpay_Public
     }
 
     /**
+     * Function used by the mobile polling mechanism to check the order status
+     * It will then return the redirect URL based on the success or failure of the request.
+     * 
      * @return void
+     * 
+     * @since 1.0.0
      */
     public function flizpay_order_finish()
     {
@@ -136,7 +119,6 @@ class Flizpay_Public
 
     /**
      * Custom function to declare compatibility with cart checkout blocks feature
-     * Custom function to declare compatibility with cart_checkout_blocks feature
      */
     public function declare_cart_checkout_blocks_compatibility()
     {
@@ -162,7 +144,7 @@ class Flizpay_Public
 
         // Hook the registration function to the action 'woocommerce blocks_payment method_type_registration'
         add_action('woocommerce_blocks_payment_method_type_registration', function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
-            // Register an instance of My_Custom_Gateway_Blocks
+            // Register an instance of Flizpay_Gateway_blocks
             $payment_method_registry->register(new Flizpay_Gateway_Blocks);
         });
     }

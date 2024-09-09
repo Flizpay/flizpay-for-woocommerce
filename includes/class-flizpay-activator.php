@@ -24,9 +24,10 @@ class Flizpay_Activator
 {
 
     /**
-     * Short Description. (use period)
+     * Activate FLIZpay by adding the custom payment failure page. (use period)
      *
-     * Long Description.
+     * Adds a post page to be used when payment fails and register a filter and an action
+     * to exclude it from the navigation menu and search results.
      *
      * @since    1.0.0
      */
@@ -52,6 +53,13 @@ class Flizpay_Activator
 
     }
 
+    /** 
+     * Filter for excluding the payment failed page from the navigation menu
+     * 
+     * @return array
+     * 
+     * @since 1.0.0
+     */
     function flizpay_exclude_menu_items($items, $menu, $args)
     {
         foreach ($items as $key => $item) {
@@ -62,6 +70,13 @@ class Flizpay_Activator
         return $items;
     }
 
+    /**
+     * Action for excluding the payment failed page from search results
+     * @param mixed $query
+     * @return mixed
+     * 
+     * @since 1.0.0
+     */
     function flizpay_exclude_pages_from_search($query)
     {
         if ($query->is_search && !is_admin()) {

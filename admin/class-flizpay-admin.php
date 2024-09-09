@@ -13,7 +13,7 @@
 /**
  * The admin-specific functionality of the plugin.
  *
- * Defines the plugin name, version, and two examples hooks for how to
+ * Defines the plugin name, version, hooks for
  * enqueue the admin-specific stylesheet and JavaScript.
  *
  * @package    Flizpay
@@ -64,18 +64,6 @@ class Flizpay_Admin
 	public function enqueue_styles()
 	{
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Flizpay_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Flizpay_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
 		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/flizpay-admin.css', array(), $this->version, 'all');
 
 	}
@@ -88,26 +76,18 @@ class Flizpay_Admin
 	public function enqueue_scripts()
 	{
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Flizpay_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Flizpay_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-admin.js', array('jquery'), $this->version, false);
 		wp_localize_script($this->plugin_name, 'flizpayParams', array('nonce' => wp_create_nonce('test_connection_nonce')));
 
 	}
 
 	/**
+	 * Define the admin page links on the plugin table row
+	 * 
 	 * @param $links
 	 * @return array|string[]
+	 * 
+	 * @since 1.0.0
 	 */
 	public function flizpay_plugin_links($links)
 	{
@@ -120,7 +100,11 @@ class Flizpay_Admin
 	}
 
 	/**
+	 * Define the admin fields present in the plugin settings page
+	 * 
 	 * @return array
+	 * 
+	 * @since 1.0.0
 	 */
 	public function load_form_fields()
 	{
@@ -162,6 +146,14 @@ class Flizpay_Admin
 			),
 		);
 	}
+
+	/**
+	 * Provide the HTML for the admin banner with configuration instructions
+	 * 
+	 * @return string
+	 * 
+	 * @since 1.0.0
+	 */
 
 	private function flizpay_description_banner()
 	{

@@ -24,9 +24,7 @@ class Flizpay_Deactivator
 {
 
 	/**
-	 * Short Description. (use period)
-	 *
-	 * Long Description.
+	 * Delete the FLIZpay payment failure page
 	 *
 	 * @since    1.0.0
 	 */

@@ -1,5 +1,10 @@
 <?php
-
+/**
+ * Centralized Singleton for communication with all FLIZpay services via API 
+ * Check our documentation at https://docs.flizpay.de
+ * 
+ * @since 1.0.0
+ */
 class WC_Flizpay_API
 {
   private $api_key;
@@ -8,6 +13,14 @@ class WC_Flizpay_API
 
   public static $instance;
 
+  /**
+   * Obtain the current instance of the API class for a given API KEY
+   * 
+   * @param string $api_key
+   * @return WC_Flizpay_API
+   * 
+   * @since 1.0.0
+   */
   public static function get_instance($api_key)
   {
     if (!isset(self::$instance) || self::$instance->api_key !== $api_key) {
@@ -16,12 +29,27 @@ class WC_Flizpay_API
     return self::$instance;
   }
 
+  /**
+   * Private constructor called by get_instance
+   * Sets the API key and initialize the API routes
+   * 
+   * @param string $api_key
+   * 
+   * @since 1.0.0
+   */
   private function __construct($api_key)
   {
     $this->api_key = $api_key;
     $this->init();
   }
 
+  /**
+   * Initialize the API Routes and base URL for further usage
+   * 
+   * @return void
+   * 
+   * @since 1.0.0
+   */
   private function init()
   {
     $this->base_url = 'https://api.flizpay.de';
@@ -81,6 +109,18 @@ class WC_Flizpay_API
     );
   }
 
+  /**
+   * Performs an API call to the specified route, with the given body. 
+   * When $api_mode is set false, this function will not immediately return success or error
+   * with wp_send_json_error or wp_send_json_success, instead it will return all responses to the caller.
+   * 
+   * @param string $route
+   * @param array $request_body
+   * @param bool $api_mode
+   * @return void | array
+   * 
+   * @since 1.0.0
+   */
   public function dispatch($route, $request_body = null, $api_mode = true)
   {
     $handler = $this->routes[$route];
