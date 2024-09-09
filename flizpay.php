@@ -41,7 +41,7 @@ define('FLIZPAY_VERSION', '1.0.0');
  * The code that runs during plugin activation.
  * This action is documented in includes/class-flizpay-activator.php
  */
-function activate_flizpay()
+function flizpay_activate()
 {
 	require_once plugin_dir_path(__FILE__) . 'includes/class-flizpay-activator.php';
 	Flizpay_Activator::activate();
@@ -51,14 +51,14 @@ function activate_flizpay()
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-flizpay-deactivator.php
  */
-function deactivate_flizpay()
+function flizpay_deactivate()
 {
 	require_once plugin_dir_path(__FILE__) . 'includes/class-flizpay-deactivator.php';
 	Flizpay_Deactivator::deactivate();
 }
 
-register_activation_hook(__FILE__, 'activate_flizpay');
-register_deactivation_hook(__FILE__, 'deactivate_flizpay');
+register_activation_hook(__FILE__, 'flizpay_activate');
+register_deactivation_hook(__FILE__, 'flizpay_deactivate');
 
 /**
  * The core plugin class that is used to define internationalization,
@@ -75,14 +75,14 @@ require plugin_dir_path(__FILE__) . 'includes/class-flizpay.php';
  *
  * @since    1.0.0
  */
-function run_flizpay()
+function flizpay_run()
 {
 
 	$plugin = new Flizpay();
 	$plugin->run();
 
 }
-run_flizpay();
+flizpay_run();
 
 /**
  * This action hook registers Flizpay class as a WooCommerce payment gateway
