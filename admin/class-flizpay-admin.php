@@ -128,7 +128,7 @@ class Flizpay_Admin
 			'description_banner' => array(
 				'title' => '', // Empty title, used for HTML output
 				'type' => 'title', // Using 'title' as a workaround to insert HTML
-				'description' => $this->add_description_banner(), // Including HTML content via a method
+				'description' => $this->flizpay_description_banner(), // Including HTML content via a method
 			),
 			'flizpay_enabled' => array(
 				'title' => 'Aktiviert<br><p style="font-style: italic;">Enabled</p>',
@@ -163,14 +163,14 @@ class Flizpay_Admin
 		);
 	}
 
-	private function add_description_banner()
+	private function flizpay_description_banner()
 	{
-		return <<<HTML
+		return "
 			<div class='flizpay-description-banner'>
-				<div class="flizpay-german-banner">
-					<div style="flizpay-banner-header">
+				<div class='flizpay-german-banner'>
+					<div style='flizpay-banner-header'>
 						<p style='font-style: italic; margin-top: 10px;'>English version below</p>
-						<p class="flizpay-header-text">Willkommen bei FLIZpay in WooCommerce!</p>
+						<p class='flizpay-header-text'>Willkommen bei FLIZpay in WooCommerce!</p>
 					</div>
 					<p>Anleitung:</p>
 					<ol>
@@ -185,14 +185,14 @@ class Flizpay_Admin
 					
 					<p>
 						Wenn du mehr darüber erfahren möchtest, wie du dieses Plugin für deine Bedürfnisse konfigurieren kannst, <a 
-							href="https://www.docs.flizpay.de/docs/intro"
-							target="_blank"
+							href='https://www.docs.flizpay.de/docs/intro'
+							target='_blank'
 							>schau dir unsere Dokumentation an.</a>
 					</p>
 				</div>
-				<div class="flizpay-english-banner">
-					<div style="flizpay-banner-header">
-						<p class="flizpay-header-text">Welcome to FLIZpay in WooCommerce!</p>
+				<div class='flizpay-english-banner'>
+					<div style='flizpay-banner-header'>
+						<p class='flizpay-header-text'>Welcome to FLIZpay in WooCommerce!</p>
 					</div>
 					<p>Instructions:</p>
 					<ol>
@@ -207,12 +207,12 @@ class Flizpay_Admin
 					
 					<p>
 						If you'd like to know more about how to configure this plugin for your needs, <a 
-							href="https://www.docs.flizpay.de/docs/intro"
-							target="_blank"
+							href='https://www.docs.flizpay.de/docs/intro'
+							target='_blank'
 							>check out our documentation.</a>
 					</p>
 				</div>
 			</div>
-		HTML;
+		";
 	}
 }
