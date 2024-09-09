@@ -32,6 +32,23 @@ as any credit transfer within the EU.
 
 FLIZ serves payers with a German bank account, while companies can receive payments across the EU.
 
+## Third-Party Services
+
+This plugin relies on the FLIZpay API service to handle payment processing. When using this plugin, certain data will be sent to FLIZpay's servers.
+When a user completes a payment through the plugin, the following data is sent to FLIZpay for processing:
+
+- Transaction details (amount, currency, etc.)
+- Merchant's name and, when set, the cashback value.
+
+### Service Information:
+- **Service**: [FLIZpay API](https://api.flizpay.de)
+- **Privacy Policy**: [FLIZpay Privacy Policy](https://flizpay.de/privacy-policy)
+- **Terms and Conditions**: [FLIZpay Terms and Conditions](https://flizpay.de/terms-and-conditions)
+
+By using this plugin, you agree to FLIZpay's terms and privacy policies.
+
+For more details on FLIZpay's API and how your data is handled, please refer to our [developer documentation](https://docs.flizpay.de/).
+
 == Installation ==
 
 The first step to install FLIZpay in your checkout is to create an account with us.
@@ -85,3 +102,20 @@ Durch die Verarbeitung von Zahlungen über das SEPA-Netzwerk unterliegt jede Zah
 wie jede Überweisung innerhalb der EU.
 
 FLIZ bedient Zahler mit einem deutschen Bankkonto, während Unternehmen Zahlungen in der gesamten EU erhalten können.
+
+## Dienste von Drittanbietern
+
+Dieses Plugin nutzt den FLIZpay API-Dienst zur Abwicklung der Zahlungsabwicklung. Bei Verwendung dieses Plugins werden bestimmte Daten an die Server von FLIZpay gesendet.
+Wenn ein Benutzer eine Zahlung über das Plugin abschließt, werden die folgenden Daten zur Verarbeitung an FLIZpay gesendet:
+
+- Transaktionsdetails (Betrag, Währung usw.)
+- Name des Händlers und, falls festgelegt, der Cashback-Wert.
+
+### Serviceinformationen:
+- **Service**: [FLIZpay API](https://api.flizpay.de)
+- **Datenschutzrichtlinie**: [FLIZpay Datenschutzrichtlinie](https://flizpay.de/privacy-policy)
+- **Allgemeine Geschäftsbedingungen**: [FLIZpay Allgemeine Geschäftsbedingungen](https://flizpay.de/terms-and-conditions)
+
+Durch die Verwendung dieses Plugins stimmen Sie den Bedingungen und Datenschutzrichtlinien von FLIZpay zu.
+
+Weitere Einzelheiten zur API von FLIZpay und zum Umgang mit Ihren Daten finden Sie in unserer [Entwicklerdokumentation](https://docs.flizpay.de/).
