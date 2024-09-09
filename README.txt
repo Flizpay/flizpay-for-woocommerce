@@ -49,6 +49,10 @@ By using this plugin, you agree to FLIZpay's terms and privacy policies.
 
 For more details on FLIZpay's API and how your data is handled, please refer to our [developer documentation](https://docs.flizpay.de/).
 
+## Requires
+This plugin requires the following:
+- WooCommerce (version 9.0.0 or higher): [https://wordpress.org/plugins/woocommerce/](https://wordpress.org/plugins/woocommerce/)
+
 == Installation ==
 
 The first step to install FLIZpay in your checkout is to create an account with us.
@@ -119,3 +123,7 @@ Wenn ein Benutzer eine Zahlung über das Plugin abschließt, werden die folgende
 Durch die Verwendung dieses Plugins stimmen Sie den Bedingungen und Datenschutzrichtlinien von FLIZpay zu.
 
 Weitere Einzelheiten zur API von FLIZpay und zum Umgang mit Ihren Daten finden Sie in unserer [Entwicklerdokumentation](https://docs.flizpay.de/).
+
+## Erfordert
+Dieses Plugin erfordert Folgendes:
+- WooCommerce (Version 9.0.0 oder höher): [https://wordpress.org/plugins/woocommerce/](https://wordpress.org/plugins/woocommerce/)

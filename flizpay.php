@@ -36,6 +36,39 @@ if (!defined('WPINC')) {
  */
 define('FLIZPAY_VERSION', '1.0.0');
 
+function flizpay_check_dependencies()
+{
+	// Check if WooCommerce is active
+	if (!class_exists('WooCommerce')) {
+		// WooCommerce is not active
+		add_action('admin_notices', 'flizpay_dependencies_notice');
+		deactivate_plugins(plugin_basename(__FILE__)); // Deactivate the plugin
+	}
+
+	global $woocommerce;
+
+	// Define the minimum required WooCommerce version
+	$required_version = '9.0.0';
+
+	// Check WooCommerce version
+	if (version_compare($woocommerce->version, $required_version, '<')) {
+		add_action('admin_notices', 'flizpay_version_notice');
+		deactivate_plugins(plugin_basename(__FILE__));
+	}
+}
+
+add_action('admin_init', 'flizpay_check_dependencies');
+
+function flizpay_dependencies_notice()
+{
+	echo '<div class="error"><p><strong>FLIZpay</strong> requires WooCommerce to be installed and active. Please install and activate WooCommerce.</p></div>';
+}
+
+function flizpay_version_notice()
+{
+	echo '<div class="error"><p><strong>FLIZpay</strong> requires WooCommerce version 9.0.0 or higher. Please update WooCommerce.</p></div>';
+}
+
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-flizpay-activator.php
@@ -44,6 +77,7 @@ function flizpay_activate()
 {
 	require_once plugin_dir_path(__FILE__) . 'includes/class-flizpay-activator.php';
 	Flizpay_Activator::activate();
+	flizpay_check_dependencies();
 }
 
 /**
