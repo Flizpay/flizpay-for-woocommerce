@@ -10,6 +10,10 @@ function flizpay_init_gateway_class()
     {
         static $VERSION = "1.0.0";
 
+        public $icon;
+        public $title;
+        public $description;
+
         /**
          * The class constructor will set FLIZ id, load translations, description, icon and etc. 
          * It's also responsible for instantiating all FLIZ variables like API KEY and WEBHOOK KEY
@@ -26,7 +30,7 @@ function flizpay_init_gateway_class()
             $this->has_fields = true;
             $this->method_title = 'FLIZpay Plugin';
             $this->method_description = 'FLIZpay Plugin WooCommerce';
-            $this->icon = home_url() . '/wp-content/plugins/flizpay-for-woocommerce/assets/images/fliz-checkout-logo.svg';
+            $this->icon = plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images/fliz-checkout-logo.svg';
 
             // Method with all the options fields
             $this->init_form_fields();

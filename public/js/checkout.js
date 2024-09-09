@@ -27,7 +27,7 @@ function LabelElement() {
     React.createElement("img", {
       width: "68",
       height: "36",
-      src: "/wp-content/plugins/flizpay-for-woocommerce/assets/images/fliz-checkout-logo.svg",
+      src: settings.icon,
     })
   );
 }

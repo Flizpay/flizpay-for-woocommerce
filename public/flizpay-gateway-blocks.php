@@ -67,7 +67,8 @@ final class Flizpay_Gateway_Blocks extends AbstractPaymentMethodType
         return [
             'enabled' => $this->gateway->is_available(),
             'title' => $this->gateway->title,
-            'description' => $this->gateway->description
+            'description' => $this->gateway->description,
+            'icon' => $this->gateway->icon,
         ];
     }
 }

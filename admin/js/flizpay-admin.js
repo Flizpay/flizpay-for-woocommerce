@@ -79,7 +79,7 @@
               Die Seite wird in 5 Sekunden automatisch neu geladen ...<p>
               <p style="font-style: italic;">Connected! Waiting for the webhook confirmation. <br />
               Page will reload automatically in 5 seconds...</p>
-              <image src='/wp-content/plugins/flizpay-for-woocommerce/assets/images/loading.svg' />`;
+              <image src='${flizpayParams.loading_icon}' />`;
               webhookURLInput.value = response.data.webhookUrl;
               setTimeout(() => {
                 $("form").submit();
@@ -88,14 +88,14 @@
               resultField.classList.add("connection-failed");
               resultField.innerHTML = `An error occurred while testing the connection. <br />
               ${response.data} <br />
-              <image src='/wp-content/plugins/flizpay-for-woocommerce/assets/images/loading.svg' />`;
+              <image src='${flizpayParams.loading_icon}' />`;
             }
           },
           error: async function (e) {
             resultField.classList.add("connection-failed");
             resultField.innerHTML = `An error occurred while testing the connection. <br />
               ${e.responseJSON.data} <br />
-              <image src='/wp-content/plugins/flizpay-for-woocommerce/assets/images/loading.svg' />`;
+              <image src='${flizpayParams.loading_icon}' />`;
           },
         });
       }

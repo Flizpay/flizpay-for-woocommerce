@@ -42,6 +42,14 @@ class Flizpay_Admin
 	private $version;
 
 	/**
+	 * The URL of the plugin assets
+	 * @since 1.0.0
+	 * @access public
+	 * @var string $assets_url
+	 */
+	public $assets_url;
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
@@ -53,6 +61,7 @@ class Flizpay_Admin
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		$this->assets_url = plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images';
 
 	}
 
@@ -77,7 +86,10 @@ class Flizpay_Admin
 	{
 
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-admin.js', array('jquery'), $this->version, false);
-		wp_localize_script($this->plugin_name, 'flizpayParams', array('nonce' => wp_create_nonce('test_connection_nonce')));
+		wp_localize_script($this->plugin_name, 'flizpayParams', array(
+			'nonce' => wp_create_nonce('test_connection_nonce'),
+			'loading_icon' => "$this->assets_url/loading.svg"
+		));
 
 	}
 
