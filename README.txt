@@ -48,8 +48,8 @@ Dieses Plugin erfordert Folgendes:
 
 == Screenshots ==
 
-1. Heyhey
-2. Non
+1. Ansicht, wenn FLIZpay in deinem Checkout ausgewählt ist.
+2. Ansicht, wenn FLIZpay in deinem Checkout nicht ausgewählt ist.
 
 == Installation ==
 
