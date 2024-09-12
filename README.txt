@@ -1,66 +1,63 @@
-=== Flizpay Gateway for WooCommerce ===
+=== FLIZpay Gateway für WooCommerce ===
 Contributors: Flizpay
-Tags: flizpay, payments, gateway, cashback, no fee
+Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.6.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
 
-Install the plugin to accept FLIZ, the payment method that is free of fees for payers and shops alike.
+Mit dem FLIZpay-Plugin kannst du die Zahlungsmethode FLIZ in deinen Checkout integrieren. FLIZ ist für Shops und Zahlende gebührenfrei.
 
 == Description ==
-## What does this plugin do for you
+## Was macht das FLIZpay Plugin?
 
-FLIZ is Germany's first fee-free payment method. Customers pay using the FLIZ App,
-enabling you to accept payments without any fees.
-Install the plugin now and embrace the ease of fee-free transactions.
-You can receive your first transactions in less than 30 minutes!
+FLIZ ist die erste kostenlose Zahlungsmethode in Deutschland. Deine Kunden zahlen mit der FLIZpay App, und du erhältst diese Zahlungen ohne Gebühren mit dem FLIZpay Plugin. Du kannst FLIZ ohne technisches Wissen in weniger als 30 Minuten installieren und sofort Zahlungen annehmen.
 
-### Use cashback to support your bottom line
+### Verbessere deine Conversion und Kundenbindung mit Cashback
 
-Change your customers' payment behavior to ensure they use fee-free payment method FLIZ.
-To achieve this, you can define a %-cashback that is deducted as a discount from every purchase your customers make with FLIZ.
-This way, customers support your bottom line and optimize their own finances at the same time.
+Ändere das Zahlungsverhalten deiner Kunden, damit sie FLIZ nutzen. Denn FLIZ ist gebührenfrei. Um dies zu erreichen, kannst du einen prozentualen Cashback festlegen, der als Rabatt von jedem Einkauf abgezogen wird, den deine Kunden mit FLIZ tätigen. So unterstützen deine Kunden dein Geschäftsergebnis und optimieren gleichzeitig ihre eigenen Finanzen.
 
-### Secure payments
+### Sichere Zahlungen
 
-FLIZ secures your transactions with complete end-to-end encryption, ensuring maximum security.
-By processing payments through the SEPA network, each payment undergoes the same rigorous security checks
-as any credit transfer within the EU.
+FLIZ sichert deine Transaktionen mit einer vollständigen Ende-zu-Ende-Verschlüsselung und gewährleistet maximale Sicherheit. Indem Zahlungen über das SEPA-Netzwerk abgewickelt werden, unterliegt jede Zahlung denselben strengen Sicherheitsprüfungen wie alle Überweisungen innerhalb der EU.
 
-FLIZ serves payers with a German bank account, while companies can receive payments across the EU.
+Mit FLIZ können Kunden mit deutschem Bankkonto zahlen & Unternehmen Zahlungen auf allen EU-Konten empfangen.
 
-## Third-Party Services
+## Dienste eines Drittanbieters
 
-This plugin relies on the FLIZpay API service to handle payment processing. When using this plugin, certain data will be sent to FLIZpay's servers.
-When a user completes a payment through the plugin, the following data is sent to FLIZpay for processing:
+Dieses Plugin nutzt den FLIZpay-API-Service zur Abwicklung von Zahlungen. Bei der Verwendung dieses Plugins werden bestimmte Daten an die Server von FLIZpay gesendet.
+Wenn ein Nutzer eine Zahlung über das Plugin abschließt, werden folgende Daten zur Verarbeitung an FLIZpay übermittelt:
 
-- Transaction details (amount, currency, etc.)
-- Merchant's name and, when set, the cashback value.
+- Transaktionsdetails (Betrag, Währung, usw.)
+- Name des Händlers und, falls festgelegt, der Cashback-Wert.
 
-### Service Information:
+### Service Informationen:
 - **Service**: [FLIZpay API](https://api.flizpay.de)
-- **Privacy Policy**: [FLIZpay Privacy Policy](https://flizpay.de/privacy-policy)
-- **Terms and Conditions**: [FLIZpay Terms and Conditions](https://flizpay.de/terms-and-conditions)
+- **Datenschutzerklärung**: [FLIZpay Privacy Policy](https://flizpay.de/privacy-policy)
+- **Allgemeine Geschäftsbedingungen**: [FLIZpay Terms and Conditions](https://www.flizpay.de/business-terms-and-conditions)
 
-By using this plugin, you agree to FLIZpay's terms and privacy policies.
+Durch die Nutzung dieses Plugins stimmst du den AGBs und der Datenschutzerklärung von FLIZpay zu.
 
-For more details on FLIZpay's API and how your data is handled, please refer to our [developer documentation](https://docs.flizpay.de/).
+Für weitere Informationen zur FLIZpay-API und wie deine Daten verarbeitet werden, siehe bitte unsere [Dokumentation für Entwickler](https://www.docs.flizpay.de/docs/category/woocommerce).
 
-## Requires
-This plugin requires the following:
-- WooCommerce (version 9.0.0 or higher): [https://wordpress.org/plugins/woocommerce/](https://wordpress.org/plugins/woocommerce/)
+## Erfordert
+Dieses Plugin erfordert Folgendes:
+- WooCommerce (Version 9.0.0 oder höher): [https://wordpress.org/plugins/woocommerce/](https://wordpress.org/plugins/woocommerce/)
+
+== Screenshots ==
+
+1. Heyhey
+2. Non
 
 == Installation ==
 
-The first step to install FLIZpay in your checkout is to create an account with us.
-[Go to our website here](https://app.flizpay.de), sign up and follow the instructions in the installation section.
+Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstellung eines Kontos bei uns. [Gehe auf unsere Website](https://app.flizpay.de), erstelle ein Konto und folge den Anweisungen im Menüpunkt "Installation".
 
 == Changelog ==
 
-- v1.0.0
+- 1.0.0
 
   - ADDED
 
@@ -68,62 +65,16 @@ The first step to install FLIZpay in your checkout is to create an account with 
     - Cashback info on Checkout
     - Order management for cashback
 
+- 1.0.1
+
+  - FIXED
+    - Plugin Readme
+    - Docs and Data Privacy links
+
 == Upgrade Notice ==
 
+=v1.0.1
+* Readme and Documentation fixes
+
 = v1.0.0 =
-* First stable version of the Flizpay Gateway for WooCommerce plugin
-
-=== Flizpay Gateway für WooCommerce ===
-Mitwirkende: Flizpay
-Tags: flizpay, flizpay business, flizpay pay, payments, gateway, cashback, keine Gebühr
-Benötigt mindestens: 4.4
-Getestet bis: 6.5
-Stabiler Tag: 1.0.0
-Erfordert PHP: 7.0
-Lizenz: GPLv2 oder später
-Lizenz-URI: https://www.gnu.org/licenses/gpl-2.0.txt
-
-Installieren Sie das Plugin, um FLIZ zu akzeptieren, die Zahlungsmethode, die für Zahler und Geschäfte gleichermaßen gebührenfrei ist.
-
-== Beschreibung ==
-## Was macht dieses Plugin für Sie
-
-FLIZ ist Deutschlands erste gebührenfreie Zahlungsmethode. Kunden bezahlen mit der FLIZ-App,
-damit Sie Zahlungen ohne Gebühren akzeptieren können.
-Installieren Sie das Plugin jetzt und genießen Sie die Einfachheit gebührenfreier Transaktionen.
-Sie können Ihre ersten Transaktionen in weniger als 30 Minuten erhalten!
-
-### Verwenden Sie Cashback, um Ihr Ergebnis zu unterstützen
-
-Ändern Sie das Zahlungsverhalten Ihrer Kunden, um sicherzustellen, dass sie die gebührenfreie Zahlungsmethode FLIZ verwenden.
-Um dies zu erreichen, können Sie ein %-Cashback definieren, das als Rabatt von jedem Kauf Ihrer Kunden mit FLIZ abgezogen wird.
-Auf diese Weise unterstützen Kunden Ihr Ergebnis und optimieren gleichzeitig ihre eigenen Finanzen.
-
-### Sichere Zahlungen
-
-FLIZ sichert Ihre Transaktionen mit vollständiger Ende-zu-Ende-Verschlüsselung, um maximale Sicherheit zu gewährleisten.
-Durch die Verarbeitung von Zahlungen über das SEPA-Netzwerk unterliegt jede Zahlung denselben strengen Sicherheitsprüfungen
-wie jede Überweisung innerhalb der EU.
-
-FLIZ bedient Zahler mit einem deutschen Bankkonto, während Unternehmen Zahlungen in der gesamten EU erhalten können.
-
-## Dienste von Drittanbietern
-
-Dieses Plugin nutzt den FLIZpay API-Dienst zur Abwicklung der Zahlungsabwicklung. Bei Verwendung dieses Plugins werden bestimmte Daten an die Server von FLIZpay gesendet.
-Wenn ein Benutzer eine Zahlung über das Plugin abschließt, werden die folgenden Daten zur Verarbeitung an FLIZpay gesendet:
-
-- Transaktionsdetails (Betrag, Währung usw.)
-- Name des Händlers und, falls festgelegt, der Cashback-Wert.
-
-### Serviceinformationen:
-- **Service**: [FLIZpay API](https://api.flizpay.de)
-- **Datenschutzrichtlinie**: [FLIZpay Datenschutzrichtlinie](https://flizpay.de/privacy-policy)
-- **Allgemeine Geschäftsbedingungen**: [FLIZpay Allgemeine Geschäftsbedingungen](https://flizpay.de/terms-and-conditions)
-
-Durch die Verwendung dieses Plugins stimmen Sie den Bedingungen und Datenschutzrichtlinien von FLIZpay zu.
-
-Weitere Einzelheiten zur API von FLIZpay und zum Umgang mit Ihren Daten finden Sie in unserer [Entwicklerdokumentation](https://docs.flizpay.de/).
-
-## Erfordert
-Dieses Plugin erfordert Folgendes:
-- WooCommerce (Version 9.0.0 oder höher): [https://wordpress.org/plugins/woocommerce/](https://wordpress.org/plugins/woocommerce/)
+* Version 1.0.0 FLIZpay Gateway für WooCommerce Plugin

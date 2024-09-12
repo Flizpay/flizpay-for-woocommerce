@@ -13,16 +13,17 @@
  * @package           Flizpay
  *
  * @wordpress-plugin
- * Plugin Name:       Flizpay
- * Plugin URI:        https://www.flizpay.de
+ * Plugin Name:       FLIZpay
+ * Plugin URI:        https://www.flizpay.de/companies
  * Description:       FLIZpay: 100% free!
- * Version:           1.0.0
- * Author:            Flizpay
- * Author URI:        https://www.flizpay.de/
+ * Version:           1.0.1
+ * Author:            FLIZpay
+ * Author URI:        https://www.flizpay.de/companies
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       flizpay-for-woocommerce
  * Domain Path:       /languages
+ * Requires Plugins: 	woocommerce
  */
 
 // If this file is called directly, abort.
@@ -34,7 +35,7 @@ if (!defined('WPINC')) {
  * Currently plugin version.
  * Start at version 1.0.0 and use SemVer - https://semver.org
  */
-define('FLIZPAY_VERSION', '1.0.0');
+define('FLIZPAY_VERSION', '1.0.1');
 
 function flizpay_check_dependencies()
 {
