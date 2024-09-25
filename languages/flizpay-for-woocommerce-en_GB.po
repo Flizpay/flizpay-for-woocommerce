@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: FlizPay 1.0.1\n"
+"Project-Id-Version: FlizPay 1.0.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-07-30 10:00+0000\n"
 "PO-Revision-Date: 2024-07-30 10:00+0000\n"
@@ -25,15 +25,15 @@ msgstr "FLIZpay - get %s%% back"
 
 #: includes/class-flizpay-gateway.php:44
 msgid "cashback-description"
-msgstr "You will get %s%% cashback on this payment. Use the FLIZpay app to make safe payments."
+msgstr "Current payment methods hurt small businesses with high fees. FLIZpay is free, so your choice matters. Sign up in 60 seconds and get %s%% back on this payment."
 
 #: includes/class-flizpay-gateway.php:47
 msgid "title"
-msgstr "FLIZpay"
+msgstr "FLIZpay - your choice matters!"
 
 #: includes/class-flizpay-gateway.php:49
 msgid "description"
-msgstr "Use the FLIZpay app to make safe payments."
+msgstr "Current payment methods hurt small businesses with high fees. FLIZpay is free, so your choice matters. Sign up in 60 seconds."
 
 #: flizpay.php:18
 msgid "accept_payments"
