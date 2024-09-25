@@ -1,5 +1,9 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-09-25 - version 1.0.2
+
+* Fixed - Logo size, checkout description and translations
+
 2024-09-12 - version 1.0.1
 
 * Fixed - Readme and Docs links and translations
