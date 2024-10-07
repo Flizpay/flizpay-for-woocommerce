@@ -35,8 +35,8 @@ class Flizpay_Activator
     {
         // Create post object
         $flizpay_fail = array(
-            'post_title' => wp_strip_all_tags('Flizpay Payment Fail'),
-            'post_content' => 'Your order has been cancelled due to unsuccessfull payment from Flizpay.',
+            'post_title' => wp_strip_all_tags('Payment Failed'),
+            'post_content' => 'Your payment has failed and the order has been canceled. Please try again.',
             'post_status' => 'publish',
             'post_author' => 1,
             'post_type' => 'page',
@@ -46,10 +46,17 @@ class Flizpay_Activator
         );
 
         // Insert the post into the database
-        wp_insert_post($flizpay_fail);
+        $flizpay_fail_id = wp_insert_post($flizpay_fail);
 
         add_filter('wp_get_nav_menu_items', 'flizpay_exclude_menu_items', 10, 3);
         add_action('pre_get_posts', 'flizpay_exclude_pages_from_search');
+
+        // Hook to add SEO exclusion meta tag for this page
+        add_action('wp_head', function () use ($flizpay_fail_id) {
+            if (is_page($flizpay_fail_id)) {
+                echo '<meta name="robots" content="noindex, nofollow">';
+            }
+        });
 
     }
 
