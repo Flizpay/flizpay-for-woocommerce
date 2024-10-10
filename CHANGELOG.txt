@@ -1,5 +1,11 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-10-10 - version 1.1.0
+
+* Added refund per item when cashback discount is applied
+* Added new logo 
+* Fixed SEO for custom payment failed page
+
 2024-09-25 - version 1.0.2
 
 * Fixed - Logo size, checkout description and translations

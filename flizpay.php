@@ -16,7 +16,7 @@
  * Plugin Name:       FLIZpay
  * Plugin URI:        https://www.flizpay.de/companies
  * Description:       FLIZpay: 100% free!
- * Version:           1.0.2
+ * Version:           1.1.0
  * Author:            FLIZpay
  * Author URI:        https://www.flizpay.de/companies
  * License:           GPL-2.0+
@@ -35,7 +35,7 @@ if (!defined('WPINC')) {
  * Currently plugin version.
  * Start at version 1.0.0 and use SemVer - https://semver.org
  */
-define('FLIZPAY_VERSION', '1.0.2');
+define('FLIZPAY_VERSION', '1.1.0');
 
 function flizpay_check_dependencies()
 {

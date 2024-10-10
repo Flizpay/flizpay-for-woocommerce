@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.6.1
-Stable tag: 1.0.2
+Stable tag: 1.1.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -77,6 +77,9 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
     - Updated checkout description and translations
 
 == Upgrade Notice ==
+
+= v1.1.0 =
+* Refund for discounted items, new logo and pages adjustments
 
 = v1.0.2 = 
 * Logo and Descriptions fixes
