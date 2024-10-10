@@ -304,13 +304,56 @@ function flizpay_init_gateway_class()
             }
 
             if ($status === 'completed') {
+                // Set payment status to completed 
                 $order->payment_complete($data['transactionId']);
-                $discount = (float) $data['originalAmount'] - (float) $data['amount'];
-                if ($discount > 0) {
-                    $order->set_discount_total((float) $order->get_discount_total()
-                        + $discount);
-                    $order->set_total($data['amount']);
-                    $order->add_order_note('FLIZ Cashback Applied: ' . $data['currency'] . sanitize_text_field($discount));
+
+                //Get the FLIZ Cashback discount
+                $fliz_discount = (float) $data['originalAmount'] - (float) $data['amount'];
+
+                if ($fliz_discount > 0) {
+                    $line_items = $order->get_items();
+                    $shipping_items = $order->get_items('shipping');
+
+                    // Apply additional discount to line items
+                    foreach ($line_items as $item) {
+                        $item_subtotal = $item->get_total();
+
+                        // Calculate the additional discount based on the already discounted total
+                        $discount_amount_fliz = ($item_subtotal * $this->cashback) / 100;
+
+                        // Set the new total for the line item after applying the additional discount
+                        $new_total = $item_subtotal - $discount_amount_fliz;
+                        $item->set_total($new_total);
+
+                        // Recalculate taxes for the item if applicable
+                        $item->calculate_taxes();
+
+                        // Save the item changes
+                        $item->save();
+                    }
+
+                    // Apply additional discount to shipping items
+                    foreach ($shipping_items as $shipping) {
+                        $shipping_total = $shipping->get_total();
+
+                        // Calculate the additional discount for shipping
+                        $discount_amount_fliz = ($shipping_total * $this->cashback) / 100;
+
+                        // Set the new shipping total after applying the discount
+                        $new_shipping_total = $shipping_total - $discount_amount_fliz;
+                        $shipping->set_total($new_shipping_total);
+
+                        // Recalculate taxes for shipping if applicable
+                        $shipping->calculate_taxes();
+
+                        // Save the shipping item changes
+                        $shipping->save();
+                    }
+
+                    // Recalculate the overall order totals
+                    $order->calculate_totals();
+                    $order->save();
+                    $order->add_order_note('FLIZ Cashback Applied: ' . $data['currency'] . sanitize_text_field($fliz_discount));
                 }
 
                 WC()->cart->empty_cart();
