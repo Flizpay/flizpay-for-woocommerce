@@ -141,6 +141,20 @@ class Flizpay_Admin
 				<p style="font-style: italic; color: #646970;">Enter you API KEY. This information is very sensitive, it should be treated as a password.</p>',
 				'desc_tip' => false,
 			),
+			'flizpay_display_logo' => array(
+				'title' => 'Logo',
+				'label' => 'FLIZpay Logo im Checkout anzeigen<br><p style="font-style: italic;">Show FLIZpay logo in checkout</p>',
+				'type' => 'checkbox',
+				'description' => '',
+				'default' => 'yes',
+			),
+			'flizpay_display_description' => array(
+				'title' => 'Beschreibung<br><p style="font-style: italic;">Description</p>',
+				'label' => 'FLIZpay Beschreibung im Checkout anzeigen<br><p style="font-style: italic;">Show FLIZpay description in checkout</p>',
+				'type' => 'checkbox',
+				'description' => '',
+				'default' => 'yes',
+			),
 			'flizpay_webhook_url' => array(
 				'title' => '',
 				'type' => 'text',

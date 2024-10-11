@@ -13,6 +13,12 @@
     const apiKeyInput = document.querySelector(
       "#woocommerce_flizpay_flizpay_api_key"
     );
+    const displayLogoInput = document.querySelector(
+      "#woocommerce_flizpay_flizpay_display_logo"
+    );
+    const displayDescriptionInput = document.querySelector(
+      "#woocommerce_flizpay_flizpay_display_description"
+    );
     const webhookURLInput = document.querySelector(
       "#woocommerce_flizpay_flizpay_webhook_url"
     );
@@ -68,6 +74,8 @@
           data: {
             action: "test_gateway_connection",
             api_key: apiKeyInput.value,
+            display_logo: displayLogoInput.checked ? "yes" : "no",
+            display_description: displayDescriptionInput.checked ? "yes" : "no",
             nonce: nonce,
           },
           success: async function (response) {

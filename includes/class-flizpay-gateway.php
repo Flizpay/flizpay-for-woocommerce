@@ -13,6 +13,14 @@ function flizpay_init_gateway_class()
         public $icon;
         public $title;
         public $description;
+        public $cashback;
+        public $i18n;
+        public $api_key;
+        public $webhook_key;
+        public $webhook_url;
+        public $flizpay_webhook_alive;
+        public $flizpay_display_logo;
+        public $flizpay_display_description;
 
         /**
          * The class constructor will set FLIZ id, load translations, description, icon and etc. 
@@ -30,7 +38,6 @@ function flizpay_init_gateway_class()
             $this->has_fields = true;
             $this->method_title = 'FLIZpay Plugin';
             $this->method_description = 'FLIZpay Plugin WooCommerce';
-            $this->icon = plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images/fliz-checkout-logo-with-banks.svg';
 
             // Method with all the options fields
             $this->init_form_fields();
@@ -44,6 +51,11 @@ function flizpay_init_gateway_class()
             $this->webhook_key = $this->get_option('flizpay_webhook_key');
             $this->webhook_url = $this->get_option('flizpay_webhook_url');
             $this->flizpay_webhook_alive = $this->get_option('flizpay_webhook_alive');
+            $this->flizpay_display_logo = $this->get_option('flizpay_display_logo');
+            $this->flizpay_display_description = $this->get_option('flizpay_display_description');
+            if ($this->flizpay_display_logo === 'yes') {
+                $this->icon = plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images/fliz-checkout-logo-with-banks.svg';
+            }
 
             $this->cashback = $this->get_cashback_data();
 
@@ -83,9 +95,11 @@ function flizpay_init_gateway_class()
             // Ensure these are not set to the fallback strings before updating
             if ($title !== 'cashback-title' && $description !== 'cashback-description') {
                 $this->title = $title;
-                $this->description = $description;
                 $this->update_option('title', $this->title);
-                $this->update_option('description', $this->description);
+                if ($this->flizpay_display_description === 'yes') {
+                    $this->description = $description;
+                    $this->update_option('description', $this->description);
+                }
             }
         }
 
@@ -105,13 +119,23 @@ function flizpay_init_gateway_class()
         {
             check_ajax_referer('test_connection_nonce', 'nonce');
             if (isset($_POST['api_key'])) {
-                $api_key = sanitize_text_field(wp_unslash($_POST['api_key']));
+                //$api_key = sanitize_text_field(wp_unslash($_POST['api_key']));
 
-                $this->update_option('enabled', 'no');
-                $this->update_option('flizpay_webhook_alive', 'no');
-                $this->update_option('flizpay_webhook_key', $this->get_webhook_key($api_key));
-                $this->update_option('flizpay_webhook_url', $this->generate_webhook_url($api_key));
-                $this->update_option('flizpay_api_key', $api_key);
+                // $this->update_option('enabled', 'no');
+                // $this->update_option('flizpay_webhook_alive', 'no');
+                // $this->update_option('flizpay_webhook_key', $this->get_webhook_key($api_key));
+                // $this->update_option('flizpay_webhook_url', $this->generate_webhook_url($api_key));
+                // $this->update_option('flizpay_api_key', $api_key);
+
+                if (isset($_POST['display_logo'])) {
+                    $display_logo = sanitize_text_field(wp_unslash($_POST['display_logo']));
+                    $this->update_option('flizpay_display_logo', $display_logo);
+                }
+
+                if (isset($_POST['display_description'])) {
+                    $display_description = sanitize_text_field(wp_unslash($_POST['display_description']));
+                    $this->update_option('flizpay_display_description', $display_description);
+                }
 
                 wp_send_json_success(array('webhookUrl' => $this->get_option('flizpay_webhook_url')));
             }

@@ -24,11 +24,12 @@ function LabelElement() {
       },
     },
     label,
-    React.createElement("img", {
-      width: "68",
-      height: "36",
-      src: settings.icon,
-    })
+    settings.icon &&
+      React.createElement("img", {
+        width: "68",
+        height: "36",
+        src: settings.icon,
+      })
   );
 }
 
