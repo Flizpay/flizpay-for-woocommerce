@@ -21,6 +21,7 @@ function flizpay_init_gateway_class()
         public $flizpay_webhook_alive;
         public $flizpay_display_logo;
         public $flizpay_display_description;
+        public $flizpay_display_headline;
 
         /**
          * The class constructor will set FLIZ id, load translations, description, icon and etc. 
@@ -53,6 +54,8 @@ function flizpay_init_gateway_class()
             $this->flizpay_webhook_alive = $this->get_option('flizpay_webhook_alive');
             $this->flizpay_display_logo = $this->get_option('flizpay_display_logo');
             $this->flizpay_display_description = $this->get_option('flizpay_display_description');
+            $this->flizpay_display_headline = $this->get_option('flizpay_display_headline');
+
             if ($this->flizpay_display_logo === 'yes') {
                 $this->icon = plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images/fliz-checkout-logo-with-banks.svg';
             }
@@ -74,16 +77,24 @@ function flizpay_init_gateway_class()
          * 
          * @return void
          * 
-         * @since 1.0.0
+         * @since 1.2.0
          */
         public function init_gateway_info()
         {
-            if (
-                isset($this->webhook_key) &&
-                isset($this->webhook_url) &&
-                $this->flizpay_webhook_alive === 'yes' &&
-                !is_null($this->cashback)
-            ) {
+            $this->set_cashback_info();
+            $this->set_title();
+            $this->set_description();
+        }
+
+        /**
+         * Sets the cashback title and description if applicable.
+         * @return void
+         * 
+         * @since 1.2.0
+         */
+        private function set_cashback_info()
+        {
+            if ($this->is_cashback_available()) {
                 $title = sprintf(__('cashback-title', 'flizpay-for-woocommerce'), $this->cashback);
                 $description = sprintf(__('cashback-description', 'flizpay-for-woocommerce'), $this->cashback);
                 $this->update_option('flizpay_cashback', $this->cashback);
@@ -91,16 +102,78 @@ function flizpay_init_gateway_class()
                 $title = __('title', 'flizpay-for-woocommerce');
                 $description = __('description', 'flizpay-for-woocommerce');
             }
+            $this->title = $this->flizpay_display_headline === 'yes' ? $title : 'FLIZpay';
+            $this->description = $this->flizpay_display_description === 'yes' ? $description : null;
+        }
 
-            // Ensure these are not set to the fallback strings before updating
-            if ($title !== 'cashback-title' && $description !== 'cashback-description') {
-                $this->title = $title;
-                $this->update_option('title', $this->title);
-                if ($this->flizpay_display_description === 'yes') {
-                    $this->description = $description;
-                    $this->update_option('description', $this->description);
+        /**
+         * Check if cashback-related information is available.
+         * @return bool
+         * 
+         * @since 1.2.0
+         */
+        private function is_cashback_available()
+        {
+            return isset($this->webhook_key) &&
+                isset($this->webhook_url) &&
+                $this->flizpay_webhook_alive === 'yes' &&
+                !is_null($this->cashback);
+        }
+
+        /**
+         * Sets the title for the payment gateway.
+         * @return void
+         * 
+         * @since 1.2.0
+         */
+        private function set_title()
+        {
+            if ($this->is_default_translation($this->title)) {
+                if ($this->flizpay_display_headline === 'yes') {
+                    $this->title = !is_null($this->cashback)
+                        ? 'FLIZpay - ' . $this->cashback . '% Cashback'
+                        : 'FLIZpay - Deine Wahl zählt!';
+                } else {
+                    $this->title = 'FLIZpay';
                 }
             }
+            $this->update_option('title', $this->title);
+        }
+
+        /**
+         * Sets the description for the payment gateway.
+         * @return void
+         * 
+         * @since 1.2.0
+         */
+        private function set_description()
+        {
+            if ($this->is_default_translation($this->description)) {
+                if ($this->flizpay_display_description === 'yes') {
+                    $this->description = 'Zahlungsmethoden belasten kleine Unternehmen mit hohen Gebühren. FLIZpay ist für alle kostenlos, deine Wahl ist also wichtig. Melde dich in 60 Sekunden an.';
+                }
+            }
+            $this->update_option('description', $this->description);
+        }
+
+        /**
+         * Checks if the translation is using the fallback/default string.
+         *
+         * @param string $value The current translation value.
+         * @param string $key The translation key.
+         * @return bool
+         * @since 1.2.0
+         */
+        private function is_default_translation($value)
+        {
+            $fallbacks = [
+                'cashback-title',
+                'cashback-description',
+                'title',
+                'description'
+            ];
+
+            return in_array($value, $fallbacks);
         }
 
         /**
@@ -135,6 +208,11 @@ function flizpay_init_gateway_class()
                 if (isset($_POST['display_description'])) {
                     $display_description = sanitize_text_field(wp_unslash($_POST['display_description']));
                     $this->update_option('flizpay_display_description', $display_description);
+                }
+
+                if (isset($_POST['display_headline'])) {
+                    $display_headline = sanitize_text_field(wp_unslash($_POST['display_headline']));
+                    $this->update_option('flizpay_display_headline', $display_headline);
                 }
 
                 wp_send_json_success(array('webhookUrl' => $this->get_option('flizpay_webhook_url')));
