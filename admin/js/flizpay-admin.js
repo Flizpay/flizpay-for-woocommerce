@@ -19,6 +19,10 @@
     const displayDescriptionInput = document.querySelector(
       "#woocommerce_flizpay_flizpay_display_description"
     );
+    const displayHeadlineInput = document.querySelector(
+      "#woocommerce_flizpay_flizpay_display_headline"
+    );
+    const displayHeadlineLabel = document.querySelector("#displayHeadline");
     const webhookURLInput = document.querySelector(
       "#woocommerce_flizpay_flizpay_webhook_url"
     );
@@ -31,6 +35,9 @@
     const description = document.querySelector(
       "#connection-stablished-description"
     );
+    const exampleImage = document.createElement("img");
+    exampleImage.setAttribute("src", flizpayParams.example_image);
+    exampleImage.setAttribute("width", "500");
 
     testButton.setAttribute("id", "woocommerce_flizpay_test_connection");
     resultField.setAttribute("id", "woocommerce_flizpay_connection_result");
@@ -40,15 +47,42 @@
     webhookURLInput.setAttribute("type", "hidden");
     enabledCheckbox.setAttribute("disabled", true);
     webhookAlive.setAttribute("disabled", true);
+    const divider = document.createElement("hr");
+    const divider2 = document.createElement("hr");
+    divider.setAttribute("style", "width: 80vw");
+    divider2.setAttribute("style", "width: 80vw");
+    const dividerRow = document.createElement("tr");
+    const dividerRow2 = document.createElement("tr");
+    dividerRow.append(divider);
+    dividerRow.append(exampleImage);
+    dividerRow2.append(divider2);
+    document
+      .querySelector("table > tbody > tr:nth-child(3)")
+      .insertAdjacentElement("afterend", dividerRow);
+    document
+      .querySelector("table > tbody > tr:nth-child(7)")
+      .insertAdjacentElement("afterend", dividerRow2);
 
     if (webhookAlive.getAttribute("checked")) {
       description.setAttribute(
         "style",
-        "color: white; background-color: green; padding: 10px; font-weight: bold; margin-top: 30px;"
+        "color: #001F3F; background-color: #80ED99; padding: 10px; font-weight: bold; margin-top: 30px;"
       );
       description.innerHTML = `Unsere Server haben erfolgreich mit deiner Website kommuniziert. Du kannst jetzt gebührenfreie Zahlungen erhalten!<br>
       <p style='font-style: italic;'>Our servers have successfully communicated with your site. You're now ready to accept fee-free payments!</p>`;
     }
+    displayHeadlineLabel.setAttribute(
+      "style",
+      displayHeadlineInput.checked ? "display: none;" : "display: block;"
+    );
+
+    jQuery(displayHeadlineInput).on("change", () => {
+      if (!displayHeadlineInput.checked) {
+        displayHeadlineLabel.setAttribute("style", "display: block;");
+      } else {
+        displayHeadlineLabel.setAttribute("style", "display: none;");
+      }
+    });
 
     $(".woocommerce-save-button").on("click", function (e) {
       e.preventDefault();
@@ -76,6 +110,7 @@
             api_key: apiKeyInput.value,
             display_logo: displayLogoInput.checked ? "yes" : "no",
             display_description: displayDescriptionInput.checked ? "yes" : "no",
+            display_headline: displayHeadlineInput.checked ? "yes" : "no",
             nonce: nonce,
           },
           success: async function (response) {

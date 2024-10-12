@@ -88,7 +88,8 @@ class Flizpay_Admin
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-admin.js', array('jquery'), $this->version, false);
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
 			'nonce' => wp_create_nonce('test_connection_nonce'),
-			'loading_icon' => "$this->assets_url/loading.svg"
+			'loading_icon' => "$this->assets_url/loading.svg",
+			'example_image' => "$this->assets_url/flizpay-checkout-example.png"
 		));
 
 	}
@@ -141,6 +142,22 @@ class Flizpay_Admin
 				<p style="font-style: italic; color: #646970;">Enter you API KEY. This information is very sensitive, it should be treated as a password.</p>',
 				'desc_tip' => false,
 			),
+			'flizpay_webhook_url' => array(
+				'title' => '',
+				'type' => 'text',
+				'description' => '',
+				'default' => '',
+				'desc_tip' => false,
+			),
+			'flizpay_display_headline' => array(
+				'title' => 'Titel<br><p style="font-style: italic;">Title</p>',
+				'label' => 'Beschreibung im Titel anzeigen<br><p style="font-style: italic;">Show description in title</p>',
+				'type' => 'checkbox',
+				'description' => '<div id="displayHeadline"><p style="font-style: italic; color: red;">Es wurde ausgewählt, die Beschreibung im Titel nicht anzuzeigen. Wenn Cashback aktiviert ist, fehlt dadurch die Information zum Cashback, '
+					. 'wie z.B. „FLIZpay – 5 % Cashback“</p><br><p style="font-style: italic; color: red;">The option to hide the description in the title has been selected. When cashback is enabled, '
+					. 'the information about cashback, such as "FLIZpay – 5% Cashback", is therefore missing"</p></div>',
+				'default' => 'yes',
+			),
 			'flizpay_display_logo' => array(
 				'title' => 'Logo',
 				'label' => 'FLIZpay Logo im Checkout anzeigen<br><p style="font-style: italic;">Show FLIZpay logo in checkout</p>',
@@ -149,24 +166,18 @@ class Flizpay_Admin
 				'default' => 'yes',
 			),
 			'flizpay_display_description' => array(
-				'title' => 'Beschreibung<br><p style="font-style: italic;">Description</p>',
-				'label' => 'FLIZpay Beschreibung im Checkout anzeigen<br><p style="font-style: italic;">Show FLIZpay description in checkout</p>',
+				'title' => 'Untertitel<br><p style="font-style: italic;">Subtitle</p>',
+				'label' => 'Untertitel anzeigen, wenn FLIZpay ausgewählt ist<br><p style="font-style: italic;">Show description in subtitle when FLIZpay is selected</p>',
 				'type' => 'checkbox',
 				'description' => '',
 				'default' => 'yes',
 			),
-			'flizpay_webhook_url' => array(
-				'title' => '',
-				'type' => 'text',
-				'description' => '',
-				'default' => '',
-				'desc_tip' => false,
-			),
+
 			'flizpay_webhook_alive' => array(
 				'title' => 'Verbindung hergestellt<br><p style="font-style: italic;">Connection Established</p>',
 				'type' => 'checkbox',
-				'label' => '<div id="connection-stablished-description">Dies zeigt an, wann unsere Server über die Webhook-URL mit Ihrer Site kommunizieren können. Laden Sie die Seite einige Sekunden nach dem Testen der Verbindung neu.<br>
-				<p style="font-style: italic;">This indicates when our servers manage to communicate with your site via the webhook URL. Reload the page a few seconds after testing the connection.</p></div>',
+				'label' => '<div id="connection-stablished-description">Hinweis für Staging-Umgebungen, die nicht öffentlich sind oder unter strengem Passwortschutz stehen: Du musst entweder die Umgebung öffentlich machen und den Passwortschutz entfernen oder der Domain flizpay.de erlauben, diese Einstellungen zu umgehen. Wir müssen direkt mit deiner Website kommunizieren.<br>
+				<p style="font-style: italic;">Note for staging environments that are not public or under strict password protection: You need to either make them public and remove the password protection or allow the domain flizpay.de to bypass these settings. We need to communicate directly with your website.</p></div>',
 				'default' => 'no',
 				'desc_tip' => false,
 			),
