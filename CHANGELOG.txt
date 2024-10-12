@@ -1,5 +1,9 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-12-10 - version 1.2.0
+* Added options to customize checkout button
+* Fixed default translation values for unsupported languages
+
 2024-10-10 - version 1.1.0
 
 * Added refund per item when cashback discount is applied
