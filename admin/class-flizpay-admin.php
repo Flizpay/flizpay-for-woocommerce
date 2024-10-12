@@ -149,6 +149,13 @@ class Flizpay_Admin
 				'default' => '',
 				'desc_tip' => false,
 			),
+			'flizpay_display_logo' => array(
+				'title' => 'Logo',
+				'label' => 'FLIZpay Logo im Checkout anzeigen<br><p style="font-style: italic;">Show FLIZpay logo in checkout</p>',
+				'type' => 'checkbox',
+				'description' => '',
+				'default' => 'yes',
+			),
 			'flizpay_display_headline' => array(
 				'title' => 'Titel<br><p style="font-style: italic;">Title</p>',
 				'label' => 'Beschreibung im Titel anzeigen<br><p style="font-style: italic;">Show description in title</p>',
@@ -156,13 +163,6 @@ class Flizpay_Admin
 				'description' => '<div id="displayHeadline"><p style="font-style: italic; color: red;">Es wurde ausgewählt, die Beschreibung im Titel nicht anzuzeigen. Wenn Cashback aktiviert ist, fehlt dadurch die Information zum Cashback, '
 					. 'wie z.B. „FLIZpay – 5 % Cashback“</p><br><p style="font-style: italic; color: red;">The option to hide the description in the title has been selected. When cashback is enabled, '
 					. 'the information about cashback, such as "FLIZpay – 5% Cashback", is therefore missing"</p></div>',
-				'default' => 'yes',
-			),
-			'flizpay_display_logo' => array(
-				'title' => 'Logo',
-				'label' => 'FLIZpay Logo im Checkout anzeigen<br><p style="font-style: italic;">Show FLIZpay logo in checkout</p>',
-				'type' => 'checkbox',
-				'description' => '',
 				'default' => 'yes',
 			),
 			'flizpay_display_description' => array(
