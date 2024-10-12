@@ -192,13 +192,13 @@ function flizpay_init_gateway_class()
         {
             check_ajax_referer('test_connection_nonce', 'nonce');
             if (isset($_POST['api_key'])) {
-                //$api_key = sanitize_text_field(wp_unslash($_POST['api_key']));
+                $api_key = sanitize_text_field(wp_unslash($_POST['api_key']));
 
-                // $this->update_option('enabled', 'no');
-                // $this->update_option('flizpay_webhook_alive', 'no');
-                // $this->update_option('flizpay_webhook_key', $this->get_webhook_key($api_key));
-                // $this->update_option('flizpay_webhook_url', $this->generate_webhook_url($api_key));
-                // $this->update_option('flizpay_api_key', $api_key);
+                $this->update_option('enabled', 'no');
+                $this->update_option('flizpay_webhook_alive', 'no');
+                $this->update_option('flizpay_webhook_key', $this->get_webhook_key($api_key));
+                $this->update_option('flizpay_webhook_url', $this->generate_webhook_url($api_key));
+                $this->update_option('flizpay_api_key', $api_key);
 
                 if (isset($_POST['display_logo'])) {
                     $display_logo = sanitize_text_field(wp_unslash($_POST['display_logo']));
