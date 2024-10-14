@@ -565,7 +565,7 @@ function flizpay_init_gateway_class()
                 'currency' => $order->get_currency(),
                 'externalId' => $order->get_id(),
                 'successUrl' => $order->get_checkout_order_received_url(),
-                'failureUrl' => get_home_url() . '/flizpay-payment-fail',
+                'failureUrl' => get_home_url() . '/payment-failed',
             );
 
             $client = WC_Flizpay_API::get_instance($api_key);
