@@ -72,7 +72,7 @@ class Flizpay
 		if (defined('FLIZPAY_VERSION')) {
 			$this->version = FLIZPAY_VERSION;
 		} else {
-			$this->version = '1.2.0';
+			$this->version = '1.2.1';
 		}
 		$this->plugin_name = 'flizpay';
 
@@ -83,6 +83,14 @@ class Flizpay
 
 		$this->update_old_payment_failed_page();
 	}
+
+	/**
+	 * Remove the old payment failed page if it's still present
+	 * 
+	 * @return void
+	 * 
+	 * @since 1.2.1
+	 */
 
 	public function update_old_payment_failed_page()
 	{
