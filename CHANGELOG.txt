@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-14-10 - version 1.2.1
+* Fixed old payment failed page still being displayed
+
 2024-12-10 - version 1.2.0
 * Added options to customize checkout button
 * Fixed default translation values for unsupported languages
