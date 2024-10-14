@@ -81,6 +81,28 @@ class Flizpay
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 
+		$this->update_old_payment_failed_page();
+	}
+
+	public function update_old_payment_failed_page()
+	{
+		try {
+			$page_slug = 'flizpay-payment-fail';
+			$page = get_page_by_path($page_slug);
+			$page_slug2 = 'flizpay-payment-fail-2';
+			$page2 = get_page_by_path($page_slug2);
+			$page_slug3 = 'flizpay-payment-fail-3';
+			$page3 = get_page_by_path($page_slug3);
+			$page_slug4 = 'flizpay-payment-fail-4';
+			$page4 = get_page_by_path($page_slug4);
+
+			if ($page || $page2 || $page3 || $page4) {
+				Flizpay_Deactivator::deactivate();
+				Flizpay_Activator::activate();
+			}
+		} catch (Exception $e) {
+
+		}
 	}
 
 	/**
@@ -101,6 +123,16 @@ class Flizpay
 	 */
 	private function load_dependencies()
 	{
+
+		/**
+		 * The class responsible for activating the plugin
+		 */
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-activator.php';
+
+		/**
+		 * The class responsible for deactivating the plugin
+		 */
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-deactivator.php';
 
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
@@ -243,5 +275,7 @@ class Flizpay
 	{
 		return $this->version;
 	}
+
+
 
 }
