@@ -110,7 +110,7 @@ class Flizpay_Public
             echo wp_json_encode(
                 array(
                     'status' => $status,
-                    'url' => $status === 'processing' ? $order->get_checkout_order_received_url() : get_home_url() . '/flizpay-payment-fail',
+                    'url' => $status === 'processing' ? $order->get_checkout_order_received_url() : get_home_url() . '/payment-failed',
                 )
             );
         }

@@ -10,7 +10,7 @@
 
 jQuery(function ($) {
   $(document).ready(function () {
-    let stopPolling = false;
+    let stopPolling = localStorage.getItem("flizpay_stop_polling") || false;
     try {
       const cancelButtonLabel = navigator.language.includes("en")
         ? "Cancel"
@@ -35,9 +35,13 @@ jQuery(function ($) {
       setTimeout(() => {
         const isBLocks = document.querySelector("form.wc-block-checkout__form");
         const isClassic = document.querySelector("form.woocommerce-checkout");
+        const existentOrderId = localStorage.getItem("flizpay_order_id");
 
         if (isBLocks) bind_blocks_hook();
         if (isClassic) bind_ajax_hook(isClassic);
+
+        if (existentOrderId)
+          mobile_redirect_when_order_finished(existentOrderId);
       }, 1700);
 
       const bind_blocks_hook = () => {
@@ -53,6 +57,9 @@ jQuery(function ($) {
           ) {
             fliz_block_ui();
             mobile_redirect_when_order_finished(
+              wp.data.select("wc/store/checkout").getOrderId()
+            );
+            updateLocalStorage(
               wp.data.select("wc/store/checkout").getOrderId()
             );
             unsubscribe();
@@ -76,11 +83,17 @@ jQuery(function ($) {
                   stopPolling = false;
                   fliz_block_ui();
                   mobile_redirect_when_order_finished(response.order_id);
+                  updateLocalStorage(response.order_id);
                 }
               }
             }
           });
         });
+      };
+
+      const updateLocalStorage = (order_id) => {
+        localStorage.removeItem("flizpay_order_id");
+        localStorage.setItem("flizpay_order_id", order_id);
       };
 
       const fliz_block_ui = () => {
@@ -112,6 +125,8 @@ jQuery(function ($) {
       const mobile_redirect_when_order_finished = (order_id) => {
         if (stopPolling) {
           jQuery.unblockUI();
+          localStorage.removeItem("flizpay_stop_polling");
+          localStorage.removeItem("flizpay_order_id");
           return;
         }
 
@@ -141,6 +156,7 @@ jQuery(function ($) {
               ) {
                 mobile_redirect_when_order_finished(order_id);
               } else {
+                localStorage.setItem("flizpay_stop_polling", true);
                 window.location.href = order.url;
               }
             }, 2000);
