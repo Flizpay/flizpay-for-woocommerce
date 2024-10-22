@@ -8,6 +8,32 @@
    * @since 1.0.0
    */
   jQuery(document).ready(function ($) {
+    const descriptionText = flizpayParams.wp_locale.includes("en")
+      ? "Our servers have successfully communicated with your site. You're now ready to accept fee-free payments!"
+      : "Unsere Server haben erfolgreich mit deiner Website kommuniziert. Du kannst jetzt gebührenfreie Zahlungen erhalten!";
+
+    const confirmReconfigurationText = flizpayParams.wp_locale.includes("en")
+      ? "Looks like you already have an integration settled up. By reconfiguring the integration you will invalidate all current ongoing payment responses. Proceed?"
+      : "Sieht so aus, als ob Sie bereits eine Integration eingerichtet haben. Durch die Neukonfiguration der Integration machen Sie alle aktuellen laufenden Zahlungsantworten ungültig. Fortfahren?";
+
+    const successfullConnectionText = flizpayParams.wp_locale.includes("en")
+      ? `<p style="font-style: italic;">Connected! Waiting for the webhook confirmation. <br />
+    Page will reload automatically in 5 seconds...</p>`
+      : `<p>Verbunden! Warte auf die Webhook-Bestätigung. <br />
+            Die Seite wird in 5 Sekunden automatisch neu geladen ...<p>`;
+
+    const failedConnectionText = flizpayParams.wp_locale.includes("en")
+      ? `An error occurred while testing the connection. Please Try Again. <br />`
+      : `Beim Testen der Verbindung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut. <br />`;
+
+    flizpayParams.wp_locale.includes("en")
+      ? document
+          .querySelector(".flizpay-german-banner")
+          .setAttribute("style", "display: none;")
+      : document
+          .querySelector(".flizpay-english-banner")
+          .setAttribute("style", "display: none;");
+
     const testButton = document.createElement("div");
     const resultField = document.createElement("div");
     const apiKeyInput = document.querySelector(
@@ -68,8 +94,7 @@
         "style",
         "color: #001F3F; background-color: #80ED99; padding: 10px; font-weight: bold; margin-top: 30px;"
       );
-      description.innerHTML = `Unsere Server haben erfolgreich mit deiner Website kommuniziert. Du kannst jetzt gebührenfreie Zahlungen erhalten!<br>
-      <p style='font-style: italic;'>Our servers have successfully communicated with your site. You're now ready to accept fee-free payments!</p>`;
+      description.innerHTML = descriptionText;
     }
     displayHeadlineLabel.setAttribute(
       "style",
@@ -91,10 +116,7 @@
       let proceed;
 
       if (webhookURLInput.value.length !== 0) {
-        proceed = confirm(
-          `Sieht so aus, als ob Sie bereits eine Integration eingerichtet haben. Durch die Neukonfiguration der Integration machen Sie alle aktuellen laufenden Zahlungsantworten ungültig. Fortfahren?\n\n
-        Looks like you already have an integration settled up. By reconfiguring the integration you will invalidate all current ongoing payment responses. Proceed?`
-        );
+        proceed = confirm(confirmReconfigurationText);
       } else {
         proceed = true;
       }
@@ -115,30 +137,34 @@
           },
           success: async function (response) {
             if (response.success) {
+              resultField.classList.remove("connection-failed");
               resultField.classList.add("connection-success");
               testButton.classList.add("hidden");
               apiKeyInput.setAttribute("disabled", "true");
-              resultField.innerHTML = `<p>Verbunden! Warte auf die Webhook-Bestätigung. <br />
-              Die Seite wird in 5 Sekunden automatisch neu geladen ...<p>
-              <p style="font-style: italic;">Connected! Waiting for the webhook confirmation. <br />
-              Page will reload automatically in 5 seconds...</p>
-              <image src='${flizpayParams.loading_icon}' />`;
+              resultField.innerHTML = `
+                ${successfullConnectionText}
+                <image src='${flizpayParams.loading_icon}' />
+              `;
               webhookURLInput.value = response.data.webhookUrl;
               setTimeout(() => {
                 $("form").submit();
               }, 5500);
             } else {
               resultField.classList.add("connection-failed");
-              resultField.innerHTML = `An error occurred while testing the connection. <br />
-              ${response.data} <br />
-              <image src='${flizpayParams.loading_icon}' />`;
+              resultField.innerHTML = `
+                ${failedConnectionText}
+                ${response.data} <br />
+                <image src='${flizpayParams.loading_icon}' />
+              `;
             }
           },
           error: async function (e) {
             resultField.classList.add("connection-failed");
-            resultField.innerHTML = `An error occurred while testing the connection. <br />
+            resultField.innerHTML = `
+              ${failedConnectionText}
               ${e.responseJSON.data} <br />
-              <image src='${flizpayParams.loading_icon}' />`;
+              <image src='${flizpayParams.loading_icon}' />
+            `;
           },
         });
       }
