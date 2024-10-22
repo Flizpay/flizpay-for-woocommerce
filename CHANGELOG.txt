@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-22-10 - version 1.2.3
+* Hotfix FLIZ logo not showing on loading wheel
+
 2024-22-10 - version 1.2.2
 * Added cancel button to the mobile loading modal
 

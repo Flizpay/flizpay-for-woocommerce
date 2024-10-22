@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.6.1
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -99,7 +99,14 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - ADDED
     - Cancel button to mobile loading modal on checkout
 
+- 1.2.3
+  - HOTIFX
+    - FLIZ logo not showing on mobile loading checkout modal
+
 == Upgrade Notice ==
+
+= v1.2.3 = 
+* Hotfixed the FLIZ logo not showing on the mobile checkout loading modal
 
 = v1.2.2 =
 * A cancel button is now available for mobile checkout
