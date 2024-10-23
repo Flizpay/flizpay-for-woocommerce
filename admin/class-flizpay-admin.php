@@ -89,7 +89,8 @@ class Flizpay_Admin
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
 			'nonce' => wp_create_nonce('test_connection_nonce'),
 			'loading_icon' => "$this->assets_url/loading.svg",
-			'example_image' => "$this->assets_url/flizpay-checkout-example.png"
+			'example_image' => $this->is_english() ? "$this->assets_url/flizpay-checkout-example-en.png" : "$this->assets_url/flizpay-checkout-example-de.png",
+			'wp_locale' => get_locale()
 		));
 
 	}
@@ -112,6 +113,11 @@ class Flizpay_Admin
 		return array_merge($plugin_links, $links);
 	}
 
+	public function is_english()
+	{
+		return str_contains(get_locale(), 'en');
+	}
+
 	/**
 	 * Define the admin fields present in the plugin settings page
 	 * 
@@ -128,8 +134,8 @@ class Flizpay_Admin
 				'description' => $this->flizpay_description_banner(), // Including HTML content via a method
 			),
 			'flizpay_enabled' => array(
-				'title' => 'Aktiviert<br><p style="font-style: italic;">Enabled</p>',
-				'label' => 'FLIZpay aktiviert<br><p style="font-style: italic;">FLIZpay enabled</p>',
+				'title' => $this->is_english() ? 'Enabled' : 'Aktiviert',
+				'label' => $this->is_english() ? 'FLIZpay enabled' : 'FLIZpay aktiviert',
 				'type' => 'checkbox',
 				'description' => '',
 				'default' => 'no',
@@ -138,8 +144,9 @@ class Flizpay_Admin
 				'title' => 'API KEY',
 				'label' => 'Enter API KEY',
 				'type' => 'password',
-				'description' => '<span style="color: black">Gib deinen API KEY ein.  Der API KEY ist ein sensibler Datensatz und sollte wie ein Passwort behandelt werden.</span><br>
-				<p style="font-style: italic; color: #646970;">Enter you API KEY. This information is very sensitive, it should be treated as a password.</p>',
+				'description' => $this->is_english()
+					? 'Enter you API KEY. This information is very sensitive, it should be treated as a password.'
+					: 'Gib deinen API KEY ein.  Der API KEY ist ein sensibler Datensatz und sollte wie ein Passwort behandelt werden',
 				'desc_tip' => false,
 			),
 			'flizpay_webhook_url' => array(
@@ -151,33 +158,38 @@ class Flizpay_Admin
 			),
 			'flizpay_display_logo' => array(
 				'title' => 'Logo',
-				'label' => 'FLIZpay Logo im Checkout anzeigen<br><p style="font-style: italic;">Show FLIZpay logo in checkout</p>',
+				'label' => $this->is_english()
+					? 'Show FLIZpay logo in checkout'
+					: 'FLIZpay Logo im Checkout anzeigen',
 				'type' => 'checkbox',
 				'description' => '',
 				'default' => 'yes',
 			),
 			'flizpay_display_headline' => array(
-				'title' => 'Titel<br><p style="font-style: italic;">Title</p>',
-				'label' => 'Beschreibung im Titel anzeigen<br><p style="font-style: italic;">Show description in title</p>',
+				'title' => $this->is_english() ? 'Title' : 'Titel',
+				'label' => $this->is_english() ? 'Show description in title' : 'Beschreibung im Titel anzeigen',
 				'type' => 'checkbox',
-				'description' => '<div id="displayHeadline"><p style="font-style: italic; color: red;">Es wurde ausgewählt, die Beschreibung im Titel nicht anzuzeigen. Wenn Cashback aktiviert ist, fehlt dadurch die Information zum Cashback, '
-					. 'wie z.B. „FLIZpay – 5 % Cashback“</p><br><p style="font-style: italic; color: red;">The option to hide the description in the title has been selected. When cashback is enabled, '
-					. 'the information about cashback, such as "FLIZpay – 5% Cashback", is therefore missing"</p></div>',
+				'description' => $this->is_english()
+					? '<div id="displayHeadline"><p style="font-style: italic; color: red;">The option to hide the description in the title has been selected. When cashback is enabled, '
+					. 'the information about cashback, such as "FLIZpay – 5% Cashback", is therefore missing"</p></div>'
+					: '<div id="displayHeadline"><p style="font-style: italic; color: red;">Es wurde ausgewählt, die Beschreibung im Titel nicht anzuzeigen. Wenn Cashback aktiviert ist, fehlt dadurch die Information zum Cashback, '
+					. 'wie z.B. „FLIZpay – 5 % Cashback“</p></div>',
 				'default' => 'yes',
 			),
 			'flizpay_display_description' => array(
-				'title' => 'Untertitel<br><p style="font-style: italic;">Subtitle</p>',
-				'label' => 'Untertitel anzeigen, wenn FLIZpay ausgewählt ist<br><p style="font-style: italic;">Show description in subtitle when FLIZpay is selected</p>',
+				'title' => $this->is_english() ? 'Subtitle' : 'Untertitel',
+				'label' => $this->is_english() ? 'Show description in subtitle when FLIZpay is selected' : 'Untertitel anzeigen, wenn FLIZpay ausgewählt ist',
 				'type' => 'checkbox',
 				'description' => '',
 				'default' => 'yes',
 			),
 
 			'flizpay_webhook_alive' => array(
-				'title' => 'Verbindung hergestellt<br><p style="font-style: italic;">Connection Established</p>',
+				'title' => $this->is_english() ? 'Connection Established' : 'Verbindung hergestellt',
 				'type' => 'checkbox',
-				'label' => '<div id="connection-stablished-description">Hinweis für Staging-Umgebungen, die nicht öffentlich sind oder unter strengem Passwortschutz stehen: Du musst entweder die Umgebung öffentlich machen und den Passwortschutz entfernen oder der Domain flizpay.de erlauben, diese Einstellungen zu umgehen. Wir müssen direkt mit deiner Website kommunizieren.<br>
-				<p style="font-style: italic;">Note for staging environments that are not public or under strict password protection: You need to either make them public and remove the password protection or allow the domain flizpay.de to bypass these settings. We need to communicate directly with your website.</p></div>',
+				'label' => $this->is_english()
+					? '<div id="connection-stablished-description">Note for staging environments that are not public or under strict password protection: You need to either make them public and remove the password protection or allow the domain flizpay.de to bypass these settings. We need to communicate directly with your website.</div>'
+					: '<div id="connection-stablished-description">Hinweis für Staging-Umgebungen, die nicht öffentlich sind oder unter strengem Passwortschutz stehen: Du musst entweder die Umgebung öffentlich machen und den Passwortschutz entfernen oder der Domain flizpay.de erlauben, diese Einstellungen zu umgehen. Wir müssen direkt mit deiner Website kommunizieren.</div>',
 				'default' => 'no',
 				'desc_tip' => false,
 			),
@@ -198,7 +210,6 @@ class Flizpay_Admin
 			<div class='flizpay-description-banner'>
 				<div class='flizpay-german-banner'>
 					<div style='flizpay-banner-header'>
-						<p style='font-style: italic; margin-top: 10px;'>English version below</p>
 						<p class='flizpay-header-text'>Willkommen bei FLIZpay in WooCommerce!</p>
 					</div>
 					<p>Anleitung:</p>
