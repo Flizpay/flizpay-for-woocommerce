@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.6.1
-Stable tag: 1.2.3
+Stable tag: 1.2.4
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -103,7 +103,17 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - HOTIFX
     - FLIZ logo not showing on mobile loading checkout modal
 
+- 1.2.4
+  - ADDED
+    - Localstorage to store ongoing orders
+    - Properly translated the admin page 
+  - FIXED
+    - Loadin wheel layout
+
 == Upgrade Notice ==
+
+= v1.2.4 = 
+* Localstorage order storage, admin page translation and fixed on loading wheel layout
 
 = v1.2.3 = 
 * Hotfixed the FLIZ logo not showing on the mobile checkout loading modal

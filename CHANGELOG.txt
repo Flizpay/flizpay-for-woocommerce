@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-23-10 - version 1.2.4
+* Add localstorage to store ongoing orders, adjusted admin page translations, fixed loading wheel layout
+
 2024-22-10 - version 1.2.3
 * Hotfix FLIZ logo not showing on loading wheel
 
