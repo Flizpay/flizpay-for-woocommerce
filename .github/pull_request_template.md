@@ -20,6 +20,6 @@ If there are any UI changes please add screenshots or videos:
 2.
 
 ## Notion Ticket
-(Link to Notion ticket)[Paste Notion ticket link here]
+[Link to Notion ticket](Paste Notion ticket link here)
 
 ---
