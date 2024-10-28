@@ -456,16 +456,12 @@ function flizpay_init_gateway_class()
                     $order->calculate_totals();
                     $order->save();
                     $order->add_order_note('FLIZ Cashback Applied: ' . $data['currency'] . sanitize_text_field($fliz_discount));
+                    WC()->cart->empty_cart();
                 }
-
-                WC()->cart->empty_cart();
 
                 if (isset($data['transactionId'])) {
                     $order->add_order_note('FLIZ transaction ID: ' . sanitize_text_field($data['transactionId']));
                 }
-            } else if ($status === 'failed') {
-                $order->cancel_order();
-                $order->update_status('cancelled', 'Updated via FLIZpay plugin', true);
             } else {
                 return;
             }
