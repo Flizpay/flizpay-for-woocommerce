@@ -47,7 +47,7 @@ function flizpay_init_gateway_class()
             // Ensure text domain is loaded
             $this->i18n->load_plugin_textdomain();
 
-            $this->enabled = $this->get_option('flizpay_enabled');
+            $this->enabled = $this->get_option('flizpay_enabled') === 'yes';
             $this->api_key = $this->get_option('flizpay_api_key');
             $this->webhook_key = $this->get_option('flizpay_webhook_key');
             $this->webhook_url = $this->get_option('flizpay_webhook_url');
@@ -64,7 +64,7 @@ function flizpay_init_gateway_class()
 
             $this->init_gateway_info();
 
-            add_action('wp_ajax_test_gateway_connection', array($this, 'test_gateway_connection'));
+            add_action('woocommerce_update_options_checkout_flizpay', array($this, 'test_gateway_connection'));
 
             // Webhook handler
             add_action('init', array($this, 'register_webhook_endpoint'));
@@ -190,32 +190,46 @@ function flizpay_init_gateway_class()
          */
         public function test_gateway_connection()
         {
-            check_ajax_referer('test_connection_nonce', 'nonce');
-            if (isset($_POST['api_key'])) {
-                $api_key = sanitize_text_field(wp_unslash($_POST['api_key']));
+            if (isset($_POST['woocommerce_flizpay_flizpay_api_key'])) {
+                $api_key = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_api_key']));
 
-                $this->update_option('enabled', 'no');
-                $this->update_option('flizpay_webhook_alive', 'no');
-                $this->update_option('flizpay_webhook_key', $this->get_webhook_key($api_key));
-                $this->update_option('flizpay_webhook_url', $this->generate_webhook_url($api_key));
-                $this->update_option('flizpay_api_key', $api_key);
+                if ($api_key !== $this->get_option('flizpay_api_key')) {
+                    $webhook_key = $this->get_webhook_key($api_key);
+                    $webhook_url = $this->generate_webhook_url($api_key);
 
-                if (isset($_POST['display_logo'])) {
-                    $display_logo = sanitize_text_field(wp_unslash($_POST['display_logo']));
-                    $this->update_option('flizpay_display_logo', $display_logo);
+                    $this->update_option('enabled', 'no');
+                    $this->update_option('flizpay_enabled', 'no');
+                    $this->update_option('flizpay_webhook_alive', 'no');
+
+                    if ($webhook_key && $webhook_url) {
+                        $this->update_option('flizpay_webhook_key', $webhook_key);
+                        $this->update_option('flizpay_webhook_url', $webhook_url);
+                        $this->update_option('flizpay_api_key', $api_key);
+                    } else {
+                        $this->update_option('flizpay_api_key', '');
+                    }
                 }
 
-                if (isset($_POST['display_description'])) {
-                    $display_description = sanitize_text_field(wp_unslash($_POST['display_description']));
-                    $this->update_option('flizpay_display_description', $display_description);
+                if (isset($_POST['woocommerce_flizpay_flizpay_display_logo'])) {
+                    $display_logo = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_display_logo']));
+                    $this->update_option('flizpay_display_logo', $display_logo ? 'yes' : 'no');
+                } else {
+                    $this->update_option('flizpay_display_logo', 'no');
                 }
 
-                if (isset($_POST['display_headline'])) {
-                    $display_headline = sanitize_text_field(wp_unslash($_POST['display_headline']));
-                    $this->update_option('flizpay_display_headline', $display_headline);
+                if (isset($_POST['woocommerce_flizpay_flizpay_display_description'])) {
+                    $display_description = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_display_description']));
+                    $this->update_option('flizpay_display_description', $display_description ? 'yes' : 'no');
+                } else {
+                    $this->update_option('flizpay_display_description', 'no');
                 }
 
-                wp_send_json_success(array('webhookUrl' => $this->get_option('flizpay_webhook_url')));
+                if (isset($_POST['woocommerce_flizpay_flizpay_display_headline'])) {
+                    $display_headline = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_display_headline']));
+                    $this->update_option('flizpay_display_headline', $display_headline ? 'yes' : 'no');
+                } else {
+                    $this->update_option('flizpay_display_headline', 'no');
+                }
             }
 
         }
@@ -230,13 +244,17 @@ function flizpay_init_gateway_class()
          * 
          * @since 1.0.0
          */
-        public function get_webhook_key(string $api_key): string
+        public function get_webhook_key(string $api_key)
         {
             $client = WC_Flizpay_API::get_instance($api_key);
 
-            $response = $client->dispatch('generate_webhook_key');
+            $response = $client->dispatch('generate_webhook_key', null, false);
 
-            $webhookKey = $response['webhookKey'];
+            $webhookKey = null;
+
+            if (isset($response['webhookKey'])) {
+                $webhookKey = $response['webhookKey'];
+            }
 
             return $webhookKey;
         }
@@ -248,18 +266,22 @@ function flizpay_init_gateway_class()
          * 
          * @since 1.0.0
          */
-        public function generate_webhook_url(string $api_key): string
+        public function generate_webhook_url(string $api_key)
         {
             $webhookUrl = home_url('/flizpay-webhook?flizpay-webhook=1&source=woocommerce');
 
             $client = WC_Flizpay_API::get_instance($api_key);
 
-            $response = $client->dispatch('save_webhook_url', array('webhookUrl' => $webhookUrl));
+            $response = $client->dispatch('save_webhook_url', array('webhookUrl' => $webhookUrl), false);
 
-            $webhookUrlResponse = $response['webhookUrl'];
+            $webhookUrlResponse = null;
+
+            if (isset($response['webhookUrl'])) {
+                $webhookUrlResponse = $response['webhookUrl'];
+            }
 
             if (strcmp($webhookUrlResponse, $webhookUrl) !== 0) {
-                return wp_send_json_error('Incorrect WebhookURL: ' . $webhookUrlResponse);
+                return null;
             }
 
             return $webhookUrlResponse;
@@ -362,6 +384,7 @@ function flizpay_init_gateway_class()
                     if (isset($data['test'])) {
                         $this->update_option('flizpay_webhook_alive', 'yes');
                         $this->update_option('flizpay_enabled', 'yes');
+                        $this->update_option('enabled', 'yes');
                         wp_send_json_success(array('alive' => true), 200);
                     } else {
                         // Process the webhook data
