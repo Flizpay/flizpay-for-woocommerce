@@ -103,8 +103,10 @@ class Flizpay
 			$page3 = get_page_by_path($page_slug3);
 			$page_slug4 = 'flizpay-payment-fail-4';
 			$page4 = get_page_by_path($page_slug4);
+			$page_slug5 = 'payment-failed';
+			$page5 = get_page_by_path($page_slug5);
 
-			if ($page || $page2 || $page3 || $page4) {
+			if ($page || $page2 || $page3 || $page4 || $page5) {
 				Flizpay_Deactivator::deactivate();
 				Flizpay_Activator::activate();
 			}
