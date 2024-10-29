@@ -190,6 +190,7 @@ function flizpay_init_gateway_class()
          */
         public function test_gateway_connection()
         {
+            wp_verify_nonce('_wpnonce');
             if (isset($_POST['woocommerce_flizpay_flizpay_api_key'])) {
                 $api_key = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_api_key']));
 
