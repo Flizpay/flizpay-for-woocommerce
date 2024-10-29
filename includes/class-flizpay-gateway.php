@@ -8,7 +8,7 @@ function flizpay_init_gateway_class()
 
     class WC_Flizpay_Gateway extends WC_Payment_Gateway
     {
-        static $VERSION = "1.2.4";
+        static $VERSION = "1.3.0";
 
         public $icon;
         public $title;
