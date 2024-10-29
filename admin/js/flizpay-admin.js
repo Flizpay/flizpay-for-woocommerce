@@ -90,7 +90,7 @@
       resultField.classList.add("connection-failed");
       resultField.innerHTML = `
         ${failedConnectionText}
-        <image src='${flizpayParams.loading_icon}' />
+        <img src='${flizpayParams.loading_icon}' />
       `;
     }
 
@@ -98,7 +98,7 @@
       resultField.classList.add("connection-success");
       resultField.innerHTML = `
         ${successfullConnectionText}
-        <image src='${flizpayParams.loading_icon}' />
+        <img src='${flizpayParams.loading_icon}' />
       `;
     }
 
