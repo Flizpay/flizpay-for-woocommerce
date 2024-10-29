@@ -3,48 +3,35 @@
 
   /**
    * This JS snippet is responsible for customizing the styles of the FLIZ Settings page.
-   * It will also be handling the saving of the settings by calling, via ajax, the test connection method of the Gateway Class
+   * It will also be handling the saving of the settings
    *
    * @since 1.0.0
    */
   jQuery(document).ready(function ($) {
+    const connectionAttempts =
+      Number.parseInt(
+        localStorage.getItem("flizpay_admin_connection_attempts")
+      ) || 0;
     const descriptionText = flizpayParams.wp_locale.includes("en")
       ? "Our servers have successfully communicated with your site. You're now ready to accept fee-free payments!"
       : "Unsere Server haben erfolgreich mit deiner Website kommuniziert. Du kannst jetzt gebührenfreie Zahlungen erhalten!";
-
     const confirmReconfigurationText = flizpayParams.wp_locale.includes("en")
       ? "Looks like you already have an integration settled up. By reconfiguring the integration you will invalidate all current ongoing payment responses. Proceed?"
       : "Sieht so aus, als ob Sie bereits eine Integration eingerichtet haben. Durch die Neukonfiguration der Integration machen Sie alle aktuellen laufenden Zahlungsantworten ungültig. Fortfahren?";
-
     const successfullConnectionText = flizpayParams.wp_locale.includes("en")
       ? `<p style="font-style: italic;">Connected! Waiting for the webhook confirmation. <br />
     Page will reload automatically in 5 seconds...</p>`
       : `<p>Verbunden! Warte auf die Webhook-Bestätigung. <br />
             Die Seite wird in 5 Sekunden automatisch neu geladen ...<p>`;
-
     const failedConnectionText = flizpayParams.wp_locale.includes("en")
       ? `An error occurred while testing the connection. Please Try Again. <br />`
       : `Beim Testen der Verbindung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut. <br />`;
-
-    flizpayParams.wp_locale.includes("en")
-      ? document
-          .querySelector(".flizpay-german-banner")
-          .setAttribute("style", "display: none;")
-      : document
-          .querySelector(".flizpay-english-banner")
-          .setAttribute("style", "display: none;");
-
     const testButton = document.createElement("div");
     const resultField = document.createElement("div");
     const apiKeyInput = document.querySelector(
       "#woocommerce_flizpay_flizpay_api_key"
     );
-    const displayLogoInput = document.querySelector(
-      "#woocommerce_flizpay_flizpay_display_logo"
-    );
-    const displayDescriptionInput = document.querySelector(
-      "#woocommerce_flizpay_flizpay_display_description"
-    );
+    const initialApiKeyValue = apiKeyInput.value;
     const displayHeadlineInput = document.querySelector(
       "#woocommerce_flizpay_flizpay_display_headline"
     );
@@ -61,113 +48,129 @@
     const description = document.querySelector(
       "#connection-stablished-description"
     );
-    const exampleImage = document.createElement("img");
-    exampleImage.setAttribute("src", flizpayParams.example_image);
-    exampleImage.setAttribute("width", "500");
-
-    testButton.setAttribute("id", "woocommerce_flizpay_test_connection");
-    resultField.setAttribute("id", "woocommerce_flizpay_connection_result");
-    apiKeyInput.parentNode.appendChild(testButton);
-    apiKeyInput.parentNode.appendChild(resultField);
-    webhookURLInput.setAttribute("disabled", true);
-    webhookURLInput.setAttribute("type", "hidden");
-    enabledCheckbox.setAttribute("disabled", true);
-    webhookAlive.setAttribute("disabled", true);
     const divider = document.createElement("hr");
     const divider2 = document.createElement("hr");
-    divider.setAttribute("style", "width: 80vw");
-    divider2.setAttribute("style", "width: 80vw");
     const dividerRow = document.createElement("tr");
     const dividerRow2 = document.createElement("tr");
-    dividerRow.append(divider);
-    dividerRow.append(exampleImage);
-    dividerRow2.append(divider2);
-    document
-      .querySelector("table > tbody > tr:nth-child(3)")
-      .insertAdjacentElement("afterend", dividerRow);
-    document
-      .querySelector("table > tbody > tr:nth-child(7)")
-      .insertAdjacentElement("afterend", dividerRow2);
+    const exampleImage = document.createElement("img");
 
-    if (webhookAlive.getAttribute("checked")) {
-      description.setAttribute(
-        "style",
-        "color: #001F3F; background-color: #80ED99; padding: 10px; font-weight: bold; margin-top: 30px;"
-      );
-      description.innerHTML = descriptionText;
+    initCustomAttributesAndStyles();
+
+    if (isConnectionFailed()) {
+      renderConnectionFailed();
+    } else if (isConnectionPending() && reachedMaxAttempts()) {
+      renderConnectionFailed();
+    } else if (isConnectionPending()) {
+      renderWaitingConnection();
+      scheduleReloadAndIncreaseCounter();
+    } else {
+      localStorage.removeItem("flizpay_admin_connection_attempts");
     }
-    displayHeadlineLabel.setAttribute(
-      "style",
-      displayHeadlineInput.checked ? "display: none;" : "display: block;"
-    );
 
-    jQuery(displayHeadlineInput).on("change", () => {
-      if (!displayHeadlineInput.checked) {
-        displayHeadlineLabel.setAttribute("style", "display: block;");
-      } else {
-        displayHeadlineLabel.setAttribute("style", "display: none;");
+    $("form").on("submit", (e) => {
+      if (hasChangedApiKey() && !confirm(confirmReconfigurationText)) {
+        e.preventDefault();
       }
     });
 
-    $(".woocommerce-save-button").on("click", function (e) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
+    function reachedMaxAttempts() {
+      return connectionAttempts === 10;
+    }
 
-      let proceed;
+    function hasChangedApiKey() {
+      return (
+        webhookAlive.checked &&
+        document.querySelector("#woocommerce_flizpay_flizpay_api_key").value !==
+          initialApiKeyValue
+      );
+    }
 
-      if (webhookURLInput.value.length !== 0) {
-        proceed = confirm(confirmReconfigurationText);
-      } else {
-        proceed = true;
+    function renderConnectionFailed() {
+      localStorage.removeItem("flizpay_admin_connection_attempts");
+      resultField.classList.add("connection-failed");
+      resultField.innerHTML = `
+        ${failedConnectionText}
+        <img src='${flizpayParams.loading_icon}' />
+      `;
+    }
+
+    function renderWaitingConnection() {
+      resultField.classList.add("connection-success");
+      resultField.innerHTML = `
+        ${successfullConnectionText}
+        <img src='${flizpayParams.loading_icon}' />
+      `;
+    }
+
+    function scheduleReloadAndIncreaseCounter() {
+      localStorage.setItem(
+        "flizpay_admin_connection_attempts",
+        connectionAttempts + 1
+      );
+      setTimeout(() => {
+        window.location.reload();
+      }, 5000);
+    }
+
+    function isConnectionFailed() {
+      return (
+        webhookURLInput.value.length !== 0 && apiKeyInput.value.length === 0
+      );
+    }
+
+    function isConnectionPending() {
+      return webhookURLInput.value.length !== 0 && !webhookAlive.checked;
+    }
+
+    function initCustomAttributesAndStyles() {
+      flizpayParams.wp_locale.includes("en")
+        ? document
+            .querySelector(".flizpay-german-banner")
+            .setAttribute("style", "display: none;")
+        : document
+            .querySelector(".flizpay-english-banner")
+            .setAttribute("style", "display: none;");
+      exampleImage.setAttribute("src", flizpayParams.example_image);
+      exampleImage.setAttribute("width", "500");
+      testButton.setAttribute("id", "woocommerce_flizpay_test_connection");
+      resultField.setAttribute("id", "woocommerce_flizpay_connection_result");
+      apiKeyInput.parentNode.appendChild(testButton);
+      apiKeyInput.parentNode.appendChild(resultField);
+      webhookURLInput.setAttribute("disabled", true);
+      webhookURLInput.setAttribute("type", "hidden");
+      enabledCheckbox.setAttribute("disabled", true);
+      webhookAlive.setAttribute("disabled", true);
+      divider.setAttribute("style", "width: 80vw");
+      divider2.setAttribute("style", "width: 80vw");
+      dividerRow.append(divider);
+      dividerRow.append(exampleImage);
+      dividerRow2.append(divider2);
+      document
+        .querySelector("table > tbody > tr:nth-child(3)")
+        .insertAdjacentElement("afterend", dividerRow);
+      document
+        .querySelector("table > tbody > tr:nth-child(7)")
+        .insertAdjacentElement("afterend", dividerRow2);
+
+      if (webhookAlive.checked) {
+        description.setAttribute(
+          "style",
+          "color: #001F3F; background-color: #80ED99; padding: 10px; font-weight: bold; margin-top: 30px;"
+        );
+        description.innerHTML = descriptionText;
       }
+      displayHeadlineLabel.setAttribute(
+        "style",
+        displayHeadlineInput.checked ? "display: none;" : "display: block;"
+      );
 
-      if (proceed) {
-        var nonce = flizpayParams.nonce;
-
-        $.ajax({
-          url: ajaxurl,
-          method: "POST",
-          data: {
-            action: "test_gateway_connection",
-            api_key: apiKeyInput.value,
-            display_logo: displayLogoInput.checked ? "yes" : "no",
-            display_description: displayDescriptionInput.checked ? "yes" : "no",
-            display_headline: displayHeadlineInput.checked ? "yes" : "no",
-            nonce: nonce,
-          },
-          success: async function (response) {
-            if (response.success) {
-              resultField.classList.remove("connection-failed");
-              resultField.classList.add("connection-success");
-              testButton.classList.add("hidden");
-              apiKeyInput.setAttribute("disabled", "true");
-              resultField.innerHTML = `
-                ${successfullConnectionText}
-                <image src='${flizpayParams.loading_icon}' />
-              `;
-              webhookURLInput.value = response.data.webhookUrl;
-              setTimeout(() => {
-                $("form").submit();
-              }, 5500);
-            } else {
-              resultField.classList.add("connection-failed");
-              resultField.innerHTML = `
-                ${failedConnectionText}
-                ${response.data} <br />
-                <image src='${flizpayParams.loading_icon}' />
-              `;
-            }
-          },
-          error: async function (e) {
-            resultField.classList.add("connection-failed");
-            resultField.innerHTML = `
-              ${failedConnectionText}
-              ${e.responseJSON.data} <br />
-              <image src='${flizpayParams.loading_icon}' />
-            `;
-          },
-        });
-      }
-    });
+      jQuery(displayHeadlineInput).on("change", () => {
+        if (!displayHeadlineInput.checked) {
+          displayHeadlineLabel.setAttribute("style", "display: block;");
+        } else {
+          displayHeadlineLabel.setAttribute("style", "display: none;");
+        }
+      });
+    }
   });
 })(jQuery);
