@@ -8,7 +8,7 @@ function flizpay_init_gateway_class()
 
     class WC_Flizpay_Gateway extends WC_Payment_Gateway
     {
-        static $VERSION = "1.2.4";
+        static $VERSION = "1.3.0";
 
         public $icon;
         public $title;
@@ -190,6 +190,7 @@ function flizpay_init_gateway_class()
          */
         public function test_gateway_connection()
         {
+            wp_verify_nonce('_wpnonce');
             if (isset($_POST['woocommerce_flizpay_flizpay_api_key'])) {
                 $api_key = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_api_key']));
 
