@@ -68,6 +68,7 @@
     }
 
     $("form").on("submit", (e) => {
+      localStorage.setItem("flizpay_admin_already_connected", true);
       if (hasChangedApiKey() && !confirm(confirmReconfigurationText)) {
         e.preventDefault();
       }
@@ -114,7 +115,10 @@
 
     function isConnectionFailed() {
       return (
-        webhookURLInput.value.length !== 0 && apiKeyInput.value.length === 0
+        (webhookURLInput.value.length !== 0 &&
+          apiKeyInput.value.length === 0) ||
+        (localStorage.getItem("flizpay_admin_already_connected") &&
+          apiKeyInput.value.length === 0)
       );
     }
 

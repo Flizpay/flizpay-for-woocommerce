@@ -556,7 +556,7 @@ function flizpay_init_gateway_class()
             $redirectUrl = $this->create_transaction($order);
 
             if ($redirectUrl) {
-                return array('result' => 'success', 'redirect' => $redirectUrl, 'order_id' => $order_id);
+                return array('result' => 'success', 'redirect' => null, 'order_id' => $order_id, 'checkout_page' => $redirectUrl);
             } else {
                 wc_add_notice('Error creating FLIZpay transaction. Please try again later.');
                 return array(
