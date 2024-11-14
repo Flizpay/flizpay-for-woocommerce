@@ -1,0 +1,60 @@
+.flizpay-express-checkout-button {
+  padding: 12px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  width: 100%;
+  cursor: pointer;
+  border: 1px solid transparent;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.5s ease, color 0.5s ease, transform 0.5s ease;
+  font-family: PayPalOpen-Regular, Helvetica, Arial, "Liberation Sans", sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+}
+
+.flizpay-express-checkout-light {
+  color: #001F3F;
+  background-color: #80ED99;
+  
+
+  &:hover {
+    background-color: #001F3F;
+    color: #80ED99;
+  }
+
+  &:active {
+    transform: scale(0.98);
+    border-color: #80ED99;
+  }
+}
+
+.flizpay-express-checkout-dark {
+  color: #80ED99;
+  background-color: #001F3F;
+
+  &:hover {
+    background-color: #80ED99;
+    color: #001F3F;
+  }
+
+  &:active {
+    transform: scale(0.98);
+    border-color: #001F3F;
+  }
+}
+
+.flizpay-express-checkout-container-checkout {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+  margin-bottom: 18px;
+  text-align: center;
+}
