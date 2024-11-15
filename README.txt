@@ -2,7 +2,7 @@
 Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
-Tested up to: 6.6.1
+Tested up to: 6.7
 Stable tag: 1.3.0
 Requires PHP: 7.0
 License: GPLv2 or later

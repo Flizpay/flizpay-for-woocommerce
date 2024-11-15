@@ -90,7 +90,7 @@ class Flizpay_Admin
 			'nonce' => wp_create_nonce('test_connection_nonce'),
 			'loading_icon' => "$this->assets_url/loading.svg",
 			'example_image' => $this->is_english() ? "$this->assets_url/flizpay-checkout-example-en.png" : "$this->assets_url/flizpay-checkout-example-de.png",
-			'wp_locale' => get_locale()
+			'wp_locale' => get_user_locale() ?? get_locale()
 		));
 
 	}
@@ -115,7 +115,7 @@ class Flizpay_Admin
 
 	public function is_english()
 	{
-		return str_contains(get_locale(), 'en');
+		return str_contains(get_user_locale() ?? get_locale(), 'en');
 	}
 
 	/**
