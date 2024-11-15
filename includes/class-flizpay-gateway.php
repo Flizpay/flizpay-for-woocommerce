@@ -618,12 +618,18 @@ function flizpay_init_gateway_class()
         {
             $flizpay_setting = get_option('woocommerce_flizpay_settings');
             $api_key = $flizpay_setting['flizpay_api_key'];
+            $customer = array(
+                'email' => $order->get_billing_email(),
+                'firstName' => $order->get_billing_first_name(),
+                'lastName' => $order->get_billing_last_name()
+            );
             $body = array(
                 'amount' => $order->get_total(),
                 'currency' => $order->get_currency(),
                 'externalId' => $order->get_id(),
                 'successUrl' => $order->get_checkout_order_received_url(),
                 'failureUrl' => 'https://checkout.flizpay.de/failed',
+                'customer' => $customer
             );
 
             $client = WC_Flizpay_API::get_instance($api_key);
