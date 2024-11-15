@@ -35,6 +35,14 @@ msgstr "FLIZpay - Deine Wahl zählt!"
 msgid "description"
 msgstr "Zahlungsmethoden belasten kleine Unternehmen mit hohen Gebühren. FLIZpay ist für alle kostenlos, deine Wahl ist also wichtig. Melde dich in 60 Sekunden an."
 
+#: includes/class-flizpay-gateway.php:107
+msgid "cashback-express-title"
+msgstr "Jetzt zahlung mit %s%% Cashback."
+
+#: includes/class-flizpay-gateway.php:112
+msgid "express-title"
+msgstr "Jetzt zahlung mit FLIZpay"
+
 #: flizpay.php:18
 msgid "accept_payments"
 msgstr "Erhalte gebührenfreie Zahlungen mit FLIZpay."
