@@ -22,6 +22,10 @@ function flizpay_init_gateway_class()
         public $flizpay_display_logo;
         public $flizpay_display_description;
         public $flizpay_display_headline;
+        public $flizpay_enable_express_checkout;
+        public $flizpay_express_checkout_pages;
+        public $flizpay_express_checkout_theme;
+        public $flizpay_express_checkout_title;
 
         /**
          * The class constructor will set FLIZ id, load translations, description, icon and etc. 
@@ -55,6 +59,9 @@ function flizpay_init_gateway_class()
             $this->flizpay_display_logo = $this->get_option('flizpay_display_logo');
             $this->flizpay_display_description = $this->get_option('flizpay_display_description');
             $this->flizpay_display_headline = $this->get_option('flizpay_display_headline');
+            $this->flizpay_enable_express_checkout = $this->get_option('flizpay_enable_express_checkout');
+            $this->flizpay_express_checkout_pages = $this->get_option('flizpay_express_checkout_pages');
+            $this->flizpay_express_checkout_theme = $this->get_option('flizpay_express_checkout_theme');
 
             if ($this->flizpay_display_logo === 'yes') {
                 $this->icon = plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images/fliz-checkout-logo.svg';
@@ -149,9 +156,11 @@ function flizpay_init_gateway_class()
             } else {
                 $title = __('title', 'flizpay-for-woocommerce');
                 $description = __('description', 'flizpay-for-woocommerce');
+                $express_checkout_title = __('express-title', 'flizpay-for-woocommerce');
             }
             $this->title = $this->flizpay_display_headline === 'yes' ? $title : 'FLIZpay';
             $this->description = $this->flizpay_display_description === 'yes' ? $description : null;
+            $this->flizpay_express_checkout_title = $express_checkout_title;
         }
 
         /**
@@ -204,8 +213,12 @@ function flizpay_init_gateway_class()
                 } else {
                     $this->title = 'FLIZpay';
                 }
+                $this->flizpay_express_checkout_title = !is_null($this->cashback)
+                    ? 'FLIZpay - ' . $this->cashback . '% Cashback'
+                    : 'Jetzt zahlung mit FLIZpay';
             }
             $this->update_option('title', $this->title);
+            $this->update_option('flizpay_express_checkout_title', $this->flizpay_express_checkout_title);
         }
 
         /**
@@ -300,6 +313,30 @@ function flizpay_init_gateway_class()
                     $this->update_option('flizpay_display_headline', $display_headline ? 'yes' : 'no');
                 } else {
                     $this->update_option('flizpay_display_headline', 'no');
+                }
+
+                if (isset($_POST['woocommerce_flizpay_flizpay_enable_express_checkout'])) {
+                    $enable_express_checkout = sanitize_text_field($_POST['woocommerce_flizpay_flizpay_enable_express_checkout']);
+                    $this->update_option('flizpay_enable_express_checkout', $enable_express_checkout ? 'yes' : 'no');
+                } else {
+                    $this->update_option('flizpay_enable_express_checkout', 'no');
+                }
+
+                if (isset($_POST['woocommerce_flizpay_flizpay_express_checkout_pages'])) {
+                    $raw_array = $_POST['woocommerce_flizpay_flizpay_express_checkout_pages'];
+                    foreach ($raw_array as $index => $page) {
+                        $express_checkout_pages[$index] = sanitize_text_field($page);
+                    }
+                    $this->update_option('flizpay_express_checkout_pages', $express_checkout_pages ?? array());
+                } else {
+                    $this->update_option('flizpay_express_checkout_pages', array());
+                }
+
+                if (isset($_POST['woocommerce_flizpay_flizpay_express_checkout_theme'])) {
+                    $express_checkout_theme = sanitize_text_field($_POST['woocommerce_flizpay_flizpay_express_checkout_theme']);
+                    $this->update_option('flizpay_express_checkout_theme', $express_checkout_theme ?? 'light');
+                } else {
+                    $this->update_option('flizpay_express_checkout_theme', 'light');
                 }
             }
 

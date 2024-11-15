@@ -84,13 +84,15 @@ class Flizpay_Admin
 	 */
 	public function enqueue_scripts()
 	{
-
-		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-admin.js', array('jquery'), $this->version, false);
+		wp_enqueue_script('select2');
+		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-admin.js', array('jquery', 'select2'), $this->version, false);
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
 			'nonce' => wp_create_nonce('test_connection_nonce'),
 			'loading_icon' => "$this->assets_url/loading.svg",
 			'example_image' => $this->is_english() ? "$this->assets_url/flizpay-checkout-example-en.png" : "$this->assets_url/flizpay-checkout-example-de.png",
-			'wp_locale' => get_user_locale() ?? get_locale()
+			'wp_locale' => get_user_locale() ?? get_locale(),
+			'express_checkout_button_dark' => $this->is_english() ? "$this->assets_url/fliz-express-checkout-example-dark-en.png" : "$this->assets_url/fliz-express-checkout-example-dark-de.png",
+			'express_checkout_button_light' => $this->is_english() ? "$this->assets_url/fliz-express-checkout-example-light-en.png" : "$this->assets_url/fliz-express-checkout-example-light-de.png",
 		));
 
 	}
@@ -149,6 +151,15 @@ class Flizpay_Admin
 					: 'Gib deinen API KEY ein.  Der API KEY ist ein sensibler Datensatz und sollte wie ein Passwort behandelt werden',
 				'desc_tip' => false,
 			),
+			'flizpay_webhook_alive' => array(
+				'title' => $this->is_english() ? 'Connection Established' : 'Verbindung hergestellt',
+				'type' => 'checkbox',
+				'label' => $this->is_english()
+					? '<div id="connection-stablished-description">Note for staging environments that are not public or under strict password protection: You need to either make them public and remove the password protection or allow the domain flizpay.de to bypass these settings. We need to communicate directly with your website.</div>'
+					: '<div id="connection-stablished-description">Hinweis für Staging-Umgebungen, die nicht öffentlich sind oder unter strengem Passwortschutz stehen: Du musst entweder die Umgebung öffentlich machen und den Passwortschutz entfernen oder der Domain flizpay.de erlauben, diese Einstellungen zu umgehen. Wir müssen direkt mit deiner Website kommunizieren.</div>',
+				'default' => 'no',
+				'desc_tip' => false,
+			),
 			'flizpay_webhook_url' => array(
 				'title' => '',
 				'type' => 'text',
@@ -183,15 +194,30 @@ class Flizpay_Admin
 				'description' => '',
 				'default' => 'yes',
 			),
-
-			'flizpay_webhook_alive' => array(
-				'title' => $this->is_english() ? 'Connection Established' : 'Verbindung hergestellt',
+			'flizpay_enable_express_checkout' => array(
+				'title' => $this->is_english() ? 'Express checkout enabled' : 'Express-Checkout Aktiviert',
 				'type' => 'checkbox',
-				'label' => $this->is_english()
-					? '<div id="connection-stablished-description">Note for staging environments that are not public or under strict password protection: You need to either make them public and remove the password protection or allow the domain flizpay.de to bypass these settings. We need to communicate directly with your website.</div>'
-					: '<div id="connection-stablished-description">Hinweis für Staging-Umgebungen, die nicht öffentlich sind oder unter strengem Passwortschutz stehen: Du musst entweder die Umgebung öffentlich machen und den Passwortschutz entfernen oder der Domain flizpay.de erlauben, diese Einstellungen zu umgehen. Wir müssen direkt mit deiner Website kommunizieren.</div>',
-				'default' => 'no',
-				'desc_tip' => false,
+				'default' => 'yes'
+			),
+			'flizpay_express_checkout_pages' => array(
+				'title' => $this->is_english() ? 'Pages where the express checkout is shown' : 'Seiten, auf denen der Express-Checkout angezeigt wird',
+				'type' => 'multiselect', // Change to 'multiselect' to allow multiple selections
+				'default' => array('product', 'cart'),
+				'options' => array(
+					'product' => $this->is_english() ? 'Product Page' : 'Produktseite',
+					'cart' => $this->is_english() ? 'Cart Page' : 'Warenkorbseite',
+				),
+				'desc_tip' => true,
+				'description' => $this->is_english() ? 'Select the pages where the express checkout button will appear.' : 'Wählen Sie die Seiten aus, auf denen die Schaltfläche für den Express-Checkout angezeigt wird.'
+			),
+			'flizpay_express_checkout_theme' => array(
+				'title' => $this->is_english() ? 'Express checkout button theme' : 'Design der Schaltfläche „Express-Checkout“',
+				'type' => 'select',
+				'default' => 'light',
+				'options' => array(
+					'light' => $this->is_english() ? 'Light' : 'Hell',
+					'dark' => $this->is_english() ? 'Dark' : 'Dunkel',
+				)
 			),
 		);
 	}
