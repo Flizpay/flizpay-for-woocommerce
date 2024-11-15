@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.7
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -116,9 +116,18 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - REMOVED
     - Payment Failed page
 
+- v1.4.0
+  - CHANGED 
+    - Admin page uses admin user language
+  - ADDED 
+    - Adding customer information to the transaction being created
+
 == Upgrade Notice ==
 
-= v1.2.4 = 
+= v1.4.0 =
+* The admin page now is presented on the admin user language or defaults to system language. Customer information add to the Transaction
+
+= v1.3.0 = 
 * The admin page now has a better UX and the payment failed page was removed in favor of FLIZ payment failed page
 
 = v1.2.4 = 
