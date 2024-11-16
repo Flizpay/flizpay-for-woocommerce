@@ -71,11 +71,16 @@ function flizpay_init_gateway_class()
 
             $this->init_gateway_info();
 
+            //Admin options setup handler
             add_action('woocommerce_update_options_checkout_flizpay', array($this, 'test_gateway_connection'));
 
             // Webhook handler
             add_action('init', array($this, 'register_webhook_endpoint'));
             add_action('template_redirect', array($this, 'handle_webhook_request'));
+
+            // Express checkout handler
+            add_action("wp_ajax_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
+            add_action("wp_ajax_nopriv_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
         }
 
         /**
@@ -587,11 +592,11 @@ function flizpay_init_gateway_class()
          * 
          * @since 1.0.0
          */
-        public function process_payment($order_id)
+        public function process_payment($order_id, $source = 'plugin')
         {
             $order = wc_get_order($order_id);
 
-            $redirectUrl = $this->create_transaction($order);
+            $redirectUrl = $this->create_transaction($order, $source);
 
             if ($redirectUrl) {
                 return array('result' => 'success', 'redirect' => $redirectUrl, 'order_id' => $order_id);
@@ -614,7 +619,7 @@ function flizpay_init_gateway_class()
          * 
          * @since 1.0.0
          */
-        public function create_transaction($order)
+        public function create_transaction($order, $source = 'plugin')
         {
             $flizpay_setting = get_option('woocommerce_flizpay_settings');
             $api_key = $flizpay_setting['flizpay_api_key'];
@@ -629,14 +634,76 @@ function flizpay_init_gateway_class()
                 'externalId' => $order->get_id(),
                 'successUrl' => $order->get_checkout_order_received_url(),
                 'failureUrl' => 'https://checkout.flizpay.de/failed',
-                'customer' => $customer
+                'customer' => $customer,
+                'source' => $source
             );
-
             $client = WC_Flizpay_API::get_instance($api_key);
 
             $response = $client->dispatch('create_transaction', $body, false);
 
             return $response['redirectUrl'];
+        }
+
+        /**
+         * Handler function for flizpay express checkout
+         * @return never
+         * @since 2.0.0
+         */
+        public function flizpay_express_checkout(): never
+        {
+            check_ajax_referer('express_checkout_nonce', 'nonce');
+            if (isset($_POST['product_id'])) {
+                $product_id = intval($_POST['product_id']);
+            }
+            if (isset($_POST['quantity'])) {
+                $quantity = intval($_POST['quantity']);
+            }
+
+            if (!isset($_POST['cart'])) {
+                if (!$product_id || $quantity <= 0) {
+                    echo wp_send_json_error(['message' => 'Invalid product or quantity.']);
+                    die();
+                }
+
+                // Clear the current cart
+                WC()->cart->empty_cart();
+
+                // Add product to cart
+                $new_cart = WC()->cart->add_to_cart($product_id, $quantity);
+
+                if (!$new_cart) {
+                    echo wp_send_json_error(['message' => 'Unable to add product to cart.']);
+                    die();
+                }
+            }
+
+            // Create order from cart
+            $order_id = wc_create_order();
+            $order = wc_get_order($order_id);
+
+            foreach (WC()->cart->get_cart() as $cart_item) {
+                $item_id = $order->add_product(
+                    wc_get_product($cart_item['product_id']),
+                    $cart_item['quantity']
+                );
+
+                if (!$item_id) {
+                    echo wp_send_json_error(['message' => 'Failed to add items to order.']);
+                    die();
+                }
+            }
+
+            $order->calculate_totals();
+            $order->update_status('pending', 'FLIZpay Express Checkout initiated.');
+            $order->save();
+
+            // Clear the cart
+            WC()->cart->empty_cart();
+
+            echo wp_send_json_success(
+                $this->process_payment($order->get_id(), 'express_checkout')
+            );
+            die();
         }
     }
 }
