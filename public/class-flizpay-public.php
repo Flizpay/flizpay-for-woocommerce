@@ -107,6 +107,13 @@ class Flizpay_Public
     private function enqueue_checkout_scripts()
     {
         wp_enqueue_script(
+            $this->plugin_name . '-globals',
+            plugin_dir_url(__FILE__) . 'js/flizpay-globals.js',
+            array('jquery', 'wp-element', 'wp-data'),
+            $this->version,
+            false
+        );
+        wp_enqueue_script(
             $this->plugin_name,
             plugin_dir_url(__FILE__) . 'js/flizpay-public.js',
             array('jquery', 'wp-element', 'wp-data'),
@@ -120,10 +127,11 @@ class Flizpay_Public
             $this->version,
             false
         );
-        $ajaxurl = array(
+        $variables = array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'public_dir_path' => plugin_dir_url(__FILE__),
             'order_finish_nonce' => wp_create_nonce('order_finish_nonce'),
+            'express_checkout_nonce' => wp_create_nonce('express_checkout_nonce'),
             'enable_express_checkout' => $this->settings['flizpay_enable_express_checkout'] === "yes" ? true : null,
             'express_checkout_pages' => $this->settings['flizpay_express_checkout_pages'],
             'express_checkout_theme' => $this->settings['flizpay_express_checkout_theme'],
@@ -134,8 +142,10 @@ class Flizpay_Public
             'is_product' => is_product() ?? null,
             'light_icon' => $this->assets_url . '/fliz-express-checkout-logo-light.svg',
             'dark_icon' => $this->assets_url . '/fliz-express-checkout-logo-dark.svg',
+            'fliz_logo' => $this->assets_url . '/fliz-logo.svg',
+            'fliz_loading_wheel' => $this->assets_url . '/fliz-loading-wheel.svg',
         );
-        wp_localize_script($this->plugin_name, "flizpay_frontend", $ajaxurl);
+        wp_localize_script($this->plugin_name, "flizpay_frontend", $variables);
     }
 
     /**

@@ -139,16 +139,107 @@ jQuery(function ($) {
       }, 1000);
     }
 
-    function cart_submit() {
-      alert("cart_submit");
+    function append_info_to_loading() {
+      if (document.querySelector("#flizpay-thanks-info")) return;
+
+      const thanks = document.createElement("p");
+      const info = document.createElement("p");
+      thanks.setAttribute("id", "flizpay-thanks-info");
+      thanks.classList.add("fliz-black-text");
+      thanks.classList.add("fliz-highlight-text");
+      info.classList.add("fliz-black-text");
+      thanks.append(
+        navigator.language.includes("en")
+          ? "Thank you for choosing FLIZpay!"
+          : "Danke, dass Sie sich für FLIZpay entschieden haben!"
+      );
+      info.append(
+        navigator.language.includes("en")
+          ? "Redirecting to our secure environment..."
+          : "Weiterleitung zu unserer sicheren Umgebung..."
+      );
+      window.flizPay.FLIZ_CANCEL_BUTTON.parentNode.insertBefore(
+        info,
+        window.flizPay.FLIZ_CANCEL_BUTTON
+      );
+      info.parentNode.insertBefore(thanks, info);
     }
 
-    function product_submit() {
-      alert("product_submit");
+    function cart_submit(e) {
+      e.preventDefault();
+
+      append_info_to_loading();
+      window.flizPay.fliz_block_ui({ express: true });
+      submit_order({ cart: true });
     }
 
-    function mini_cart_submit() {
-      alert("mini cart submit");
+    function product_submit(e) {
+      e.preventDefault();
+
+      append_info_to_loading();
+      window.flizPay.fliz_block_ui({ express: true });
+
+      const quantity = jQuery("input.qty").val() || "1";
+      const productId = jQuery('[name="add-to-cart"]').val();
+
+      if (!productId) {
+        alert("Product ID not found.");
+        return window.location.reload();
+      }
+
+      submit_order({ productId, quantity });
+    }
+
+    function mini_cart_submit(e) {
+      e.preventDefault();
+
+      append_info_to_loading();
+      window.flizPay.fliz_block_ui({ express: true });
+      submit_order({ cart: true });
+    }
+
+    function submit_order({ productId, quantity, cart = false }) {
+      const data = {
+        action: "flizpay_express_checkout",
+        product_id: productId,
+        quantity: quantity,
+        nonce: flizpay_frontend.express_checkout_nonce, // For security
+      };
+      if (cart) data.cart = true;
+
+      jQuery.ajax({
+        url: flizpay_frontend.ajaxurl, // Provided by wp_localize_script
+        type: "POST",
+        data,
+        beforeSend: function () {
+          // Optional: Show a loading spinner
+          jQuery(".flizpay-express-checkout-button").prop("disabled", true);
+        },
+        success: function (response) {
+          if (response.success && response.data.result === "success") {
+            window.flizPay.updateLocalStorage(response.data.order_id);
+            window.flizPay.mobile_redirect_when_order_finished(
+              response.data.order_id
+            );
+            window.flizPay.stopPolling = false;
+            // Redirect to checkout page
+            window.location.href = response.data.redirect;
+          } else {
+            alert(response.data?.message || "Error.");
+            jQuery.unblockUI();
+            window.location.reload();
+          }
+        },
+        complete: function () {
+          jQuery(".flizpay-express-checkout-button").prop("disabled", false);
+        },
+        error: function (_, status, error) {
+          console.error("AJAX Error:", status, error);
+          jQuery.unblockUI();
+          alert(error);
+          window.location.reload();
+        },
+      });
     }
 
     if (should_render_mini_cart_button()) render_mini_cart_button();
