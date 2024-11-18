@@ -252,24 +252,21 @@ function flizpay_init_gateway_class()
                 }
 
                 if (isset($_POST['woocommerce_flizpay_flizpay_enable_express_checkout'])) {
-                    $enable_express_checkout = sanitize_text_field($_POST['woocommerce_flizpay_flizpay_enable_express_checkout']);
+                    $enable_express_checkout = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_enable_express_checkout']));
                     $this->update_option('flizpay_enable_express_checkout', $enable_express_checkout ? 'yes' : 'no');
                 } else {
                     $this->update_option('flizpay_enable_express_checkout', 'no');
                 }
 
                 if (isset($_POST['woocommerce_flizpay_flizpay_express_checkout_pages'])) {
-                    $raw_array = $_POST['woocommerce_flizpay_flizpay_express_checkout_pages'];
-                    foreach ($raw_array as $index => $page) {
-                        $express_checkout_pages[$index] = sanitize_text_field($page);
-                    }
+                    $express_checkout_pages = array_map('sanitize_text_field', wp_unslash($_POST['woocommerce_flizpay_flizpay_express_checkout_pages']));
                     $this->update_option('flizpay_express_checkout_pages', $express_checkout_pages ?? array());
                 } else {
                     $this->update_option('flizpay_express_checkout_pages', array());
                 }
 
                 if (isset($_POST['woocommerce_flizpay_flizpay_express_checkout_theme'])) {
-                    $express_checkout_theme = sanitize_text_field($_POST['woocommerce_flizpay_flizpay_express_checkout_theme']);
+                    $express_checkout_theme = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_express_checkout_theme']));
                     $this->update_option('flizpay_express_checkout_theme', $express_checkout_theme ?? 'light');
                 } else {
                     $this->update_option('flizpay_express_checkout_theme', 'light');
@@ -661,7 +658,7 @@ function flizpay_init_gateway_class()
 
             if (!isset($_POST['cart'])) {
                 if (!$product_id || $quantity <= 0) {
-                    echo wp_send_json_error(['message' => 'Invalid product or quantity.']);
+                    echo esc_html(wp_send_json_error(['message' => 'Invalid product or quantity.']));
                     die();
                 }
 
@@ -672,7 +669,7 @@ function flizpay_init_gateway_class()
                 $new_cart = WC()->cart->add_to_cart($product_id, $quantity);
 
                 if (!$new_cart) {
-                    echo wp_send_json_error(['message' => 'Unable to add product to cart.']);
+                    echo esc_html(wp_send_json_error(['message' => 'Unable to add product to cart.']));
                     die();
                 }
             }
@@ -688,7 +685,7 @@ function flizpay_init_gateway_class()
                 );
 
                 if (!$item_id) {
-                    echo wp_send_json_error(['message' => 'Failed to add items to order.']);
+                    echo esc_html(wp_send_json_error(['message' => 'Failed to add items to order.']));
                     die();
                 }
             }
@@ -700,9 +697,9 @@ function flizpay_init_gateway_class()
             // Clear the cart
             WC()->cart->empty_cart();
 
-            echo wp_send_json_success(
+            echo esc_html(wp_send_json_success(
                 $this->process_payment($order->get_id(), 'express_checkout')
-            );
+            ));
             die();
         }
     }
