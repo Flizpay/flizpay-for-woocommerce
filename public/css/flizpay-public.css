@@ -58,3 +58,30 @@
   margin-bottom: 18px;
   text-align: center;
 }
+
+.fliz-loading-html {
+  margin-bottom: -15px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.fliz-cancel-button {
+  cursor: pointer;
+  text-decoration: underline;
+  border: none;
+  color: #001F3F;
+  border-radius: 5%;
+  background-color: white;
+}
+
+.fliz-black-text {
+  color: #001F3F;
+  font-weight: 600;
+}
+
+.fliz-highlight-text {
+  text-shadow: 0px 0px 4px #80ED99;
+}
