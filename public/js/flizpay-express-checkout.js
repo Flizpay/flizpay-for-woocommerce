@@ -55,14 +55,51 @@ jQuery(function ($) {
     }
 
     function render_product_button() {
-      const addToCartForm = document.querySelector(".cart");
-      const [expressCheckoutButton, expressCheckoutContainer] =
-        create_components();
-      expressCheckoutButton.addEventListener("click", product_submit);
-      addToCartForm.parentNode.insertBefore(
-        expressCheckoutContainer,
-        addToCartForm.nextSibling
-      );
+      setTimeout(() => {
+        const addToCartButton = document.querySelector(
+          ".single_add_to_cart_button"
+        );
+
+        if (!addToCartButton) return;
+
+        const addToCartForm = document.querySelector(".cart");
+
+        const [expressCheckoutButton, expressCheckoutContainer] =
+          create_components();
+        if (addToCartButton.classList.contains("disabled")) {
+          expressCheckoutButton.classList.add("disabled");
+        } else {
+          expressCheckoutButton.addEventListener("click", product_submit);
+        }
+
+        const addToCartObserver = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.attributeName === "class") {
+              if (addToCartButton.classList.contains("disabled")) {
+                expressCheckoutButton.classList.add("disabled");
+                expressCheckoutButton.removeEventListener(
+                  "click",
+                  product_submit
+                );
+              } else {
+                expressCheckoutButton.addEventListener("click", product_submit);
+                expressCheckoutButton.classList.remove("disabled");
+              }
+            }
+          });
+        });
+
+        // Start observing the button for class changes
+        addToCartObserver.observe(addToCartButton, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+
+        addToCartForm.parentNode.insertBefore(
+          expressCheckoutContainer,
+          addToCartForm.nextSibling
+        );
+      }, 1700);
     }
 
     function render_cart_button() {
@@ -95,7 +132,7 @@ jQuery(function ($) {
         } else {
           proceedToCheckoutBlock.append(expressCheckoutContainer);
         }
-      }, 1000);
+      }, 1700);
     }
 
     function render_mini_cart_button() {
@@ -136,7 +173,7 @@ jQuery(function ($) {
           childList: true,
           subtree: true,
         });
-      }, 1000);
+      }, 1300);
     }
 
     function append_info_to_loading() {
@@ -181,13 +218,14 @@ jQuery(function ($) {
 
       const quantity = jQuery("input.qty").val() || "1";
       const productId = jQuery('[name="add-to-cart"]').val();
+      const variationId = jQuery('[name="variation_id"]').val();
 
       if (!productId) {
         alert("Product ID not found.");
         return window.location.reload();
       }
 
-      submit_order({ productId, quantity });
+      submit_order({ productId, quantity, variationId });
     }
 
     function mini_cart_submit(e) {
@@ -198,11 +236,17 @@ jQuery(function ($) {
       submit_order({ cart: true });
     }
 
-    function submit_order({ productId, quantity, cart = false }) {
+    function submit_order({
+      productId,
+      quantity,
+      variationId = null,
+      cart = false,
+    }) {
       const data = {
         action: "flizpay_express_checkout",
         product_id: productId,
         quantity: quantity,
+        variation_id: variationId,
         nonce: flizpay_frontend.express_checkout_nonce, // For security
       };
       if (cart) data.cart = true;
