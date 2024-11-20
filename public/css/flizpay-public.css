@@ -85,3 +85,18 @@
 .fliz-highlight-text {
   text-shadow: 0px 0px 4px #80ED99;
 }
+
+.flizpay-express-checkout-button.disabled {
+  cursor: not-allowed;
+  filter: grayscale(100%);
+
+  &:hover {
+    cursor: not-allowed;
+    filter: grayscale(100%);
+  }
+
+  &:active {
+    cursor: not-allowed;
+    filter: grayscale(100%);
+  }
+}
