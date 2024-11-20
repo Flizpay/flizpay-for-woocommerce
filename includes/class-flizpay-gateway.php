@@ -585,6 +585,7 @@ function flizpay_init_gateway_class()
          * It's responsible for creating the transaction using the FLIZ API Class
          * 
          * @param string $order_id
+         * @param string $source
          * @return array
          * 
          * @since 1.0.0
@@ -612,6 +613,7 @@ function flizpay_init_gateway_class()
          * It will return the redirect URL to the FLIZ checkout page
          * 
          * @param array $order
+         * @param string $source
          * @return string
          * 
          * @since 1.0.0
@@ -649,14 +651,12 @@ function flizpay_init_gateway_class()
         public function flizpay_express_checkout(): never
         {
             check_ajax_referer('express_checkout_nonce', 'nonce');
-            if (isset($_POST['product_id'])) {
-                $product_id = intval($_POST['product_id']);
-            }
-            if (isset($_POST['quantity'])) {
-                $quantity = intval($_POST['quantity']);
-            }
 
             if (!isset($_POST['cart'])) {
+                $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+                $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
+                $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
+
                 if (!$product_id || $quantity <= 0) {
                     echo esc_html(wp_send_json_error(['message' => 'Invalid product or quantity.']));
                     die();
@@ -666,7 +666,10 @@ function flizpay_init_gateway_class()
                 WC()->cart->empty_cart();
 
                 // Add product to cart
-                $new_cart = WC()->cart->add_to_cart($product_id, $quantity);
+                $new_cart = $variation_id
+                    ? WC()->cart->add_to_cart($product_id, $quantity, $variation_id)
+                    : WC()->cart->add_to_cart($product_id, $quantity);
+
 
                 if (!$new_cart) {
                     echo esc_html(wp_send_json_error(['message' => 'Unable to add product to cart.']));
