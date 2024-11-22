@@ -90,9 +90,9 @@ jQuery(function ($) {
             }
           }
         });
-
-        adjust_fliz_totals_classic();
       });
+
+      adjust_fliz_totals_classic();
     }
 
     function updateLocalStorage(order_id) {
