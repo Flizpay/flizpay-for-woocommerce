@@ -317,7 +317,7 @@ function flizpay_init_gateway_class()
                 }
             }
 
-            return !empty($cashback_data) ? $cashback_data : null;
+            return !empty($cashback_data) && floatval($cashback_data) > 0 ? $cashback_data : null;
         }
 
         /**
