@@ -66,6 +66,8 @@ jQuery(function ($) {
           unsubscribe();
         }
       });
+
+      adjust_fliz_totals_blocks();
     }
 
     function bind_ajax_hook(isClassic) {
@@ -88,6 +90,8 @@ jQuery(function ($) {
             }
           }
         });
+
+        adjust_fliz_totals_classic();
       });
     }
 
@@ -164,6 +168,194 @@ jQuery(function ($) {
           }, 2000);
         },
       });
+    }
+
+    function adjust_fliz_totals_blocks() {
+      if (
+        !flizpay_frontend.cashback ||
+        parseFloat(flizpay_frontend.cashback) === 0
+      )
+        return;
+
+      const paymentRadioSelector =
+        "#radio-control-wc-payment-method-options-flizpay";
+      const orderTotalSelector = ".wc-block-components-totals-item__value";
+      const paymentRadioElement = document.querySelector(paymentRadioSelector);
+      const orderTotalElement = document.querySelectorAll(orderTotalSelector);
+      const productsTotal = orderTotalElement[0];
+      const shipmentTotal = orderTotalElement[1];
+      const totalDesktop = orderTotalElement[2];
+      const totalMobile = orderTotalElement[3];
+      const cashback = parseFloat(flizpay_frontend.cashback);
+
+      let originalTotal = null; // Track the original total value
+      let isUpdating = false; // Flag to prevent loop
+
+      // Function to update the order total
+      const updateOrderTotal = () => {
+        if (!productsTotal || !shipmentTotal || isUpdating) return;
+
+        isUpdating = true;
+
+        const currentValue =
+          parseFloat(
+            productsTotal.textContent.replace(".", "").replace(",", ".")
+          ) +
+          parseFloat(
+            shipmentTotal.textContent.replace(".", "").replace(",", ".")
+          );
+
+        // Initialize the original total value
+        //if (flizpay_frontend.website_language.includes("de"))
+        originalTotal = parseFloat(currentValue).toFixed(2);
+        //else originalTotal = parseFloat(currentValue * 100).toFixed(2);
+
+        if (paymentRadioElement && paymentRadioElement.checked) {
+          const discountedValue = (
+            originalTotal -
+            originalTotal * parseFloat(cashback / 100)
+          ).toFixed(2);
+
+          if (originalTotal - discountedValue < 1) {
+            isUpdating = false;
+            return;
+          }
+
+          const discountedLabel = `<strike style='color: red;'>${originalTotal.replace(
+            ".",
+            ","
+          )} €</strike> ${discountedValue.replace(".", ",")} €`;
+
+          if (totalDesktop) totalDesktop.innerHTML = discountedLabel;
+          if (totalMobile) totalMobile.innerHTML = discountedLabel;
+        } else {
+          const originalLabel = `${originalTotal.replace(".", ",")} €`;
+
+          if (totalDesktop) totalDesktop.innerHTML = originalLabel;
+          if (totalMobile) totalMobile.innerHTML = originalLabel;
+        }
+
+        setTimeout(() => {
+          isUpdating = false;
+        }, 1000);
+      };
+
+      // Observe changes to the Flizpay payment method selection
+      if (paymentRadioElement) {
+        const paymentObserver = new MutationObserver(() => {
+          if (!isUpdating) updateOrderTotal();
+        });
+
+        paymentObserver.observe(window.document, {
+          attributes: true,
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
+
+        // Initial state check
+        updateOrderTotal();
+      }
+
+      // Observe changes to the order total element
+      if (productsTotal) {
+        orderTotalElement.forEach((element) => {
+          const orderObserver = new MutationObserver(() => {
+            if (!isUpdating) updateOrderTotal();
+          });
+
+          orderObserver.observe(element, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+          });
+        });
+      }
+    }
+
+    function adjust_fliz_totals_classic() {
+      if (
+        !flizpay_frontend.cashback ||
+        parseFloat(flizpay_frontend.cashback) === 0
+      )
+        return;
+
+      const paymentRadioSelector = "#payment_method_flizpay";
+      const orderTotalSelector =
+        "#order_review > table > tfoot > tr.order-total > td > strong > span > bdi";
+      const paymentRadioElement = document.querySelector(paymentRadioSelector);
+      const orderTotalElement = document.querySelector(orderTotalSelector);
+      const cashback = parseFloat(flizpay_frontend.cashback);
+
+      let originalTotal = null; // Track the original total value
+      let isUpdating = false; // Flag to prevent loop
+
+      const updateOrderTotal = () => {
+        if (!paymentRadioElement || !orderTotalElement || isUpdating) return;
+
+        isUpdating = true;
+
+        const currentValue = parseFloat(
+          orderTotalElement.textContent.replace(".", "").replace(",", ".")
+        );
+        originalTotal = currentValue.toFixed(2);
+
+        if (paymentRadioElement && paymentRadioElement.checked) {
+          const discountedValue = (
+            originalTotal -
+            originalTotal * parseFloat(cashback / 100)
+          ).toFixed(2);
+
+          if (originalTotal - discountedValue < 1) {
+            isUpdating = false;
+            return;
+          }
+
+          const discountedLabel = `<strike style='color: red;'>${originalTotal.replace(
+            ".",
+            ","
+          )} €</strike> ${discountedValue.replace(".", ",")} €`;
+
+          orderTotalElement.innerHTML = discountedLabel;
+        } else {
+          const originalLabel = `${originalTotal.replace(".", ",")} €`;
+          orderTotalElement.innerHTML = originalLabel;
+        }
+
+        setTimeout(() => {
+          isUpdating = false;
+        }, 1000);
+      };
+
+      // Observe changes to the Flizpay payment method selection
+      if (paymentRadioElement) {
+        const paymentObserver = new MutationObserver(() => {
+          if (!isUpdating) updateOrderTotal();
+        });
+
+        paymentObserver.observe(window.document, {
+          attributes: true,
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
+
+        // Initial state check
+        updateOrderTotal();
+      }
+
+      // Observe changes to the order total element
+      if (productsTotal) {
+        const orderObserver = new MutationObserver(() => {
+          if (!isUpdating) updateOrderTotal();
+        });
+
+        orderObserver.observe(orderTotalElement, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
+      }
     }
   });
 });
