@@ -206,11 +206,12 @@ jQuery(function ($) {
           );
 
         // Initialize the original total value
-        //if (flizpay_frontend.website_language.includes("de"))
         originalTotal = parseFloat(currentValue).toFixed(2);
-        //else originalTotal = parseFloat(currentValue * 100).toFixed(2);
 
-        if (paymentRadioElement && paymentRadioElement.checked) {
+        if (
+          paymentRadioElement &&
+          document.querySelector(paymentRadioSelector).checked
+        ) {
           const discountedValue = (
             originalTotal -
             originalTotal * parseFloat(cashback / 100)
@@ -300,7 +301,10 @@ jQuery(function ($) {
         );
         originalTotal = currentValue.toFixed(2);
 
-        if (paymentRadioElement && paymentRadioElement.checked) {
+        if (
+          paymentRadioElement &&
+          document.querySelector(paymentRadioSelector).checked
+        ) {
           const discountedValue = (
             originalTotal -
             originalTotal * parseFloat(cashback / 100)
