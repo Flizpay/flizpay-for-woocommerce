@@ -180,19 +180,28 @@ jQuery(function ($) {
       const paymentRadioSelector =
         "#radio-control-wc-payment-method-options-flizpay";
       const orderTotalSelector = ".wc-block-components-totals-item__value";
+      const taxSelector = ".wc-block-components-totals-footer-item-tax";
       const paymentRadioElement = document.querySelector(paymentRadioSelector);
       const orderTotalElement = document.querySelectorAll(orderTotalSelector);
       const productsTotal = orderTotalElement[0];
-      const shipmentTotal = orderTotalElement[1];
-      const totalDesktop = orderTotalElement[2];
-      const totalMobile = orderTotalElement[3];
       const cashback = parseFloat(flizpay_frontend.cashback);
+      const taxElement = document.querySelectorAll(taxSelector);
+      const taxDesktop = taxElement[0];
+      const taxMobile = taxElement[1];
+      const originalTax = taxDesktop?.innerHTML || taxMobile?.innerHTML;
 
       let originalTotal = null; // Track the original total value
       let isUpdating = false; // Flag to prevent loop
 
       // Function to update the order total
       const updateOrderTotal = () => {
+        // Duplicate it for on the fly checks
+        const orderTotalElement = document.querySelectorAll(orderTotalSelector);
+        const productsTotal = orderTotalElement[0];
+        const shipmentTotal = orderTotalElement[1];
+        const totalDesktop = orderTotalElement[2];
+        const totalMobile = orderTotalElement[3];
+
         if (!productsTotal || !shipmentTotal || isUpdating) return;
 
         isUpdating = true;
@@ -226,14 +235,21 @@ jQuery(function ($) {
             ".",
             ","
           )} €</strike> ${discountedValue.replace(".", ",")} €`;
+          const discountedTaxLabel = navigator.language.includes("en")
+            ? 'Incl. 19% VAT.'
+            : 'Inkl. 19% MwSt.'
 
           if (totalDesktop) totalDesktop.innerHTML = discountedLabel;
           if (totalMobile) totalMobile.innerHTML = discountedLabel;
+          if (taxDesktop) taxDesktop.innerHTML = discountedTaxLabel;
+          if (taxMobile) taxMobile.innerHTML = discountedTaxLabel;
         } else {
           const originalLabel = `${originalTotal.replace(".", ",")} €`;
 
           if (totalDesktop) totalDesktop.innerHTML = originalLabel;
           if (totalMobile) totalMobile.innerHTML = originalLabel;
+          if (taxDesktop) taxDesktop.innerHTML = originalTax;
+          if (taxMobile) taxMobile.innerHTML = originalTax;
         }
 
         setTimeout(() => {
@@ -284,8 +300,13 @@ jQuery(function ($) {
       const paymentRadioSelector = "#payment_method_flizpay";
       const orderTotalSelector =
         "#order_review > table > tfoot > tr.order-total > td > strong > span > bdi";
+      const gmTaxSelector = "#order_review > table > tfoot > tr.order-total > td > span"
+      const defaultTaxSelector = "#order_review > table > tfoot > tr.order-tax"
+      
       const paymentRadioElement = document.querySelector(paymentRadioSelector);
       const orderTotalElement = document.querySelector(orderTotalSelector);
+      const taxElement = document.querySelector(gmTaxSelector) || document.querySelector(defaultTaxSelector);
+      const originalTax = taxElement?.innerHTML;
       const cashback = parseFloat(flizpay_frontend.cashback);
 
       let originalTotal = null; // Track the original total value
@@ -297,7 +318,7 @@ jQuery(function ($) {
         isUpdating = true;
 
         const currentValue = parseFloat(
-          orderTotalElement.textContent.replace(".", "").replace(",", ".")
+          document.querySelector(orderTotalSelector).textContent.replace(".", "").replace(",", ".")
         );
         originalTotal = currentValue.toFixed(2);
 
@@ -320,10 +341,15 @@ jQuery(function ($) {
             ","
           )} €</strike> ${discountedValue.replace(".", ",")} €`;
 
-          orderTotalElement.innerHTML = discountedLabel;
+          document.querySelector(orderTotalSelector).innerHTML =
+            discountedLabel;
+          taxElement.innerHTML = navigator.language.includes("en")
+            ? 'Incl. 19% VAT.'
+            : 'Inkl. 19% MwSt.'
         } else {
           const originalLabel = `${originalTotal.replace(".", ",")} €`;
-          orderTotalElement.innerHTML = originalLabel;
+          document.querySelector(orderTotalSelector).innerHTML = originalLabel;
+          taxElement.innerHTML = originalTax;
         }
 
         setTimeout(() => {
