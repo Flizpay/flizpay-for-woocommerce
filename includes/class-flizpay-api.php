@@ -52,7 +52,7 @@ class WC_Flizpay_API
    */
   private function init()
   {
-    $this->base_url = 'http://localhost:8080';
+    $this->base_url = 'https://api.flizpay.de';
     $this->routes = array(
       'generate_webhook_key' => function ($body) {
         return array(

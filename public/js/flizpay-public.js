@@ -375,7 +375,7 @@ jQuery(function ($) {
       }
 
       // Observe changes to the order total element
-      if (productsTotal) {
+      if (orderTotalElement) {
         const orderObserver = new MutationObserver(() => {
           if (!isUpdating) updateOrderTotal();
         });
