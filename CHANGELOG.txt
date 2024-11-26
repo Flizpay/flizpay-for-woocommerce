@@ -1,5 +1,9 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-25-11 - version 1.4.0
+* Use admin user language on admin page prior to general language settings and add customer info to transaction
+* Value with cashback applied is now displayed on the checkout page
+
 2024-29-10 - version 1.3.0
 * Remove the payment failed page in favor of FLIZ payment failed page. Smooth the UX in the admin page
 
