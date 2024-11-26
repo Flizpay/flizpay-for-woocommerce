@@ -186,8 +186,8 @@ jQuery(function ($) {
       const productsTotal = orderTotalElement[0];
       const cashback = parseFloat(flizpay_frontend.cashback);
       const taxElement = document.querySelectorAll(taxSelector);
-      const taxDesktop = taxElement[0];
-      const taxMobile = taxElement[1];
+      const taxDesktop = Array.isArray(taxElement) && taxElement[0] ? taxElement[0] : null;
+      const taxMobile = Array.isArray(taxElement) && taxElement[1] ?taxElement[1] : null;
       const originalTax = taxDesktop?.innerHTML || taxMobile?.innerHTML;
 
       let originalTotal = null; // Track the original total value
@@ -343,13 +343,16 @@ jQuery(function ($) {
 
           document.querySelector(orderTotalSelector).innerHTML =
             discountedLabel;
-          taxElement.innerHTML = navigator.language.includes("en")
-            ? 'Incl. 19% VAT.'
-            : 'Inkl. 19% MwSt.'
+          if (taxElement) {
+            taxElement.innerHTML = navigator.language.includes("en")
+              ? 'Incl. 19% VAT.'
+              : 'Inkl. 19% MwSt.'
+          }
         } else {
           const originalLabel = `${originalTotal.replace(".", ",")} €`;
           document.querySelector(orderTotalSelector).innerHTML = originalLabel;
-          taxElement.innerHTML = originalTax;
+          if(taxElement)
+            taxElement.innerHTML = originalTax;
         }
 
         setTimeout(() => {
