@@ -121,11 +121,13 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
     - Admin page uses admin user language
   - ADDED 
     - Adding customer information to the transaction being created
+  - ADDED 
+    - Value with cashback applied, when active, is now displayed in the checkout page
 
 == Upgrade Notice ==
 
 = v1.4.0 =
-* The admin page now is presented on the admin user language or defaults to system language. Customer information add to the Transaction
+* The admin page now is presented on the admin user language or defaults to system language. Customer information add to the Transaction and value with cashback displayed on the checkout page
 
 = v1.3.0 = 
 * The admin page now has a better UX and the payment failed page was removed in favor of FLIZ payment failed page
