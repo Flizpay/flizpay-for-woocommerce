@@ -87,6 +87,7 @@ class Flizpay_Public
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 'public_dir_path' => plugin_dir_url(__FILE__),
                 'order_finish_nonce' => wp_create_nonce('order_finish_nonce'),
+                'cashback' => get_transient('flizpay_cashback_transient'),
             );
             wp_localize_script($this->plugin_name, "flizpay_frontend", $ajaxurl);
         }
