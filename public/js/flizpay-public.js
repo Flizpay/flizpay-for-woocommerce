@@ -47,8 +47,6 @@ jQuery(function ($) {
           unsubscribe();
         }
       });
-
-      adjust_fliz_totals_blocks();
     }
 
     function bind_ajax_hook(isClassic) {
@@ -74,8 +72,6 @@ jQuery(function ($) {
           }
         });
       });
-
-      adjust_fliz_totals_classic();
     }
   });
 });
