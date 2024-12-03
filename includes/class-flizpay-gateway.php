@@ -307,13 +307,19 @@ function flizpay_init_gateway_class()
 
                 $response = $client->dispatch('fetch_cashback_data', null, false);
 
-                if (isset($response['cashbacks'])) {
+                if (isset($response['cashbacks']) && count($response['cashbacks']) > 0) {
                     foreach ($response['cashbacks'] as $cashback) {
-                        if ($cashback['active']) {
-                            set_transient('flizpay_cashback_transient', $cashback['amount'], 300);
+                        if ($cashback['active'] && floatval($cashback['amount']) !== 0) {
+                            set_transient('flizpay_cashback_transient', $cashback['amount'], 600);
                             return $cashback['amount'];
+                        } else {
+                            set_transient('flizpay_cashback_transient', 0, 600);
+                            return null;
                         }
                     }
+                } else {
+                    set_transient('flizpay_cashback_transient', 0, 600);
+                    return null;
                 }
             }
 
