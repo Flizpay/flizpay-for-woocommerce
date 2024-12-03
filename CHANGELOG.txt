@@ -1,5 +1,9 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-03-12 - version 1.4.1
+* Increased time of the cashback cached value to 10 min
+* Reverted: Value with cashback applied is now displayed on the checkout page
+
 2024-25-11 - version 1.4.0
 * Use admin user language on admin page prior to general language settings and add customer info to transaction
 * Value with cashback applied is now displayed on the checkout page

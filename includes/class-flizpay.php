@@ -72,7 +72,7 @@ class Flizpay
 		if (defined('FLIZPAY_VERSION')) {
 			$this->version = FLIZPAY_VERSION;
 		} else {
-			$this->version = '1.4.0';
+			$this->version = '1.4.1';
 		}
 		$this->plugin_name = 'flizpay';
 

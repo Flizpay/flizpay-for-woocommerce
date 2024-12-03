@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.7
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -124,7 +124,16 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - ADDED 
     - Value with cashback applied, when active, is now displayed in the checkout page
 
+- v1.4.1
+  - REMOVED 
+    - Reverted value with cashback at the checkout page
+  - CHANGED 
+    - Increased time of the cashback cached value to 10 min
+
 == Upgrade Notice ==
+
+= v1.4.1 =
+* Reverted value with cashback at the checkout page and increased cached time for cashback value
 
 = v1.4.0 =
 * The admin page now is presented on the admin user language or defaults to system language. Customer information add to the Transaction and value with cashback displayed on the checkout page
