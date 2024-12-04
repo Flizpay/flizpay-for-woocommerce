@@ -433,10 +433,20 @@ function flizpay_init_gateway_class()
                         $this->update_option('flizpay_enabled', 'yes');
                         $this->update_option('enabled', 'yes');
                         wp_send_json_success(array('alive' => true), 200);
+                    } else if (isset($data['shippingInfo'])) {
+                        // Receive customer shipping address and respond with available methods
+                        $shipping_info = $this->calculate_shipping($data);
+
+                        wp_send_json_success($shipping_info, 200);
+                    } else if (isset($data['shippingMethodId'])) {
+                        // Customer picked a shipping method in express checkout
+                        $total_cost = $this->set_shipping_method($data);
+
+                        wp_send_json_success(array('totalCost' => $total_cost), 200);
                     } else {
-                        // Process the webhook data
+                        // Transaction Finished (Completed or Failed)
                         $this->process_webhook_data($data);
-                        // Respond with success
+
                         wp_send_json_success('Order updated successfully', 200);
                     }
                 } else {
@@ -445,6 +455,144 @@ function flizpay_init_gateway_class()
             }
 
             return; // Do not process the request
+        }
+
+        /**
+         * Function responsible for calculating the shipping fees and available methods
+         * given the customer address
+         * 
+         * @param array $data
+         * @return mixed
+         * 
+         * @since 2.0.0
+         */
+        public function calculate_shipping($data)
+        {
+            if (!isset($data['orderId']) || !isset($data['shippingInfo'])) {
+                return wp_send_json_error('OrderId and Shipping Info are required', 400);
+            }
+
+            $order_id = $data['orderId'];
+            $shipping_info = $data['shippingInfo'];
+
+            // Extract shipping information
+            $city = $shipping_info['city'];
+            $country = $shipping_info['country'];
+            $street = $shipping_info['street'];
+            $zip_code = $shipping_info['zipCode'];
+            $number = $shipping_info['number'];
+            $firstName = $shipping_info['firstName'];
+            $lastName = $shipping_info['lastName'];
+
+            $order = wc_get_order($order_id);
+            if (!$order) {
+                return wp_send_json_error('Invalid order ID', 404);
+            }
+
+            // Update shipping address in the order
+            $address = [
+                'first_name' => $order->get_billing_first_name() || $firstName, // Retain the existing first name
+                'last_name' => $order->get_billing_last_name() || $lastName,  // Retain the existing last name
+                'company' => $order->get_billing_company() || '',    // Retain the existing company
+                'address_1' => $street . ' ' . $number,
+                'address_2' => '',
+                'city' => $city,
+                'state' => '', // Optional: Set state if available
+                'postcode' => $zip_code,
+                'country' => $country,
+            ];
+            $order->set_address($address, 'shipping');
+            $order->save();
+
+            // Calculate available shipping methods
+            $package = [
+                'destination' => [
+                    'country' => $country,
+                    'state' => '', // Optional: Add state if necessary
+                    'postcode' => $zip_code,
+                    'city' => $city,
+                    'address' => $street . ' ' . $number,
+                ],
+                'contents' => $order->get_items(),
+                'contents_cost' => $order->get_total(),
+                'applied_coupons' => $order->get_coupon_codes(),
+            ];
+
+            // Retrieve shipping methods
+            $shipping_methods = WC_Shipping_Zones::get_shipping_methods_for_package($package);
+            $available_methods = [];
+
+            foreach ($shipping_methods as $method) {
+                $available_methods[] = [
+                    'name' => $method->get_method_title(),
+                    'totalCost' => (float) $method->cost,
+                    'id' => $method->id,
+                ];
+            }
+
+            return $available_methods;
+        }
+
+        /**
+         * Function responsible for setting the shipping method of the customer choice
+         * 
+         * @param array $data
+         * @return mixed
+         * 
+         * @since 2.0.0
+         */
+        public function set_shipping_method($data)
+        {
+            if (!isset($data['orderId']) || !isset($data['shippingMethodId'])) {
+                return wp_send_json_error('OrderId and ShippingMethodId are required', 400);
+            }
+
+            $order_id = $data['orderId'];
+            $shipping_method_id = $data['shippingMethodId'];
+
+            $order = wc_get_order($order_id);
+            if (!$order) {
+                return wp_send_json_error('Invalid order ID', 404);
+            }
+
+            $packages = WC()->shipping->calculate_shipping_for_package([
+                'contents' => $order->get_items(),
+                'destination' => [
+                    'country' => $order->get_shipping_country(),
+                    'state' => $order->get_shipping_state(),
+                    'postcode' => $order->get_shipping_postcode(),
+                    'city' => $order->get_shipping_city(),
+                ],
+            ]);
+
+            $selected_method = null;
+
+            foreach ($packages['rates'] as $rate_id => $rate) {
+                if ($rate_id === $shipping_method_id) {
+                    $selected_method = $rate;
+                    break;
+                }
+            }
+
+            if (!$selected_method) {
+                return wp_send_json_error('Invalid shipping method ID', 400);
+            }
+
+            // Remove existing shipping items
+            $order->remove_order_items('shipping');
+
+            // Add the selected shipping method
+            $item = new WC_Order_Item_Shipping();
+            $item->set_method_id($selected_method->get_method_id());
+            $item->set_method_title($selected_method->get_label());
+            $item->set_total($selected_method->get_cost());
+            $order->add_item($item);
+
+            // Recalculate totals
+            $order->calculate_totals();
+            $order->save();
+
+            return wc_price($order->get_total());
         }
 
         /**
