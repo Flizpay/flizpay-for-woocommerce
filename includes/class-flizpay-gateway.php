@@ -558,6 +558,8 @@ function flizpay_init_gateway_class()
         public function process_payment($order_id)
         {
             $order = wc_get_order($order_id);
+            $order->set_status('wc-checkout-draft', 'Waiting FLIZpay payment');
+            $order->save();
 
             $redirectUrl = $this->create_transaction($order);
 
