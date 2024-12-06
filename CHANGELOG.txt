@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-03-12 - version 1.4.2
+* Create order in draft to prevent accountability softwares from picking pending orders
+
 2024-03-12 - version 1.4.1
 * Increased time of the cashback cached value to 10 min
 * Reverted: Value with cashback applied is now displayed on the checkout page
