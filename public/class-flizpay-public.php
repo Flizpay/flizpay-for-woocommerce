@@ -144,6 +144,7 @@ class Flizpay_Public
             'dark_icon' => $this->assets_url . '/fliz-express-checkout-logo-dark.svg',
             'fliz_logo' => $this->assets_url . '/fliz-logo.svg',
             'fliz_loading_wheel' => $this->assets_url . '/fliz-loading-wheel.svg',
+            'cashback' => get_transient('flizpay_cashback_transient'),
         );
         wp_localize_script($this->plugin_name, "flizpay_frontend", $variables);
     }
