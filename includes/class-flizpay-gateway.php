@@ -483,6 +483,7 @@ function flizpay_init_gateway_class()
             $number = $shipping_info['number'];
             $firstName = $shipping_info['firstName'];
             $lastName = $shipping_info['lastName'];
+            $email = $shipping_info['email'];
 
             $order = wc_get_order($order_id);
             if (!$order) {
@@ -500,8 +501,12 @@ function flizpay_init_gateway_class()
                 'state' => '', // Optional: Set state if available
                 'postcode' => $zip_code,
                 'country' => $country,
+                'email' => $order->get_billing_email() || $email
             ];
             $order->set_address($address, 'shipping');
+            $order->set_billing_first_name($order->get_billing_first_name() || $firstName);
+            $order->set_billing_last_name($order->get_billing_last_name() || $lastName);
+            $order->set_billing_email($order->get_billing_email() || $email);
             $order->save();
 
             // Calculate available shipping methods
