@@ -4,6 +4,16 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 	exit;
 }
 
+require_once('includes/class-flizpay-api.php');
+
+$flizpay_settings = get_option('woocommerce_flizpay_settings');
+error_log(json_encode($flizpay_settings));
+$api_key = $flizpay_settings['flizpay_api_key'];
+
+$api_client = WC_Flizpay_API::get_instance($api_key);
+
+$api_client->dispatch('uninstall', array("webhookUrl" => ''));
+
 // Clean up options
 $options = array(
 	'flizpay_api_key',
