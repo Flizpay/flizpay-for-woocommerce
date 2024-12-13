@@ -21,11 +21,11 @@ msgstr "Docs"
 
 #: includes/class-flizpay-gateway.php:42
 msgid "cashback-title"
-msgstr "FLIZpay - get %s%% back"
+msgstr "FLIZpay - get up to %s%% back"
 
 #: includes/class-flizpay-gateway.php:44
 msgid "cashback-description"
-msgstr "Current payment methods hurt small businesses with high fees. FLIZpay is free, so your choice matters. Sign up in 60 seconds and get %s%% back on this payment."
+msgstr "Current payment methods hurt small businesses with high fees. FLIZpay is free, so your choice matters. Sign up in 60 seconds and get up to %s%% back on this payment."
 
 #: includes/class-flizpay-gateway.php:47
 msgid "title"

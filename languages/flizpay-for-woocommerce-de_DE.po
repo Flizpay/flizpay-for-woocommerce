@@ -21,11 +21,11 @@ msgstr "Dokumentation"
 
 #: includes/class-flizpay-gateway.php:42
 msgid "cashback-title"
-msgstr "FLIZpay - %s%% Cashback"
+msgstr "FLIZpay - bis zu %s%% Cashback"
 
 #: includes/class-flizpay-gateway.php:44
 msgid "cashback-description"
-msgstr "Zahlungsmethoden belasten kleine Unternehmen mit hohen Gebühren. FLIZpay ist für alle kostenlos, deine Wahl ist also wichtig. Melde dich in 60 Sekunden an und erhalte jetzt %s%% Cashback."
+msgstr "Zahlungsmethoden belasten kleine Unternehmen mit hohen Gebühren. FLIZpay ist für alle kostenlos, deine Wahl ist also wichtig. Melde dich in 60 Sekunden an und erhalte jetzt bis zu %s%% Cashback."
 
 #: includes/class-flizpay-gateway.php:47
 msgid "title"
