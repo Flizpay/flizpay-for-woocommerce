@@ -309,9 +309,12 @@ function flizpay_init_gateway_class()
 
                 if (isset($response['cashbacks']) && count($response['cashbacks']) > 0) {
                     foreach ($response['cashbacks'] as $cashback) {
-                        if ($cashback['active'] && floatval($cashback['amount']) !== 0) {
-                            set_transient('flizpay_cashback_transient', $cashback['amount'], 600);
-                            return $cashback['amount'];
+                        $firstPurchaseAmount = floatval($cashback['firstPurchaseAmount']);
+                        $amount = floatval($cashback['amount']);
+
+                        if ($cashback['active'] && $firstPurchaseAmount !== 0 || $amount !== 0) {
+                            set_transient('flizpay_cashback_transient', $firstPurchaseAmount ?? $amount, 600);
+                            return $firstPurchaseAmount ?? $amount;
                         } else {
                             set_transient('flizpay_cashback_transient', 0, 600);
                             return null;
@@ -441,6 +444,7 @@ function flizpay_init_gateway_class()
 
                 //Get the FLIZ Cashback discount
                 $fliz_discount = (float) $data['originalAmount'] - (float) $data['amount'];
+                $cashback_value = (float) ($fliz_discount * 100) / $data['originalAmount'];
 
                 if ($fliz_discount > 0) {
                     $line_items = $order->get_items();
@@ -451,7 +455,7 @@ function flizpay_init_gateway_class()
                         $item_subtotal = $item->get_total();
 
                         // Calculate the additional discount based on the already discounted total
-                        $discount_amount_fliz = ($item_subtotal * $this->cashback) / 100;
+                        $discount_amount_fliz = ($item_subtotal * $cashback_value) / 100;
 
                         // Set the new total for the line item after applying the additional discount
                         $new_total = $item_subtotal - $discount_amount_fliz;
@@ -469,7 +473,7 @@ function flizpay_init_gateway_class()
                         $shipping_total = $shipping->get_total();
 
                         // Calculate the additional discount for shipping
-                        $discount_amount_fliz = ($shipping_total * $this->cashback) / 100;
+                        $discount_amount_fliz = ($shipping_total * $cashback_value) / 100;
 
                         // Set the new shipping total after applying the discount
                         $new_shipping_total = $shipping_total - $discount_amount_fliz;
