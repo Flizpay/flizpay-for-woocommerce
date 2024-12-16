@@ -69,6 +69,27 @@ function flizpay_init_gateway_class()
             // Webhook handler
             add_action('init', array($this, 'register_webhook_endpoint'));
             add_action('template_redirect', array($this, 'handle_webhook_request'));
+
+            // Order placed e-mail handler
+            add_filter('woocommerce_email_enabled_new_order', array($this, 'disable_new_order_email_for_flizpay'), 10, 2);
+        }
+
+        /**
+         * Disable sending notifications to the admin when an order is placed with FLIZ
+         * Since the order wasn't yet paid on this moment, we don't notify
+         * All e-mails for order paid and so on shall be sent normally
+         * 
+         * @return mixed | bool
+         * 
+         * @since 1.4.3
+         */
+        public function disable_new_order_email_for_flizpay($enabled, $order)
+        {
+            if ($order && 'flizpay' === $order->get_payment_method()) {
+                // If order is paid via Flizpay, disable the New Order email
+                return false;
+            }
+            return $enabled;
         }
 
         /**
