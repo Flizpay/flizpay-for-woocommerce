@@ -21,7 +21,7 @@ msgstr "Docs"
 
 #: includes/class-flizpay-gateway.php:42
 msgid "cashback-title"
-msgstr "FLIZpay - get up to %s%% back"
+msgstr "FLIZpay - %s%% Instant-Cashback"
 
 #: includes/class-flizpay-gateway.php:44
 msgid "cashback-description"
@@ -29,7 +29,7 @@ msgstr "Current payment methods hurt small businesses with high fees. FLIZpay is
 
 #: includes/class-flizpay-gateway.php:47
 msgid "title"
-msgstr "FLIZpay - your choice matters!"
+msgstr "FLIZpay - The Payment Revolution"
 
 #: includes/class-flizpay-gateway.php:49
 msgid "description"
