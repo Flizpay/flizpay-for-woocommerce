@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-17-12 - version 1.4.4
+* Hotfix cashback data type backwards compatibility
+
 2024-17-12 - version 1.4.3
 * Dynamic cashback value for first purchase and standard options
 * Remove the webhook url on uninstall
