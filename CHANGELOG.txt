@@ -1,5 +1,10 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-17-12 - version 1.4.3
+* Dynamic cashback value for first purchase and standard options
+* Remove the webhook url on uninstall
+* Disable new order emails for FLIZpay orders
+
 2024-03-12 - version 1.4.2
 * Create order in draft to prevent accountability softwares from picking pending orders
 
