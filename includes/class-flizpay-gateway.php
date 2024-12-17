@@ -8,7 +8,7 @@ function flizpay_init_gateway_class()
 
     class WC_Flizpay_Gateway extends WC_Payment_Gateway
     {
-        static $VERSION = "1.4.2";
+        static $VERSION = "1.4.4";
 
         public $icon;
         public $title;
@@ -370,6 +370,10 @@ function flizpay_init_gateway_class()
         public function get_cashback_data()
         {
             $cashback_data = get_transient('flizpay_cashback_transient');
+
+            if (gettype($cashback_data) === "string") {
+                $cashback_data = false;
+            }
 
             if ($cashback_data === false && !empty($this->api_key)) {
 
