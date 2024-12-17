@@ -19,13 +19,21 @@ msgstr "Settings"
 msgid "Docs"
 msgstr "Docs"
 
-#: includes/class-flizpay-gateway.php:42
+#: includes/class-flizpay-gateway.php:100
 msgid "cashback-title"
 msgstr "FLIZpay - %s%% Instant-Cashback"
 
-#: includes/class-flizpay-gateway.php:44
-msgid "cashback-description"
-msgstr "Current payment methods hurt small businesses with high fees. FLIZpay is free, so your choice matters. Sign up in 60 seconds and get up to %s%% back on this payment."
+#: includes/class-flizpay-gateway.php:106
+msgid "cashback-description-both"
+msgstr "• Secure payments in direct collaboration with your bank.\n After your first FLIZ-payment at %s, you get %s%% Instant-Cashback."
+
+#: includes/class-flizpay-gateway.php:108
+msgid "cashback-description-standard"
+msgstr "• Secure payments in direct collaboration with your bank.\n %s%% Instant-Cashback for every FLIZ-payment at %s."
+
+#: includes/class-flizpay-gateway.php:113
+msgid "cashback-description-first"
+msgstr "• Secure payments in direct collaboration with your bank.\n No cashback after your first FLIZ-payment at %s."
 
 #: includes/class-flizpay-gateway.php:47
 msgid "title"
@@ -33,7 +41,7 @@ msgstr "FLIZpay - The Payment Revolution"
 
 #: includes/class-flizpay-gateway.php:49
 msgid "description"
-msgstr "Current payment methods hurt small businesses with high fees. FLIZpay is free, so your choice matters. Sign up in 60 seconds."
+msgstr "• Secure payments in direct collaboration with your bank. We support small businesses and keep your data private – stored securely in Germany."
 
 #: flizpay.php:18
 msgid "accept_payments"

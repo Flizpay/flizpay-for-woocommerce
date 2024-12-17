@@ -57,7 +57,7 @@ function flizpay_init_gateway_class()
             $this->flizpay_display_headline = $this->get_option('flizpay_display_headline');
 
             if ($this->flizpay_display_logo === 'yes') {
-                $this->icon = plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images/fliz-checkout-logo-with-banks.svg';
+                $this->icon = plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images/fliz-checkout-logo.svg';
             }
 
             $this->cashback = $this->get_cashback_data();
@@ -95,8 +95,35 @@ function flizpay_init_gateway_class()
         private function set_cashback_info()
         {
             if ($this->is_cashback_available()) {
-                $title = sprintf(__('cashback-title', 'flizpay-for-woocommerce'), $this->cashback);
-                $description = sprintf(__('cashback-description', 'flizpay-for-woocommerce'), $this->cashback);
+                $shop_name = get_bloginfo('name');
+                $title = sprintf(
+                    __('cashback-title', 'flizpay-for-woocommerce'),
+                    floatval($this->cashback['first_purchase_amount']) > 0
+                    ? $this->cashback['first_purchase_amount']
+                    : $this->cashback['standard_amount']
+                );
+                switch ($this->get_cashback_type()) {
+                    case 'both':
+                        $description = sprintf(
+                            __('cashback-description-both', 'flizpay-for-woocommerce'),
+                            $shop_name,
+                            $this->cashback['standard_amount']
+                        );
+                        break;
+                    case 'first':
+                        $description = sprintf(
+                            __('cashback-description-first', 'flizpay-for-woocommerce'),
+                            $shop_name
+                        );
+                        break;
+                    case 'standard':
+                        $description = sprintf(
+                            __('cashback-description-standard', 'flizpay-for-woocommerce'),
+                            $this->cashback['standard_amount'],
+                            $shop_name
+                        );
+                        break;
+                }
                 $this->update_option('flizpay_cashback', $this->cashback);
             } else {
                 $title = __('title', 'flizpay-for-woocommerce');
@@ -104,6 +131,24 @@ function flizpay_init_gateway_class()
             }
             $this->title = $this->flizpay_display_headline === 'yes' ? $title : 'FLIZpay';
             $this->description = $this->flizpay_display_description === 'yes' ? $description : null;
+        }
+
+        /**
+         * Define the type of cashback enabled for the business
+         * @return string { both, standard, first }
+         * @since 1.4.3
+         */
+        private function get_cashback_type()
+        {
+            $first = floatval($this->cashback['first_purchase_amount']);
+            $amount = floatval($this->cashback['standard_amount']);
+
+            if ($first > 0 && $amount > 0)
+                return 'both';
+            else if ($first > 0)
+                return 'first';
+            else
+                return 'standard';
         }
 
         /**
@@ -117,7 +162,9 @@ function flizpay_init_gateway_class()
             return isset($this->webhook_key) &&
                 isset($this->webhook_url) &&
                 $this->flizpay_webhook_alive === 'yes' &&
-                !is_null($this->cashback);
+                !is_null($this->cashback) &&
+                (!is_null($this->cashback['first_purchase_amount']) ||
+                    !is_null($this->cashback['standard_amount']));
         }
 
         /**
@@ -131,8 +178,8 @@ function flizpay_init_gateway_class()
             if ($this->is_default_translation($this->title)) {
                 if ($this->flizpay_display_headline === 'yes') {
                     $this->title = !is_null($this->cashback)
-                        ? 'FLIZpay - ' . $this->cashback . '% Cashback'
-                        : 'FLIZpay - Deine Wahl zählt!';
+                        ? 'FLIZpay - ' . $this->cashback['first_purchase_amount'] ?? $this->cashback['standard_amount'] . '% Sofort-Cashback'
+                        : 'FLIZpay - Die Zahlungsrevolution';
                 } else {
                     $this->title = 'FLIZpay';
                 }
@@ -150,7 +197,7 @@ function flizpay_init_gateway_class()
         {
             if ($this->is_default_translation($this->description)) {
                 if ($this->flizpay_display_description === 'yes') {
-                    $this->description = 'Zahlungsmethoden belasten kleine Unternehmen mit hohen Gebühren. FLIZpay ist für alle kostenlos, deine Wahl ist also wichtig. Melde dich in 60 Sekunden an.';
+                    $this->description = '• Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank, unterstützung kleiner Unternehmen, und deine Daten bleiben privat und in Deutschland.';
                 }
             }
             $this->update_option('description', $this->description);
@@ -168,7 +215,9 @@ function flizpay_init_gateway_class()
         {
             $fallbacks = [
                 'cashback-title',
-                'cashback-description',
+                'cashback-description-both',
+                'cashback-description-first',
+                'cashback-description-standard',
                 'title',
                 'description'
             ];
@@ -293,7 +342,7 @@ function flizpay_init_gateway_class()
          * or by making an API call using the FLIZ API class when the transient 
          * is expired.
          * 
-         * @return string | null
+         * @return array | null
          * 
          * @since 1.0.0
          */
@@ -312,9 +361,19 @@ function flizpay_init_gateway_class()
                         $firstPurchaseAmount = floatval($cashback['firstPurchaseAmount']);
                         $amount = floatval($cashback['amount']);
 
-                        if ($cashback['active'] && $firstPurchaseAmount !== 0 || $amount !== 0) {
-                            set_transient('flizpay_cashback_transient', $firstPurchaseAmount ?? $amount, 600);
-                            return $firstPurchaseAmount ?? $amount;
+                        if ($cashback['active'] && $firstPurchaseAmount > 0 || $amount > 0) {
+                            set_transient(
+                                'flizpay_cashback_transient',
+                                array(
+                                    'first_purchase_amount' => $firstPurchaseAmount,
+                                    'standard_amount' => $amount
+                                ),
+                                600
+                            );
+                            return array(
+                                'first_purchase_amount' => $firstPurchaseAmount,
+                                'standard_amount' => $amount
+                            );
                         } else {
                             set_transient('flizpay_cashback_transient', 0, 600);
                             return null;
@@ -326,7 +385,11 @@ function flizpay_init_gateway_class()
                 }
             }
 
-            return !empty($cashback_data) && floatval($cashback_data) > 0 ? $cashback_data : null;
+            return !empty($cashback_data) &&
+                (
+                    floatval($cashback_data['first_purchase_amount']) > 0 ||
+                    floatval($cashback_data['standard_amount']) > 0
+                ) ? $cashback_data : null;
         }
 
         /**
