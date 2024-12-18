@@ -150,29 +150,22 @@ jQuery(function ($) {
         }
 
         // Function to observe changes in the mini cart and add the button when it appears
-        const miniCartObserver = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (mutation.addedNodes.length > 0) {
-              const blocksMiniCartFooter = document.querySelector(
-                ".wc-block-mini-cart__footer-actions"
-              );
+        setInterval(() => {
+          const blocksMiniCartFooter = document.querySelector(
+            ".wc-block-mini-cart__footer-actions"
+          );
+          const blocksMiniCartButton = document.querySelector(
+            ".wc-block-mini-cart__footer-actions .flizpay-express-checkout-container-checkout"
+          );
               // Check if mini cart elements are now available
-              if (blocksMiniCartFooter) {
-                blocksMiniCartFooter.parentNode.insertBefore(
-                  expressCheckoutContainer,
-                  blocksMiniCartFooter.nextSibling
-                );
-                miniCartObserver.disconnect(); // Stop observing once the button is added
-              }
-            }
-          });
-        });
-
-        // Start observing the document body for changes
-        miniCartObserver.observe(document.body, {
-          childList: true,
-          subtree: true,
-        });
+          if (blocksMiniCartFooter && !blocksMiniCartButton) {
+            blocksMiniCartFooter.parentNode.insertBefore(
+              expressCheckoutContainer,
+              blocksMiniCartFooter.nextSibling
+            );
+            
+          }
+        }, 650);
       }, 1300);
     }
 
