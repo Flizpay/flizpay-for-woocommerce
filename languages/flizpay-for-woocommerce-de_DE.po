@@ -43,11 +43,11 @@ msgstr "FLIZpay - Die Zahlungsrevolution"
 msgid "description"
 msgstr "• Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank. FLIZ unterstützt kleine Unternehmen und schützt deine Daten – sicher in Deutschland gespeichert."
 
-#: includes/class-flizpay-gateway.php:107
+#: includes/class-flizpay-gateway.php:144
 msgid "cashback-express-title"
 msgstr "Jetzt zahlung mit %s%% Cashback."
 
-#: includes/class-flizpay-gateway.php:112
+#: includes/class-flizpay-gateway.php:170
 msgid "express-title"
 msgstr "Jetzt zahlung mit FLIZpay"
 
