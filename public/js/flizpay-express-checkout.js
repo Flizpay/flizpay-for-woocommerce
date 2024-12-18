@@ -198,7 +198,7 @@ jQuery(function ($) {
     function cart_submit(e) {
       e.preventDefault();
 
-      append_info_to_loading();
+      //append_info_to_loading();
       window.flizPay.fliz_block_ui({ express: true });
       submit_order({ cart: true });
     }
@@ -206,7 +206,7 @@ jQuery(function ($) {
     function product_submit(e) {
       e.preventDefault();
 
-      append_info_to_loading();
+      //append_info_to_loading();
       window.flizPay.fliz_block_ui({ express: true });
 
       const quantity = jQuery("input.qty").val() || "1";
@@ -224,7 +224,7 @@ jQuery(function ($) {
     function mini_cart_submit(e) {
       e.preventDefault();
 
-      append_info_to_loading();
+      //append_info_to_loading();
       window.flizPay.fliz_block_ui({ express: true });
       submit_order({ cart: true });
     }
