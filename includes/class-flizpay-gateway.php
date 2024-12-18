@@ -219,13 +219,13 @@ function flizpay_init_gateway_class()
             if ($this->is_default_translation($this->title)) {
                 if ($this->flizpay_display_headline === 'yes') {
                     $this->title = !is_null($this->cashback)
-                        ? 'FLIZpay - ' . $this->cashback['first_purchase_amount'] ?? $this->cashback['standard_amount'] . '% Sofort-Cashback'
+                        ? 'FLIZpay - ' . floatval($this->cashback['first_purchase_amount']) > 0 ? $this->cashback['first_purchase_amount'] : $this->cashback['standard_amount'] . '% Sofort-Cashback'
                         : 'FLIZpay - Die Zahlungsrevolution';
                 } else {
                     $this->title = 'FLIZpay';
                 }
                 $this->flizpay_express_checkout_title = !is_null($this->cashback)
-                    ? 'FLIZpay - ' . $this->cashback . '% Sofort-Cashback'
+                    ? 'FLIZpay - ' . floatval($this->cashback['first_purchase_amount']) > 0 ? $this->cashback['first_purchase_amount'] : $this->cashback['standard_amount'] . '% Sofort-Cashback'
                     : 'Jetzt zahlung mit FLIZpay';
             }
             $this->update_option('title', $this->title);
