@@ -45,11 +45,11 @@ msgstr "• Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank. FLIZ u
 
 #: includes/class-flizpay-gateway.php:144
 msgid "cashback-express-title"
-msgstr "Jetzt zahlung mit %s%% Cashback."
+msgstr "%s%% Sofort-Cashback"
 
 #: includes/class-flizpay-gateway.php:170
 msgid "express-title"
-msgstr "Jetzt zahlung mit FLIZpay"
+msgstr "Die Zahlungsrevolution"
 
 #: flizpay.php:18
 msgid "accept_payments"
