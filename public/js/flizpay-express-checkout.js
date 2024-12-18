@@ -155,7 +155,7 @@ jQuery(function ($) {
             ".wc-block-mini-cart__footer-actions"
           );
           const blocksMiniCartButton = document.querySelector(
-            ".wc-block-mini-cart__footer-actions .flizpay-express-checkout-container-checkout"
+            ".wp-block-woocommerce-filled-mini-cart-contents-block .flizpay-express-checkout-container-checkout"
           );
               // Check if mini cart elements are now available
           if (blocksMiniCartFooter && !blocksMiniCartButton) {
