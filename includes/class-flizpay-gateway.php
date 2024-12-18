@@ -135,6 +135,12 @@ function flizpay_init_gateway_class()
                     ? $this->cashback['first_purchase_amount']
                     : $this->cashback['standard_amount']
                 );
+                $express_checkout_title = sprintf(
+                    __('cashback-express-title', 'flizpay-for-woocommerce'),
+                    floatval($this->cashback['first_purchase_amount']) > 0
+                    ? $this->cashback['first_purchase_amount']
+                    : $this->cashback['standard_amount']
+                );
                 switch ($this->get_cashback_type()) {
                     case 'both':
                         $description = sprintf(
@@ -219,7 +225,7 @@ function flizpay_init_gateway_class()
                     $this->title = 'FLIZpay';
                 }
                 $this->flizpay_express_checkout_title = !is_null($this->cashback)
-                    ? 'FLIZpay - ' . $this->cashback . '% Cashback'
+                    ? 'FLIZpay - ' . $this->cashback . '% Sofort-Cashback'
                     : 'Jetzt zahlung mit FLIZpay';
             }
             $this->update_option('title', $this->title);
