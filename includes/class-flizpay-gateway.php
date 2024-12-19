@@ -813,8 +813,8 @@ function flizpay_init_gateway_class()
                     $order->calculate_taxes();
                     $order->calculate_totals();
                     $order->set_total($data['amount']);
-                    $order->save();
                     $order->add_order_note('FLIZ Cashback Applied: ' . $data['currency'] . sanitize_text_field($fliz_discount));
+                    $order->save();
                     WC()->cart->empty_cart();
                 }
 
