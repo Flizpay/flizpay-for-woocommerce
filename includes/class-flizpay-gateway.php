@@ -639,9 +639,12 @@ function flizpay_init_gateway_class()
 
             $available_methods = [];
             foreach ($shipping_packages['rates'] as $rate_id => $rate) {
+                $tax_rates = WC_Tax::get_shipping_tax_rates();
+                $calculated_taxes = WC_Tax::calc_shipping_tax($rate->get_cost(), $tax_rates);
+                $shipping_cost_incl_tax = (float) $rate->get_cost() + array_sum($calculated_taxes);
                 $available_methods[] = [
                     'name' => $rate->get_label(),
-                    'totalCost' => (float) $rate->get_cost(),
+                    'totalCost' => $shipping_cost_incl_tax,
                     'id' => $rate_id,
                 ];
             }
@@ -671,20 +674,44 @@ function flizpay_init_gateway_class()
                 return wp_send_json_error('Invalid order ID', 404);
             }
 
-            $packages = WC()->shipping->calculate_shipping_for_package([
-                'contents' => $order->get_items(),
+            $contents = [];
+
+            foreach ($order->get_items() as $item_id => $item) {
+                $product = $item->get_product(); // Get the WC_Product object
+                if ($product) {
+                    $contents[$item_id] = [
+                        'product_id' => $product->get_id(),
+                        'variation_id' => $product->is_type('variable') ? $product->get_id() : 0,
+                        'quantity' => $item->get_quantity(),
+                        'data' => $product, // WC_Product object
+                    ];
+                }
+            }
+            // Calculate available shipping methods
+            $package = [
                 'destination' => [
                     'country' => $order->get_shipping_country(),
                     'state' => $order->get_shipping_state(),
                     'postcode' => $order->get_shipping_postcode(),
                     'city' => $order->get_shipping_city(),
                 ],
-            ]);
+                'contents' => $contents,
+                'contents_cost' => $order->get_total(),
+                'applied_coupons' => $order->get_coupon_codes(),
+            ];
 
+            // Get available shipping rates
+            $shipping = new WC_Shipping();
+            $shipping_packages = $shipping->calculate_shipping_for_package($package);
+
+            // Find the selected method
+            $shipping_cost_incl_tax = 0;
             $selected_method = null;
-
-            foreach ($packages['rates'] as $rate_id => $rate) {
+            foreach ($shipping_packages['rates'] as $rate_id => $rate) {
                 if ($rate_id === $shipping_method_id) {
+                    $tax_rates = WC_Tax::get_shipping_tax_rates();
+                    $calculated_taxes = WC_Tax::calc_shipping_tax($rate->get_cost(), $tax_rates);
+                    $shipping_cost_incl_tax = (float) $rate->get_cost() + array_sum($calculated_taxes);
                     $selected_method = $rate;
                     break;
                 }
@@ -694,21 +721,22 @@ function flizpay_init_gateway_class()
                 return wp_send_json_error('Invalid shipping method ID', 400);
             }
 
-            // Remove existing shipping items
+            // Remove existing shipping items and add the selected method
             $order->remove_order_items('shipping');
 
-            // Add the selected shipping method
             $item = new WC_Order_Item_Shipping();
             $item->set_method_id($selected_method->get_method_id());
             $item->set_method_title($selected_method->get_label());
-            $item->set_total($selected_method->get_cost());
+            $item->set_total($shipping_cost_incl_tax);
+            $item->save();
+
             $order->add_item($item);
 
-            // Recalculate totals
+            // Recalculate and save order totals
             $order->calculate_totals();
             $order->save();
 
-            return wc_price($order->get_total());
+            return $order->get_total();
         }
 
         /**
