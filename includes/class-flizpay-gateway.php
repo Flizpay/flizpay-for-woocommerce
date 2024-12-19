@@ -588,21 +588,21 @@ function flizpay_init_gateway_class()
 
             // Update shipping address in the order
             $address = [
-                'first_name' => $order->get_billing_first_name() || $firstName, // Retain the existing first name
-                'last_name' => $order->get_billing_last_name() || $lastName,  // Retain the existing last name
-                'company' => $order->get_billing_company() || '',    // Retain the existing company
+                'first_name' => $order->get_billing_first_name() ?? $firstName, // Retain the existing first name
+                'last_name' => $order->get_billing_last_name() ?? $lastName,  // Retain the existing last name
+                'company' => $order->get_billing_company() ?? '',    // Retain the existing company
                 'address_1' => $street . ' ' . $number,
                 'address_2' => '',
                 'city' => $city,
                 'state' => '', // Optional: Set state if available
                 'postcode' => $zip_code,
                 'country' => $country,
-                'email' => $order->get_billing_email() || $email
+                'email' => $order->get_billing_email() ?? $email
             ];
             $order->set_address($address, 'shipping');
-            $order->set_billing_first_name($order->get_billing_first_name() || $firstName);
-            $order->set_billing_last_name($order->get_billing_last_name() || $lastName);
-            $order->set_billing_email($order->get_billing_email() || $email);
+            $order->set_billing_first_name($order->get_billing_first_name() ?? $firstName);
+            $order->set_billing_last_name($order->get_billing_last_name() ?? $lastName);
+            $order->set_billing_email($order->get_billing_email() ?? $email);
             $order->save();
 
             // Calculate available shipping methods
