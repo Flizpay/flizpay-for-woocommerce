@@ -480,7 +480,7 @@ function flizpay_init_gateway_class()
             if (isset($_SERVER['HTTP_X_FLIZ_SIGNATURE'])) {
                 $signature = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FLIZ_SIGNATURE']));
 
-                $signedData = hash_hmac('sha256', wp_json_encode($data), $key);
+                $signedData = hash_hmac('sha256', wp_json_encode($data, JSON_UNESCAPED_UNICODE), $key);
 
                 return hash_equals($signature, $signedData);
             }
@@ -573,7 +573,6 @@ function flizpay_init_gateway_class()
 
             // Extract shipping information
             $city = $shipping_info['city'];
-            $country = $shipping_info['country'];
             $street = $shipping_info['street'];
             $zip_code = $shipping_info['zipCode'];
             $number = $shipping_info['number'];
@@ -588,46 +587,62 @@ function flizpay_init_gateway_class()
 
             // Update shipping address in the order
             $address = [
-                'first_name' => $order->get_billing_first_name() ?? $firstName, // Retain the existing first name
-                'last_name' => $order->get_billing_last_name() ?? $lastName,  // Retain the existing last name
-                'company' => $order->get_billing_company() ?? '',    // Retain the existing company
+                'first_name' => $firstName, // Retain the existing first name
+                'last_name' => $lastName,  // Retain the existing last name
+                'company' => '',    // Retain the existing company
                 'address_1' => $street . ' ' . $number,
                 'address_2' => '',
                 'city' => $city,
                 'state' => '', // Optional: Set state if available
                 'postcode' => $zip_code,
-                'country' => $country,
-                'email' => $order->get_billing_email() ?? $email
+                'country' => 'DE',
+                'email' => $email
             ];
             $order->set_address($address, 'shipping');
-            $order->set_billing_first_name($order->get_billing_first_name() ?? $firstName);
-            $order->set_billing_last_name($order->get_billing_last_name() ?? $lastName);
-            $order->set_billing_email($order->get_billing_email() ?? $email);
+            $order->set_address($address, 'billing');
+            $order->set_billing_first_name($firstName);
+            $order->set_billing_last_name($lastName);
+            $order->set_billing_email($email);
             $order->save();
+
+            $contents = [];
+
+            foreach ($order->get_items() as $item_id => $item) {
+                $product = $item->get_product(); // Get the WC_Product object
+                if ($product) {
+                    $contents[$item_id] = [
+                        'product_id' => $product->get_id(),
+                        'variation_id' => $product->is_type('variable') ? $product->get_id() : 0,
+                        'quantity' => $item->get_quantity(),
+                        'data' => $product, // WC_Product object
+                    ];
+                }
+            }
 
             // Calculate available shipping methods
             $package = [
                 'destination' => [
-                    'country' => $country,
+                    'country' => 'DE',
                     'state' => '', // Optional: Add state if necessary
                     'postcode' => $zip_code,
                     'city' => $city,
                     'address' => $street . ' ' . $number,
                 ],
-                'contents' => $order->get_items(),
+                'contents' => $contents,
                 'contents_cost' => $order->get_total(),
                 'applied_coupons' => $order->get_coupon_codes(),
             ];
 
-            // Retrieve shipping methods
-            $shipping_methods = WC_Shipping_Zones::get_shipping_methods_for_package($package);
-            $available_methods = [];
+            // Get available shipping rates
+            $shipping = new WC_Shipping();
+            $shipping_packages = $shipping->calculate_shipping_for_package($package);
 
-            foreach ($shipping_methods as $method) {
+            $available_methods = [];
+            foreach ($shipping_packages['rates'] as $rate_id => $rate) {
                 $available_methods[] = [
-                    'name' => $method->get_method_title(),
-                    'totalCost' => (float) $method->cost,
-                    'id' => $method->id,
+                    'name' => $rate->get_label(),
+                    'totalCost' => (float) $rate->get_cost(),
+                    'id' => $rate_id,
                 ];
             }
 
