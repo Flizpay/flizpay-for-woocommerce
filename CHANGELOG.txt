@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-19-12 - version 1.4.5
+* Hotfix total order value could have been stored incorrectly due to taxes variation
+
 2024-17-12 - version 1.4.4
 * Hotfix cashback data type backwards compatibility
 
