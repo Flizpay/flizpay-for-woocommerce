@@ -8,14 +8,16 @@
   gap: 8px !important;
   width: 100% !important;
   cursor: pointer !important;
-  border: 1px solid transparent !important;
-  padding: 10px 20px !important;
+  border: 0px !important;
+  padding: 4 !important;
+  max-height: 48px !important;
   border-radius: 5px !important;
   cursor: pointer !important;
   transition: background-color 0.5s ease, color 0.5s ease, transform 0.5s ease !important;
-  font-family: PayPalOpen-Regular, Helvetica, Arial, "Liberation Sans", sans-serif !important;
-  font-weight: 500 !important;
+  font-family: 'Google sans', sans-serif !important;
+  font-weight: 600 !important;
   font-size: 18px !important;
+  height: 48px !important;
 }
 
 .flizpay-express-checkout-light {
@@ -24,8 +26,7 @@
   
 
   &:hover {
-    background-color: #001F3F !important;
-    color: #80ED99 !important;
+    background-color: #83ffb5 !important;
   }
 
   &:active {
@@ -61,7 +62,7 @@
 
 .fliz-loading-html {
   margin-bottom: -15px;
-  padding: 16px;
+  padding: 46 8;
   display: flex;
   flex-direction: column;
   justify-content: center;
