@@ -12,7 +12,7 @@ $api_key = $flizpay_settings['flizpay_api_key'];
 
 $api_client = WC_Flizpay_API::get_instance($api_key);
 
-$api_client->dispatch('save_webhook_url', array("webhookUrl" => ''));
+$api_client->dispatch('save_webhook_url', array("webhookUrl" => ''), false);
 
 // Clean up options
 $options = array(
