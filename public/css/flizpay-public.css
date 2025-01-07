@@ -26,7 +26,7 @@
   
 
   &:hover {
-    background-color: #83ffb5 !important;
+    filter: opacity(85%) !important;
   }
 
   &:active {
