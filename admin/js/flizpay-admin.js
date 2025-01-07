@@ -62,6 +62,9 @@
     const expressCheckoutButtonDark = document.createElement("img");
     const buttonExampleLabel = document.createElement("p");
 
+    // Remove the express checkout theme selection from the settings page
+    document.querySelector('#woocommerce_flizpay_flizpay_express_checkout_theme').parentNode.parentElement.parentElement.style.display = 'none';
+
     initCustomAttributesAndStyles();
 
     if (isConnectionFailed()) {
