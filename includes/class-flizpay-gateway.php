@@ -8,7 +8,7 @@ function flizpay_init_gateway_class()
 
     class WC_Flizpay_Gateway extends WC_Payment_Gateway
     {
-        static $VERSION = "1.4.4";
+        static $VERSION = "1.4.5";
 
         public $icon;
         public $title;
@@ -546,11 +546,8 @@ function flizpay_init_gateway_class()
                         $discount_amount_fliz = ($item_subtotal * $cashback_value) / 100;
 
                         // Set the new total for the line item after applying the additional discount
-                        $new_total = $item_subtotal - $discount_amount_fliz;
+                        $new_total = round($item_subtotal - $discount_amount_fliz, 2, PHP_ROUND_HALF_DOWN);
                         $item->set_total($new_total);
-
-                        // Recalculate taxes for the item if applicable
-                        $item->calculate_taxes();
 
                         // Save the item changes
                         $item->save();
@@ -564,20 +561,19 @@ function flizpay_init_gateway_class()
                         $discount_amount_fliz = ($shipping_total * $cashback_value) / 100;
 
                         // Set the new shipping total after applying the discount
-                        $new_shipping_total = $shipping_total - $discount_amount_fliz;
+                        $new_shipping_total = round($shipping_total - $discount_amount_fliz, 2, PHP_ROUND_HALF_DOWN);
+                        // Reset item taxes to let WC recalculate
                         $shipping->set_total($new_shipping_total);
-
-                        // Recalculate taxes for shipping if applicable
-                        $shipping->calculate_taxes();
-
                         // Save the shipping item changes
                         $shipping->save();
                     }
 
                     // Recalculate the overall order totals
+                    $order->calculate_taxes();
                     $order->calculate_totals();
-                    $order->save();
+                    $order->set_total($data['amount']);
                     $order->add_order_note('FLIZ Cashback Applied: ' . $data['currency'] . sanitize_text_field($fliz_discount));
+                    $order->save();
                     WC()->cart->empty_cart();
                 }
 
