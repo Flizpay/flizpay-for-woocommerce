@@ -4,11 +4,11 @@ jQuery(function ($) {
     window.flizPay.stopPolling =
       localStorage.getItem("flizpay_stop_polling") || false;
     window.flizPay.refreshButtonLabel = navigator.language.includes("en")
-      ? "Didn't redirect? Click here to refresh."
-      : "Nicht weitergeleitet? Klicken Sie hier, um die Seite neu zu laden";
+      ? "Already paid? Click here to refresh."
+      : "Hast du schon bezahlt? Klickst du hier, um die Seite neu zu laden";
     window.flizPay.cancelButtonLabel = navigator.language.includes("en")
-      ? "Or cancel."
-      : "Oder Abbrechen.";
+      ? "Cancel."
+      : "Abbrechen.";
     window.flizPay.waitLabel = navigator.language.includes("en")
       ? "Wait..."
       : "Warten...";
@@ -55,7 +55,6 @@ jQuery(function ($) {
               const flizRefreshButton = document.querySelector(
                 "#flizpay-refresh-button"
               );
-              flizRefreshButton.setAttribute("style", "display: none;");
               flizCancelButton.onclick = () => {
                 flizCancelButton.innerHTML = window.flizPay.waitLabel;
                 window.location.reload();
@@ -66,7 +65,7 @@ jQuery(function ($) {
               }
               setTimeout(() => {
                 flizRefreshButton.setAttribute("style", "display: block;");
-              });
+              }, 5000);
             },
             css: {
               border: "none",
