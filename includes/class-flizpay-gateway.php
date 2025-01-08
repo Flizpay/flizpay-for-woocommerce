@@ -218,7 +218,7 @@ function flizpay_init_gateway_class()
         {
             if ($this->is_default_translation($this->description)) {
                 if ($this->flizpay_display_description === 'yes') {
-                    $this->description = '• Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank, unterstützung kleiner Unternehmen, und deine Daten bleiben privat und in Deutschland.';
+                    $this->description = 'Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank, unterstützung kleiner Unternehmen, und deine Daten bleiben privat und in Deutschland.';
                 }
             }
             $this->update_option('description', $this->description);
