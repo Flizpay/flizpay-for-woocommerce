@@ -1,67 +1,68 @@
 .flizpay-express-checkout-button {
-  padding: 12px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 8px;
-  width: 100%;
-  cursor: pointer;
-  border: 1px solid transparent;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.5s ease, color 0.5s ease, transform 0.5s ease;
-  font-family: PayPalOpen-Regular, Helvetica, Arial, "Liberation Sans", sans-serif;
-  font-weight: 500;
-  font-size: 18px;
+  padding: 12px !important;
+  border-radius: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  cursor: pointer !important;
+  border: 0px !important;
+  padding: 4 !important;
+  max-height: 48px !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  transition: background-color 0.5s ease, color 0.5s ease, transform 0.5s ease !important;
+  font-family: 'Google sans', sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 18px !important;
+  height: 48px !important;
 }
 
 .flizpay-express-checkout-light {
-  color: #001F3F;
-  background-color: #80ED99;
+  color: #001F3F !important;
+  background-color: #80ED99 !important;
   
 
   &:hover {
-    background-color: #001F3F;
-    color: #80ED99;
+    filter: opacity(85%) !important;
   }
 
   &:active {
-    transform: scale(0.98);
-    border-color: #80ED99;
+    transform: scale(0.98) !important;
+    border-color: #80ED99 !important;
   }
 }
 
 .flizpay-express-checkout-dark {
-  color: #80ED99;
-  background-color: #001F3F;
+  color: #80ED99 !important;
+  background-color: #001F3F !important;
 
   &:hover {
-    background-color: #80ED99;
-    color: #001F3F;
+    background-color: #80ED99 !important;
+    color: #001F3F !important;
   }
 
   &:active {
-    transform: scale(0.98);
-    border-color: #001F3F;
+    transform: scale(0.98) !important;
+    border-color: #001F3F !important;
   }
 }
 
 .flizpay-express-checkout-container-checkout {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin-top: 8px;
-  margin-bottom: 18px;
-  text-align: center;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin-top: 8px !important;
+  margin-bottom: 18px !important;
+  text-align: center !important;
 }
 
 .fliz-loading-html {
   margin-bottom: -15px;
-  padding: 8px;
+  padding: 46 8;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -96,16 +97,16 @@
 }
 
 .flizpay-express-checkout-button.disabled {
-  cursor: not-allowed;
-  filter: grayscale(100%);
+  cursor: not-allowed !important;
+  filter: grayscale(100%) !important;
 
   &:hover {
-    cursor: not-allowed;
-    filter: grayscale(100%);
+    cursor: not-allowed !important;
+    filter: grayscale(100%) !important;
   }
 
   &:active {
-    cursor: not-allowed;
-    filter: grayscale(100%);
+    cursor: not-allowed !important;
+    filter: grayscale(100%) !important;
   }
 }
