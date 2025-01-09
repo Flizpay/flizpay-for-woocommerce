@@ -70,7 +70,7 @@ jQuery(function ($) {
             css: {
               border: "none",
               borderRadius: "8px",
-              padding: "12px",
+              padding: "16px",
               top: "30%",
               left: "20%",
               width: "60%",
