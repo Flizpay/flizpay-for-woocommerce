@@ -1,9 +1,12 @@
 == FLIZpay for WooCommerce Changelog ==
 
-2024-19-12 - version 2.0.1
+2025-09-01 - version 2.0.2
+* Fix express checkout button font size
+
+2025-09-01 - version 2.0.1
 * Express checkout functionality files
 
-2024-19-12 - version 2.0.0
+2025-09-01 - version 2.0.0
 * Express checkout functionality added
 
 2024-19-12 - version 1.4.5
