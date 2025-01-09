@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2024-19-12 - version 2.0.0
+* Express checkout functionality added
+
 2024-19-12 - version 1.4.5
 * Hotfix total order value could have been stored incorrectly due to taxes variation
 

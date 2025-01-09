@@ -4,11 +4,11 @@ jQuery(function ($) {
     window.flizPay.stopPolling =
       localStorage.getItem("flizpay_stop_polling") || false;
     window.flizPay.refreshButtonLabel = navigator.language.includes("en")
-      ? "Already paid? Click here to refresh."
+      ? "Already paid? Click here to refresh"
       : "Hast du schon bezahlt? Klickst du hier, um die Seite neu zu laden";
     window.flizPay.cancelButtonLabel = navigator.language.includes("en")
-      ? "Cancel."
-      : "Abbrechen.";
+      ? "Cancel"
+      : "Abbrechen";
     window.flizPay.waitLabel = navigator.language.includes("en")
       ? "Wait..."
       : "Warten...";
@@ -61,16 +61,22 @@ jQuery(function ($) {
               };
               flizRefreshButton.onclick = () => {
                 flizRefreshButton.innerHTML = window.flizPay.waitLabel;
-                window.location.reload();
+                if (localStorage.getItem("flizpay_order_id")) {
+                  window.flizPay.mobile_redirect_when_order_finished(localStorage.getItem("flizpay_order_id"));
+                  setTimeout(() => window.location.reload(), 10000);
+                } else {
+                  window.location.reload();
+                }
+                  
               }
               setTimeout(() => {
                 flizRefreshButton.setAttribute("style", "display: block;");
-              }, 5000);
+              }, 8000);
             },
             css: {
               border: "none",
               borderRadius: "8px",
-              padding: "12px",
+              padding: "64px 0px",
               top: "30%",
               left: "20%",
               width: "60%",
@@ -89,6 +95,13 @@ jQuery(function ($) {
 
     window.flizPay.mobile_redirect_when_order_finished =
       function mobile_redirect_when_order_finished(order_id) {
+        const flizRefreshButton = document.querySelector(
+          "#flizpay-refresh-button"
+        );
+        const flizCancelButton = document.querySelector(
+          "#flizpay-cancel-button"
+        );
+        
         if (window.flizPay.stopPolling) {
           jQuery.unblockUI();
           localStorage.removeItem("flizpay_stop_polling");
@@ -122,6 +135,10 @@ jQuery(function ($) {
               ) {
                 window.flizPay.mobile_redirect_when_order_finished(order_id);
               } else {
+                if (flizRefreshButton && flizCancelButton) {
+                  flizRefreshButton.setAttribute("style", "display: none;");
+                  flizCancelButton.innerHTML = window.flizPay.waitLabel;
+                }
                 localStorage.setItem("flizpay_stop_polling", true);
                 window.location.href = order.url;
               }

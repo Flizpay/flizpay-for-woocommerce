@@ -5,6 +5,12 @@
 
 jQuery(function ($) {
   $(document).ready(function () {
+    //Google Sans Font
+    document.head.insertAdjacentHTML(
+      "beforeend",
+      `<link href="https://fonts.googleapis.com/css2?family=Google+Sans&display=swap" rel="stylesheet">`
+    );
+
     function is_express_checkout() {
       if (!flizpay_frontend.enable_express_checkout) return false;
 
@@ -47,6 +53,8 @@ jQuery(function ($) {
         "src",
         flizpay_frontend[flizpay_frontend.express_checkout_theme + "_icon"]
       );
+      expressCheckoutIcon.setAttribute("width", "115");
+      expressCheckoutIcon.setAttribute("height", "29");
       expressCheckoutButton.append(expressCheckoutIcon);
       expressCheckoutButton.append(flizpay_frontend.express_checkout_title);
       expressCheckoutContainer.append(expressCheckoutButton);
