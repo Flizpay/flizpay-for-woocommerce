@@ -1,11 +1,9 @@
 .flizpay-express-checkout-button {
-  padding: 12px !important;
   border-radius: 4px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  gap: 8px !important;
   width: 100% !important;
   cursor: pointer !important;
   border: 0px !important;
@@ -16,7 +14,8 @@
   transition: background-color 0.5s ease, color 0.5s ease, transform 0.5s ease !important;
   font-family: 'Google sans', sans-serif !important;
   font-weight: 600 !important;
-  font-size: 18px !important;
+  font-size: 16px !important;
+  font-size-adjust: inherit !important;
   height: 48px !important;
 }
 
