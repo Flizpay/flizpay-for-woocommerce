@@ -3,9 +3,12 @@ jQuery(function ($) {
     window.flizPay = {};
     window.flizPay.stopPolling =
       localStorage.getItem("flizpay_stop_polling") || false;
+    window.flizPay.refreshButtonLabel = navigator.language.includes("en")
+      ? "Already paid? Click here to refresh."
+      : "Hast du schon bezahlt? Klickst du hier, um die Seite neu zu laden";
     window.flizPay.cancelButtonLabel = navigator.language.includes("en")
-      ? "Cancel"
-      : "Abbrechen";
+      ? "Cancel."
+      : "Abbrechen.";
     window.flizPay.waitLabel = navigator.language.includes("en")
       ? "Wait..."
       : "Warten...";
@@ -13,6 +16,7 @@ jQuery(function ($) {
     window.flizPay.FLIZ_LOGO = document.createElement("img");
     window.flizPay.FLIZ_LOADING_WHEEL = document.createElement("img");
     window.flizPay.FLIZ_CANCEL_BUTTON = document.createElement("button");
+    window.flizPay.FLIZ_REFRESH_BUTTON = document.createElement("button");
 
     window.flizPay.FLIZ_LOGO.setAttribute("src", flizpay_frontend.fliz_logo);
     window.flizPay.FLIZ_LOGO.setAttribute("style", "margin-top: -10px;");
@@ -25,11 +29,18 @@ jQuery(function ($) {
       "id",
       "flizpay-cancel-button"
     );
+    window.flizPay.FLIZ_REFRESH_BUTTON.setAttribute(
+      "id",
+      "flizpay-refresh-button"
+    );
     window.flizPay.FLIZ_CANCEL_BUTTON.classList.add("fliz-cancel-button");
+    window.flizPay.FLIZ_REFRESH_BUTTON.classList.add("fliz-refresh-button");
 
     window.flizPay.FLIZ_CANCEL_BUTTON.append(window.flizPay.cancelButtonLabel);
+    window.flizPay.FLIZ_REFRESH_BUTTON.append(window.flizPay.refreshButtonLabel);
     window.flizPay.FLIZ_LOADING_HTML.append(window.flizPay.FLIZ_LOGO);
     window.flizPay.FLIZ_LOADING_HTML.append(window.flizPay.FLIZ_LOADING_WHEEL);
+    window.flizPay.FLIZ_LOADING_HTML.append(window.flizPay.FLIZ_REFRESH_BUTTON);
     window.flizPay.FLIZ_LOADING_HTML.append(window.flizPay.FLIZ_CANCEL_BUTTON);
 
     window.flizPay.fliz_block_ui = function fliz_block_ui(options) {
@@ -41,15 +52,25 @@ jQuery(function ($) {
               const flizCancelButton = document.querySelector(
                 "#flizpay-cancel-button"
               );
+              const flizRefreshButton = document.querySelector(
+                "#flizpay-refresh-button"
+              );
               flizCancelButton.onclick = () => {
                 flizCancelButton.innerHTML = window.flizPay.waitLabel;
                 window.location.reload();
               };
+              flizRefreshButton.onclick = () => {
+                flizRefreshButton.innerHTML = window.flizPay.waitLabel;
+                window.location.reload();
+              }
+              setTimeout(() => {
+                flizRefreshButton.setAttribute("style", "display: block;");
+              }, 5000);
             },
             css: {
               border: "none",
               borderRadius: "8px",
-              padding: "10px",
+              padding: "12px",
               top: "30%",
               left: "20%",
               width: "60%",
