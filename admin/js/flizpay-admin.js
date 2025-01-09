@@ -48,12 +48,23 @@
     const description = document.querySelector(
       "#connection-stablished-description"
     );
+    const expressCheckoutButtonTheme = document.querySelector(
+      "#woocommerce_flizpay_flizpay_express_checkout_theme"
+    );
     const divider = document.createElement("hr");
     const divider2 = document.createElement("hr");
     const dividerRow = document.createElement("tr");
     const dividerRow2 = document.createElement("tr");
     const exampleImage = document.createElement("img");
+    const checkoutSectionTitle = document.createElement("h2");
+    const expressCheckoutSectionTitle = document.createElement("h2");
+    const expressCheckoutButtonLight = document.createElement("img");
+    const expressCheckoutButtonDark = document.createElement("img");
+    const buttonExampleLabel = document.createElement("p");
 
+    // Remove the express checkout theme selection from the settings page
+    document.querySelector('#woocommerce_flizpay_flizpay_express_checkout_theme').parentNode.parentElement.parentElement.style.display = 'none';
+    
     initCustomAttributesAndStyles();
 
     if (isConnectionFailed()) {
@@ -123,6 +134,24 @@
     }
 
     function initCustomAttributesAndStyles() {
+      if (
+        !jQuery("#woocommerce_flizpay_flizpay_enable_express_checkout").is(
+          ":checked"
+        )
+      ) {
+        expressCheckoutButtonTheme.setAttribute("disabled", true);
+        document
+          .querySelector("#woocommerce_flizpay_flizpay_express_checkout_pages")
+          .setAttribute("disabled", true);
+      }
+      jQuery("#woocommerce_flizpay_flizpay_express_checkout_pages").select2({
+        placeholder: flizpayParams.wp_locale.includes("en")
+          ? "Select pages..."
+          : "Seiten auswählen",
+        allowClear: true,
+        width: "100%",
+        tags: true, // Allows dynamic adding and removal
+      });
       flizpayParams.wp_locale.includes("en")
         ? document
             .querySelector(".flizpay-german-banner")
@@ -131,7 +160,25 @@
             .querySelector(".flizpay-english-banner")
             .setAttribute("style", "display: none;");
       exampleImage.setAttribute("src", flizpayParams.example_image);
-      exampleImage.setAttribute("width", "500");
+      exampleImage.setAttribute("width", "40%");
+      expressCheckoutButtonDark.setAttribute(
+        "src",
+        flizpayParams.express_checkout_button_dark
+      );
+      expressCheckoutButtonDark.setAttribute(
+        "width",
+        expressCheckoutButtonTheme.offsetWidth
+      );
+      expressCheckoutButtonDark.setAttribute("style", "margin-top: 10px;");
+      expressCheckoutButtonLight.setAttribute(
+        "src",
+        flizpayParams.express_checkout_button_light
+      );
+      expressCheckoutButtonLight.setAttribute(
+        "width",
+        expressCheckoutButtonTheme.offsetWidth
+      );
+      expressCheckoutButtonLight.setAttribute("style", "margin-top: 10px;");
       testButton.setAttribute("id", "woocommerce_flizpay_test_connection");
       resultField.setAttribute("id", "woocommerce_flizpay_connection_result");
       apiKeyInput.parentNode.appendChild(testButton);
@@ -140,16 +187,42 @@
       webhookURLInput.setAttribute("type", "hidden");
       enabledCheckbox.setAttribute("disabled", true);
       webhookAlive.setAttribute("disabled", true);
-      divider.setAttribute("style", "width: 80vw");
-      divider2.setAttribute("style", "width: 80vw");
+      divider.setAttribute("style", "width: 100%");
+      divider2.setAttribute("style", "width: 100%");
+      dividerRow.setAttribute(
+        "style",
+        "width: 80vw; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; padding: 10px; text-align: center;"
+      );
+      dividerRow2.setAttribute(
+        "style",
+        "width: 80vw; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; padding: 10px; text-align: center; gap: 20px;"
+      );
+      checkoutSectionTitle.setAttribute("style", "width: 100%;");
+      expressCheckoutSectionTitle.setAttribute("style", "width: 100%;");
+      checkoutSectionTitle.innerHTML = flizpayParams.wp_locale.includes("en")
+        ? "Checkout Settings"
+        : "Kasse Einstellung";
+      expressCheckoutSectionTitle.innerHTML = flizpayParams.wp_locale.includes(
+        "en"
+      )
+        ? "Express Checkout Settings"
+        : "Express-Checkout Einstellung";
       dividerRow.append(divider);
+      dividerRow.appendChild(checkoutSectionTitle);
       dividerRow.append(exampleImage);
       dividerRow2.append(divider2);
+      dividerRow2.appendChild(expressCheckoutSectionTitle);
+      buttonExampleLabel.innerHTML = flizpayParams.wp_locale.includes("en")
+        ? "Example:"
+        : "Beispiel:";
+      expressCheckoutButtonTheme.parentNode.append(buttonExampleLabel);
+      expressCheckoutButtonTheme.parentNode.append(expressCheckoutButtonDark);
+      expressCheckoutButtonTheme.parentNode.append(expressCheckoutButtonLight);
       document
         .querySelector("table > tbody > tr:nth-child(3)")
         .insertAdjacentElement("afterend", dividerRow);
       document
-        .querySelector("table > tbody > tr:nth-child(7)")
+        .querySelector("table > tbody > tr:nth-child(8)")
         .insertAdjacentElement("afterend", dividerRow2);
 
       if (webhookAlive.checked) {
@@ -164,6 +237,20 @@
         displayHeadlineInput.checked ? "display: none;" : "display: block;"
       );
 
+      expressCheckoutButtonTheme.value === "light"
+        ? (expressCheckoutButtonDark.style.display = "none")
+        : (expressCheckoutButtonLight.style.display = "none");
+
+      jQuery(expressCheckoutButtonTheme).on("change", function () {
+        if (this.value === "light") {
+          jQuery(expressCheckoutButtonDark).hide();
+          jQuery(expressCheckoutButtonLight).show();
+        } else {
+          jQuery(expressCheckoutButtonLight).hide();
+          jQuery(expressCheckoutButtonDark).show();
+        }
+      });
+
       jQuery(displayHeadlineInput).on("change", () => {
         if (!displayHeadlineInput.checked) {
           displayHeadlineLabel.setAttribute("style", "display: block;");
@@ -171,6 +258,27 @@
           displayHeadlineLabel.setAttribute("style", "display: none;");
         }
       });
+
+      jQuery("#woocommerce_flizpay_flizpay_enable_express_checkout").on(
+        "change",
+        function () {
+          if (!this.checked) {
+            expressCheckoutButtonTheme.setAttribute("disabled", true);
+            document
+              .querySelector(
+                "#woocommerce_flizpay_flizpay_express_checkout_pages"
+              )
+              .setAttribute("disabled", true);
+          } else {
+            expressCheckoutButtonTheme.removeAttribute("disabled");
+            document
+              .querySelector(
+                "#woocommerce_flizpay_flizpay_express_checkout_pages"
+              )
+              .removeAttribute("disabled");
+          }
+        }
+      );
     }
   });
 })(jQuery);

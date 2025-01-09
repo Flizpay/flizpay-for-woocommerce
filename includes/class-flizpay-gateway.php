@@ -22,6 +22,10 @@ function flizpay_init_gateway_class()
         public $flizpay_display_logo;
         public $flizpay_display_description;
         public $flizpay_display_headline;
+        public $flizpay_enable_express_checkout;
+        public $flizpay_express_checkout_pages;
+        public $flizpay_express_checkout_theme;
+        public $flizpay_express_checkout_title;
 
         /**
          * The class constructor will set FLIZ id, load translations, description, icon and etc. 
@@ -55,6 +59,9 @@ function flizpay_init_gateway_class()
             $this->flizpay_display_logo = $this->get_option('flizpay_display_logo');
             $this->flizpay_display_description = $this->get_option('flizpay_display_description');
             $this->flizpay_display_headline = $this->get_option('flizpay_display_headline');
+            $this->flizpay_enable_express_checkout = $this->get_option('flizpay_enable_express_checkout');
+            $this->flizpay_express_checkout_pages = $this->get_option('flizpay_express_checkout_pages');
+            $this->flizpay_express_checkout_theme = $this->get_option('flizpay_express_checkout_theme');
 
             if ($this->flizpay_display_logo === 'yes') {
                 $this->icon = plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images/fliz-checkout-logo.svg';
@@ -64,6 +71,7 @@ function flizpay_init_gateway_class()
 
             $this->init_gateway_info();
 
+            //Admin options setup handler
             add_action('woocommerce_update_options_checkout_flizpay', array($this, 'test_gateway_connection'));
 
             // Webhook handler
@@ -72,6 +80,10 @@ function flizpay_init_gateway_class()
 
             // Order placed e-mail handler
             add_filter('woocommerce_email_enabled_new_order', array($this, 'disable_new_order_email_for_flizpay'), 10, 2);
+
+            // Express checkout handler
+            add_action("wp_ajax_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
+            add_action("wp_ajax_nopriv_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
         }
 
         /**
@@ -123,6 +135,12 @@ function flizpay_init_gateway_class()
                     ? $this->cashback['first_purchase_amount']
                     : $this->cashback['standard_amount']
                 );
+                $express_checkout_title = sprintf(
+                    __('cashback-express-title', 'flizpay-for-woocommerce'),
+                    floatval($this->cashback['first_purchase_amount']) > 0
+                    ? $this->cashback['first_purchase_amount']
+                    : $this->cashback['standard_amount']
+                );
                 switch ($this->get_cashback_type()) {
                     case 'both':
                         $description = sprintf(
@@ -149,9 +167,11 @@ function flizpay_init_gateway_class()
             } else {
                 $title = __('title', 'flizpay-for-woocommerce');
                 $description = __('description', 'flizpay-for-woocommerce');
+                $express_checkout_title = __('express-title', 'flizpay-for-woocommerce');
             }
             $this->title = $this->flizpay_display_headline === 'yes' ? $title : 'FLIZpay';
             $this->description = $this->flizpay_display_description === 'yes' ? $description : null;
+            $this->flizpay_express_checkout_title = $express_checkout_title;
         }
 
         /**
@@ -199,13 +219,17 @@ function flizpay_init_gateway_class()
             if ($this->is_default_translation($this->title)) {
                 if ($this->flizpay_display_headline === 'yes') {
                     $this->title = !is_null($this->cashback)
-                        ? 'FLIZpay - ' . $this->cashback['first_purchase_amount'] ?? $this->cashback['standard_amount'] . '% Sofort-Cashback'
+                        ? 'FLIZpay - ' . floatval($this->cashback['first_purchase_amount']) > 0 ? $this->cashback['first_purchase_amount'] : $this->cashback['standard_amount'] . '% Sofort-Cashback'
                         : 'FLIZpay - Die Zahlungsrevolution';
                 } else {
                     $this->title = 'FLIZpay';
                 }
+                $this->flizpay_express_checkout_title = !is_null($this->cashback)
+                    ? 'FLIZpay - ' . floatval($this->cashback['first_purchase_amount']) > 0 ? $this->cashback['first_purchase_amount'] : $this->cashback['standard_amount'] . '% Sofort-Cashback'
+                    : 'Jetzt zahlung mit FLIZpay';
             }
             $this->update_option('title', $this->title);
+            $this->update_option('flizpay_express_checkout_title', $this->flizpay_express_checkout_title);
         }
 
         /**
@@ -300,6 +324,27 @@ function flizpay_init_gateway_class()
                     $this->update_option('flizpay_display_headline', $display_headline ? 'yes' : 'no');
                 } else {
                     $this->update_option('flizpay_display_headline', 'no');
+                }
+
+                if (isset($_POST['woocommerce_flizpay_flizpay_enable_express_checkout'])) {
+                    $enable_express_checkout = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_enable_express_checkout']));
+                    $this->update_option('flizpay_enable_express_checkout', $enable_express_checkout ? 'yes' : 'no');
+                } else {
+                    $this->update_option('flizpay_enable_express_checkout', 'no');
+                }
+
+                if (isset($_POST['woocommerce_flizpay_flizpay_express_checkout_pages'])) {
+                    $express_checkout_pages = array_map('sanitize_text_field', wp_unslash($_POST['woocommerce_flizpay_flizpay_express_checkout_pages']));
+                    $this->update_option('flizpay_express_checkout_pages', $express_checkout_pages ?? array());
+                } else {
+                    $this->update_option('flizpay_express_checkout_pages', array());
+                }
+
+                if (isset($_POST['woocommerce_flizpay_flizpay_express_checkout_theme'])) {
+                    $express_checkout_theme = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_express_checkout_theme']));
+                    $this->update_option('flizpay_express_checkout_theme', $express_checkout_theme ?? 'light');
+                } else {
+                    $this->update_option('flizpay_express_checkout_theme', 'light');
                 }
             }
 
@@ -435,7 +480,7 @@ function flizpay_init_gateway_class()
             if (isset($_SERVER['HTTP_X_FLIZ_SIGNATURE'])) {
                 $signature = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FLIZ_SIGNATURE']));
 
-                $signedData = hash_hmac('sha256', wp_json_encode($data), $key);
+                $signedData = hash_hmac('sha256', wp_json_encode($data, JSON_UNESCAPED_UNICODE), $key);
 
                 return hash_equals($signature, $signedData);
             }
@@ -484,10 +529,20 @@ function flizpay_init_gateway_class()
                         $this->update_option('flizpay_enabled', 'yes');
                         $this->update_option('enabled', 'yes');
                         wp_send_json_success(array('alive' => true), 200);
+                    } else if (isset($data['shippingInfo'])) {
+                        // Receive customer shipping address and respond with available methods
+                        $shipping_info = $this->calculate_shipping($data);
+
+                        wp_send_json_success($shipping_info, 200);
+                    } else if (isset($data['shippingMethodId'])) {
+                        // Customer picked a shipping method in express checkout
+                        $total_cost = $this->set_shipping_method($data);
+
+                        wp_send_json_success(array('totalCost' => $total_cost), 200);
                     } else {
-                        // Process the webhook data
+                        // Transaction Finished (Completed or Failed)
                         $this->process_webhook_data($data);
-                        // Respond with success
+
                         wp_send_json_success('Order updated successfully', 200);
                     }
                 } else {
@@ -496,6 +551,192 @@ function flizpay_init_gateway_class()
             }
 
             return; // Do not process the request
+        }
+
+        /**
+         * Function responsible for calculating the shipping fees and available methods
+         * given the customer address
+         * 
+         * @param array $data
+         * @return mixed
+         * 
+         * @since 2.0.0
+         */
+        public function calculate_shipping($data)
+        {
+            if (!isset($data['orderId']) || !isset($data['shippingInfo'])) {
+                return wp_send_json_error('OrderId and Shipping Info are required', 400);
+            }
+
+            $order_id = $data['orderId'];
+            $shipping_info = $data['shippingInfo'];
+
+            // Extract shipping information
+            $city = $shipping_info['city'];
+            $street = $shipping_info['street'];
+            $zip_code = $shipping_info['zipCode'];
+            $number = $shipping_info['number'];
+            $firstName = $shipping_info['firstName'];
+            $lastName = $shipping_info['lastName'];
+            $email = $shipping_info['email'];
+
+            $order = wc_get_order($order_id);
+            if (!$order) {
+                return wp_send_json_error('Invalid order ID', 404);
+            }
+
+            // Update shipping address in the order
+            $address = [
+                'first_name' => $firstName, // Retain the existing first name
+                'last_name' => $lastName,  // Retain the existing last name
+                'company' => '',    // Retain the existing company
+                'address_1' => $street . ' ' . $number,
+                'address_2' => '',
+                'city' => $city,
+                'state' => '', // Optional: Set state if available
+                'postcode' => $zip_code,
+                'country' => 'DE',
+                'email' => $email
+            ];
+            $order->set_address($address, 'shipping');
+            $order->set_address($address, 'billing');
+            $order->set_billing_first_name($firstName);
+            $order->set_billing_last_name($lastName);
+            $order->set_billing_email($email);
+            $order->save();
+
+            $contents = [];
+
+            foreach ($order->get_items() as $item_id => $item) {
+                $product = $item->get_product(); // Get the WC_Product object
+                if ($product) {
+                    $contents[$item_id] = [
+                        'product_id' => $product->get_id(),
+                        'variation_id' => $product->is_type('variable') ? $product->get_id() : 0,
+                        'quantity' => $item->get_quantity(),
+                        'data' => $product, // WC_Product object
+                    ];
+                }
+            }
+
+            // Calculate available shipping methods
+            $package = [
+                'destination' => [
+                    'country' => 'DE',
+                    'state' => '', // Optional: Add state if necessary
+                    'postcode' => $zip_code,
+                    'city' => $city,
+                    'address' => $street . ' ' . $number,
+                ],
+                'contents' => $contents,
+                'contents_cost' => $order->get_total(),
+                'applied_coupons' => $order->get_coupon_codes(),
+            ];
+
+            // Get available shipping rates
+            $shipping = new WC_Shipping();
+            $shipping_packages = $shipping->calculate_shipping_for_package($package);
+
+            $available_methods = [];
+            foreach ($shipping_packages['rates'] as $rate_id => $rate) {
+                $tax_rates = WC_Tax::get_shipping_tax_rates();
+                $calculated_taxes = WC_Tax::calc_shipping_tax($rate->get_cost(), $tax_rates);
+                $shipping_cost_incl_tax = (float) $rate->get_cost() + array_sum($calculated_taxes);
+                $available_methods[] = [
+                    'name' => $rate->get_label(),
+                    'totalCost' => $shipping_cost_incl_tax,
+                    'id' => $rate_id,
+                ];
+            }
+
+            return $available_methods;
+        }
+
+        /**
+         * Function responsible for setting the shipping method of the customer choice
+         * 
+         * @param array $data
+         * @return mixed
+         * 
+         * @since 2.0.0
+         */
+        public function set_shipping_method($data)
+        {
+            if (!isset($data['orderId']) || !isset($data['shippingMethodId'])) {
+                return wp_send_json_error('OrderId and ShippingMethodId are required', 400);
+            }
+
+            $order_id = $data['orderId'];
+            $shipping_method_id = $data['shippingMethodId'];
+
+            $order = wc_get_order($order_id);
+            if (!$order) {
+                return wp_send_json_error('Invalid order ID', 404);
+            }
+
+            $contents = [];
+
+            foreach ($order->get_items() as $item_id => $item) {
+                $product = $item->get_product(); // Get the WC_Product object
+                if ($product) {
+                    $contents[$item_id] = [
+                        'product_id' => $product->get_id(),
+                        'variation_id' => $product->is_type('variable') ? $product->get_id() : 0,
+                        'quantity' => $item->get_quantity(),
+                        'data' => $product, // WC_Product object
+                    ];
+                }
+            }
+            // Calculate available shipping methods
+            $package = [
+                'destination' => [
+                    'country' => $order->get_shipping_country(),
+                    'state' => $order->get_shipping_state(),
+                    'postcode' => $order->get_shipping_postcode(),
+                    'city' => $order->get_shipping_city(),
+                ],
+                'contents' => $contents,
+                'contents_cost' => $order->get_total(),
+                'applied_coupons' => $order->get_coupon_codes(),
+            ];
+
+            // Get available shipping rates
+            $shipping = new WC_Shipping();
+            $shipping_packages = $shipping->calculate_shipping_for_package($package);
+
+            // Find the selected method
+            $shipping_cost_incl_tax = 0;
+            $selected_method = null;
+            foreach ($shipping_packages['rates'] as $rate_id => $rate) {
+                if ($rate_id === $shipping_method_id) {
+                    $tax_rates = WC_Tax::get_shipping_tax_rates();
+                    $calculated_taxes = WC_Tax::calc_shipping_tax($rate->get_cost(), $tax_rates);
+                    $shipping_cost_incl_tax = (float) $rate->get_cost() + array_sum($calculated_taxes);
+                    $selected_method = $rate;
+                    break;
+                }
+            }
+
+            if (!$selected_method) {
+                return wp_send_json_error('Invalid shipping method ID', 400);
+            }
+
+            // Remove existing shipping items and add the selected method
+            $order->remove_order_items('shipping');
+
+            $item = new WC_Order_Item_Shipping();
+            $item->set_method_id($selected_method->get_method_id());
+            $item->set_method_title($selected_method->get_label());
+            $item->set_total($shipping_cost_incl_tax);
+            $item->save();
+
+            $order->add_item($item);
+
+            // Recalculate and save order totals
+            $order->calculate_totals();
+            $order->save();
+
+            return $order->get_total();
         }
 
         /**
@@ -639,18 +880,19 @@ function flizpay_init_gateway_class()
          * It's responsible for creating the transaction using the FLIZ API Class
          * 
          * @param string $order_id
+         * @param string $source
          * @return array
          * 
          * @since 1.0.0
          */
-        public function process_payment($order_id)
+        public function process_payment($order_id, $source = 'plugin')
         {
             $order = wc_get_order($order_id);
             // We set the status as draft here to avoid accountability softwares picking the Pending Payment order
             $order->set_status('wc-checkout-draft', 'Waiting FLIZpay payment');
             $order->save();
 
-            $redirectUrl = $this->create_transaction($order);
+            $redirectUrl = $this->create_transaction($order, $source);
 
             if ($redirectUrl) {
                 return array('result' => 'success', 'redirect' => $redirectUrl, 'order_id' => $order_id);
@@ -669,11 +911,12 @@ function flizpay_init_gateway_class()
          * It will return the redirect URL to the FLIZ checkout page
          * 
          * @param array $order
+         * @param string $source
          * @return string
          * 
          * @since 1.0.0
          */
-        public function create_transaction($order)
+        public function create_transaction($order, $source = 'plugin')
         {
             $flizpay_setting = get_option('woocommerce_flizpay_settings');
             $api_key = $flizpay_setting['flizpay_api_key'];
@@ -688,14 +931,77 @@ function flizpay_init_gateway_class()
                 'externalId' => $order->get_id(),
                 'successUrl' => $order->get_checkout_order_received_url(),
                 'failureUrl' => 'https://checkout.flizpay.de/failed',
-                'customer' => $customer
+                'customer' => $customer,
+                'source' => $source
             );
-
             $client = WC_Flizpay_API::get_instance($api_key);
 
             $response = $client->dispatch('create_transaction', $body, false);
 
             return $response['redirectUrl'];
+        }
+
+        /**
+         * Handler function for flizpay express checkout
+         * @return never
+         * @since 2.0.0
+         */
+        public function flizpay_express_checkout(): never
+        {
+            check_ajax_referer('express_checkout_nonce', 'nonce');
+
+            if (!isset($_POST['cart'])) {
+                $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+                $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
+                $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
+
+                if (!$product_id || $quantity <= 0) {
+                    echo esc_html(wp_send_json_error(['message' => 'Invalid product or quantity.']));
+                    die();
+                }
+
+                // Clear the current cart
+                WC()->cart->empty_cart();
+
+                // Add product to cart
+                $new_cart = $variation_id
+                    ? WC()->cart->add_to_cart($product_id, $quantity, $variation_id)
+                    : WC()->cart->add_to_cart($product_id, $quantity);
+
+
+                if (!$new_cart) {
+                    echo esc_html(wp_send_json_error(['message' => 'Unable to add product to cart.']));
+                    die();
+                }
+            }
+
+            // Create order from cart
+            $order_id = wc_create_order();
+            $order = wc_get_order($order_id);
+
+            foreach (WC()->cart->get_cart() as $cart_item) {
+                $item_id = $order->add_product(
+                    wc_get_product($cart_item['product_id']),
+                    $cart_item['quantity']
+                );
+
+                if (!$item_id) {
+                    echo esc_html(wp_send_json_error(['message' => 'Failed to add items to order.']));
+                    die();
+                }
+            }
+
+            $order->calculate_totals();
+            $order->update_status('pending', 'FLIZpay Express Checkout initiated.');
+            $order->save();
+
+            // Clear the cart
+            WC()->cart->empty_cart();
+
+            echo esc_html(wp_send_json_success(
+                $this->process_payment($order->get_id(), 'express_checkout')
+            ));
+            die();
         }
     }
 }
