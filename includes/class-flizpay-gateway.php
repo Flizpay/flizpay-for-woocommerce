@@ -634,14 +634,23 @@ function flizpay_init_gateway_class()
             ];
 
             // Get available shipping rates
+            $prices_include_tax = ('yes' === get_option('woocommerce_prices_include_tax'));
+
             $shipping = new WC_Shipping();
             $shipping_packages = $shipping->calculate_shipping_for_package($package);
 
             $available_methods = [];
             foreach ($shipping_packages['rates'] as $rate_id => $rate) {
-                $tax_rates = WC_Tax::get_shipping_tax_rates();
-                $calculated_taxes = WC_Tax::calc_shipping_tax($rate->get_cost(), $tax_rates);
-                $shipping_cost_incl_tax = (float) $rate->get_cost() + array_sum($calculated_taxes);
+                // If prices are entered excluding tax, let's add the tax:
+                if (!$prices_include_tax) {
+                    $tax_rates = WC_Tax::get_shipping_tax_rates();
+                    $calculated_taxes = WC_Tax::calc_shipping_tax($rate->get_cost(), $tax_rates);
+                    $shipping_cost_incl_tax = (float) $rate->get_cost() + array_sum($calculated_taxes);
+                } else {
+                    // If prices are entered including tax, assume $rate->get_cost() already has tax
+                    $shipping_cost_incl_tax = (float) $rate->get_cost();
+                }
+
                 $available_methods[] = [
                     'name' => $rate->get_label(),
                     'totalCost' => $shipping_cost_incl_tax,
@@ -991,12 +1000,13 @@ function flizpay_init_gateway_class()
                 }
             }
 
+            // Remove shipping
+            foreach ($order->get_items('shipping') as $item_id => $shipping_item) {
+                $order->remove_item($item_id);
+            }
             $order->calculate_totals();
-            $order->update_status('pending', 'FLIZpay Express Checkout initiated.');
+            $order->update_status('wc-checkout-draft', 'FLIZpay Express Checkout initiated.');
             $order->save();
-
-            // Clear the cart
-            WC()->cart->empty_cart();
 
             echo esc_html(wp_send_json_success(
                 $this->process_payment($order->get_id(), 'express_checkout')
