@@ -45,7 +45,7 @@ msgstr "• Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank. FLIZ u
 
 #: includes/class-flizpay-gateway.php:144
 msgid "cashback-express-title"
-msgstr "%s%% Sofort-Cashback"
+msgstr "Bis zu %s%% Sofort-Cashback"
 
 #: includes/class-flizpay-gateway.php:170
 msgid "express-title"
