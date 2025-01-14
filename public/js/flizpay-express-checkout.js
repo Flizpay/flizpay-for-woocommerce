@@ -206,16 +206,11 @@ jQuery(function ($) {
     function cart_submit(e) {
       e.preventDefault();
 
-      //append_info_to_loading();
-      window.flizPay.fliz_block_ui({ express: true });
       submit_order({ cart: true });
     }
 
     function product_submit(e) {
       e.preventDefault();
-
-      //append_info_to_loading();
-      window.flizPay.fliz_block_ui({ express: true });
 
       const quantity = jQuery("input.qty").val() || "1";
       const productId = jQuery('[name="add-to-cart"]').val();
@@ -232,8 +227,6 @@ jQuery(function ($) {
     function mini_cart_submit(e) {
       e.preventDefault();
 
-      //append_info_to_loading();
-      window.flizPay.fliz_block_ui({ express: true });
       submit_order({ cart: true });
     }
 
@@ -243,6 +236,11 @@ jQuery(function ($) {
       variationId = null,
       cart = false,
     }) {
+      if (window.innerWidth < 768) {
+        window.flizPay.fliz_block_ui({ express: true });
+      } else {
+        window.flizPay.flizLoadingButton();
+      }
       const data = {
         action: "flizpay_express_checkout",
         product_id: productId,
