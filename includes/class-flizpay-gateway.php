@@ -934,10 +934,25 @@ function flizpay_init_gateway_class()
                 'firstName' => $order->get_billing_first_name(),
                 'lastName' => $order->get_billing_last_name()
             );
+
+            $order_items = $order->get_items();
+            $products = array();
+
+            foreach ( $order_items as $item_id => $item ) {
+                $product_name = $item->get_name();
+                $quantity     = $item->get_quantity();
+
+                $products[] = array(
+                    'name'     => $product_name,
+                    'quantity' => $quantity,
+                );
+            }
+
             $body = array(
                 'amount' => $order->get_total(),
                 'currency' => $order->get_currency(),
                 'externalId' => $order->get_id(),
+                'products' => $products,
                 'successUrl' => $order->get_checkout_order_received_url(),
                 'failureUrl' => 'https://checkout.flizpay.de/failed',
                 'customer' => $customer,
@@ -946,7 +961,7 @@ function flizpay_init_gateway_class()
             $client = WC_Flizpay_API::get_instance($api_key);
 
             $response = $client->dispatch('create_transaction', $body, false);
-
+            
             return $response['redirectUrl'];
         }
 
@@ -987,7 +1002,7 @@ function flizpay_init_gateway_class()
             // Create order from cart
             $order_id = wc_create_order();
             $order = wc_get_order($order_id);
-
+        
             foreach (WC()->cart->get_cart() as $cart_item) {
                 $item_id = $order->add_product(
                     wc_get_product($cart_item['product_id']),
