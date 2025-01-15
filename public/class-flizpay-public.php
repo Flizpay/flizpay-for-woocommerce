@@ -163,7 +163,8 @@ class Flizpay_Public
         if (isset($_POST['order_id'])) {
             $order_id = sanitize_text_field(wp_unslash($_POST['order_id']));
             $order = wc_get_order($order_id);
-            $status = $order->get_status();
+            $status = $order ? $order->get_status() : 'pending';
+
             echo wp_json_encode(
                 array(
                     'status' => $status,
