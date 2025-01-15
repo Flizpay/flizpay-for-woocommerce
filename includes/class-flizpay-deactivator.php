@@ -60,10 +60,17 @@ class Flizpay_Deactivator
 			wp_delete_post($payment_failed_page->ID, true);
 		}
 
-		require_once('includes/class-flizpay-api.php');
+		require_once('class-flizpay-api.php');
 
 		$flizpay_settings = get_option('woocommerce_flizpay_settings');
+
+		if (!$flizpay_settings)
+			return;
+
 		$api_key = $flizpay_settings['flizpay_api_key'];
+
+		if (!$api_key)
+			return;
 
 		$api_client = WC_Flizpay_API::get_instance($api_key);
 
