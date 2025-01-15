@@ -988,16 +988,23 @@ function flizpay_init_gateway_class()
             $order_id = wc_create_order();
             $order = wc_get_order($order_id);
 
-            foreach (WC()->cart->get_cart() as $cart_item) {
-                $item_id = $order->add_product(
-                    wc_get_product($cart_item['product_id']),
-                    $cart_item['quantity']
-                );
+            foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
+                $item = new WC_Order_Item_Product();
 
-                if (!$item_id) {
-                    echo esc_html(wp_send_json_error(['message' => 'Failed to add items to order.']));
-                    die();
-                }
+                $item->set_props(array(
+                    'product_id' => $cart_item['product_id'],
+                    'variation_id' => $cart_item['variation_id'],
+                    'quantity' => $cart_item['quantity'],
+
+                    // Use the cart's exact line subtotals/line totals (reflects discounts & sale prices)
+                    'subtotal' => $cart_item['line_subtotal'],
+                    'total' => $cart_item['line_total'],
+                    'subtotal_tax' => $cart_item['line_subtotal_tax'],
+                    'total_tax' => $cart_item['line_tax'],
+                    'taxes' => $cart_item['line_tax_data'],
+                ));
+
+                $order->add_item($item);
             }
 
             // Remove shipping
