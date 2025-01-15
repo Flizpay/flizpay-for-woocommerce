@@ -41,7 +41,7 @@ msgstr "FLIZpay - The Payment Revolution"
 
 #: includes/class-flizpay-gateway.php:49
 msgid "description"
-msgstr "• Secure payments in direct collaboration with your bank. We support small businesses and keep your data private – stored securely in Germany."
+msgstr "Secure payments in direct collaboration with your bank. We support small businesses and keep your data private – stored securely in Germany."
 
 #: includes/class-flizpay-gateway.php:144
 msgid "cashback-express-title"
