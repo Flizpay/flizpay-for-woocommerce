@@ -30,6 +30,13 @@ class Flizpay_Activator
      */
     public static function activate()
     {
+        require_once('includes/class-flizpay-api.php');
 
+        $flizpay_settings = get_option('woocommerce_flizpay_settings');
+        $api_key = $flizpay_settings['flizpay_api_key'];
+
+        $api_client = WC_Flizpay_API::get_instance($api_key);
+
+        $api_client->dispatch('save_webhook_url', array("woocommerceActive" => true), false);
     }
 }
