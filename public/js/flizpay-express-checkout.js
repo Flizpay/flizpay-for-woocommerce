@@ -44,7 +44,6 @@ jQuery(function ($) {
       expressCheckoutContainer.classList.add(
         "flizpay-express-checkout-container-checkout"
       );
-      expressCheckoutButton.classList.add("button");
       expressCheckoutButton.classList.add("flizpay-express-checkout-button");
       expressCheckoutButton.classList.add(
         `flizpay-express-checkout-${flizpay_frontend.express_checkout_theme}`
@@ -70,10 +69,16 @@ jQuery(function ($) {
 
         if (!addToCartButton) return;
 
-        const addToCartForm = document.querySelector(".cart");
+        const addToCartForm = document.querySelectorAll(".cart")[1] ?? document.querySelector(".cart");
 
         const [expressCheckoutButton, expressCheckoutContainer] =
           create_components();
+        
+        addToCartForm.parentNode.insertBefore(
+          expressCheckoutContainer,
+          addToCartForm.nextSibling
+        );
+
         if (addToCartButton.classList.contains("disabled")) {
           expressCheckoutButton.classList.add("disabled");
         } else {
@@ -102,11 +107,6 @@ jQuery(function ($) {
           attributes: true,
           attributeFilter: ["class"],
         });
-
-        addToCartForm.parentNode.insertBefore(
-          expressCheckoutContainer,
-          addToCartForm.nextSibling
-        );
       }, 1700);
     }
 
@@ -155,8 +155,13 @@ jQuery(function ($) {
         //Render the classic mini cart button as it's always in the DOM
         if (classicMiniCartButtons) {
           classicMiniCartButtons.append(expressCheckoutContainer);
+        } else {
+          rebuild_minicart_button_loop(expressCheckoutContainer);
         }
 
+      }, 1300);
+
+      function rebuild_minicart_button_loop(expressCheckoutContainer) {
         // Function to observe changes in the mini cart and add the button when it appears
         setInterval(() => {
           const blocksMiniCartFooter = document.querySelector(
@@ -174,33 +179,7 @@ jQuery(function ($) {
             
           }
         }, 650);
-      }, 1300);
-    }
-
-    function append_info_to_loading() {
-      if (document.querySelector("#flizpay-thanks-info")) return;
-
-      const thanks = document.createElement("p");
-      const info = document.createElement("p");
-      thanks.setAttribute("id", "flizpay-thanks-info");
-      thanks.classList.add("fliz-black-text");
-      thanks.classList.add("fliz-highlight-text");
-      info.classList.add("fliz-black-text");
-      thanks.append(
-        navigator.language.includes("en")
-          ? "Thank you for choosing FLIZpay!"
-          : "Danke, dass Sie sich für FLIZpay entschieden haben!"
-      );
-      info.append(
-        navigator.language.includes("en")
-          ? "Redirecting to our secure environment..."
-          : "Weiterleitung zu unserer sicheren Umgebung..."
-      );
-      window.flizPay.FLIZ_CANCEL_BUTTON.parentNode.insertBefore(
-        info,
-        window.flizPay.FLIZ_CANCEL_BUTTON
-      );
-      info.parentNode.insertBefore(thanks, info);
+      }
     }
 
     function cart_submit(e) {
