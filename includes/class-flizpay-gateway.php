@@ -97,8 +97,12 @@ function flizpay_init_gateway_class()
          */
         public function disable_new_order_email_for_flizpay($enabled, $order)
         {
-            if ($order && 'flizpay' === $order->get_payment_method()) {
-                // If order is paid via Flizpay, disable the New Order email
+            if (
+                $order &&
+                ($order->get_status() === 'checkout-draft' || $order->get_status() === 'pending') &&
+                'flizpay' === $order->get_payment_method()
+            ) {
+                // If FLIZ order is not yed paid, disable the New Order email
                 return false;
             }
             return $enabled;
@@ -830,6 +834,21 @@ function flizpay_init_gateway_class()
                 if (isset($data['transactionId'])) {
                     $order->add_order_note('FLIZ transaction ID: ' . sanitize_text_field($data['transactionId']));
                 }
+
+                // Send customer and shop owner e-mails about the order
+                $mailer = WC()->mailer();
+                $emails = $mailer->get_emails();
+
+                if (!empty($emails['WC_Email_Customer_Completed_Order'])) {
+                    $emails['WC_Email_Customer_Completed_Order']->trigger($order_id);
+                }
+                if (!empty($emails['WC_Email_Customer_Invoice'])) {
+                    $emails['WC_Email_Customer_Invoice']->trigger($order_id);
+                }
+                if (!empty($emails['WC_Email_New_Order'])) {
+                    $emails['WC_Email_New_Order']->trigger($order_id);
+                }
+
             } else {
                 return;
             }
