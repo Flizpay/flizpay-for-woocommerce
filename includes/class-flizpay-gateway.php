@@ -934,6 +934,26 @@ function flizpay_init_gateway_class()
                 'firstName' => $order->get_billing_first_name(),
                 'lastName' => $order->get_billing_last_name()
             );
+            $products = array();
+            foreach ( $order->get_items() as $item_id => $item ) {
+                $product = $item->get_product();
+                if ( !$product ) {
+                    continue; 
+                }
+  
+                $name    = $product->get_name();
+                $amount  = $item->get_quantity();
+                $price   = $product->get_price(); // or use $item->get_subtotal() depending on how you want to handle pricing
+                $img_id  = $product->get_image_id();
+                $picture = wp_get_attachment_image_url( $img_id, 'full' );
+        
+                $products[] = array(
+                    'name'    => $name,
+                    'amount'  => $amount,
+                    'price'   => $price,
+                    'picture' => $picture ? $picture : ''
+                );
+            }
             $body = array(
                 'amount' => $order->get_total(),
                 'currency' => $order->get_currency(),
@@ -941,7 +961,8 @@ function flizpay_init_gateway_class()
                 'successUrl' => $order->get_checkout_order_received_url(),
                 'failureUrl' => 'https://checkout.flizpay.de/failed',
                 'customer' => $customer,
-                'source' => $source
+                'source' => $source,
+                'products' => $products,  
             );
             $client = WC_Flizpay_API::get_instance($api_key);
 
