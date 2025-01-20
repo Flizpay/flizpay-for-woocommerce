@@ -945,13 +945,11 @@ function flizpay_init_gateway_class()
                 $amount  = $item->get_quantity();
                 $price   = $product->get_price(); // or use $item->get_subtotal() depending on how you want to handle pricing
                 $img_id  = $product->get_image_id();
-                $picture = wp_get_attachment_image_url( $img_id, 'full' );
         
                 $products[] = array(
                     'name'    => $name,
                     'amount'  => $amount,
                     'price'   => $price,
-                    'picture' => $picture ? $picture : ''
                 );
             }
             $body = array(
