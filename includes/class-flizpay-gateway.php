@@ -943,7 +943,7 @@ function flizpay_init_gateway_class()
   
                 $name    = $product->get_name();
                 $amount  = $item->get_quantity();
-                $price   = $product->get_subtotal();
+                $price   = $product->get_price(); 
         
                 $products[] = array(
                     'name'    => $name,
