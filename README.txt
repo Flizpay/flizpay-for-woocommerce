@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.7
-Stable tag: 2.0.4
+Stable tag: 2.0.5
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -172,7 +172,15 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - ADDED
     - Set business as active/inactive on plugin activation/deactivation
 
+- v2.0.5
+  - FIXED
+    - Express checkout button font size
+    - Emails not being sent for orders paid with FLIZpay
+
 == Upgrade Notice ==
+
+= 2.0.5 =
+* Hotfix for express checkout button font size and emails not being sent for orders paid with FLIZpay
 
 = 2.0.4 =
 * Fix for express checkout for items on sale, small adjustments on loading and translations

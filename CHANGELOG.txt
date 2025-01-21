@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-18-01 - version 2.0.5
+* Fix express checkout button font size and customer/merchant e-mails for orders 
+
 2025-15-01 - version 2.0.4
 * Fix express checkout for items on sale, small adjustments on loading and translations
 * Set business as active/inactive on plugin activation/deactivation
