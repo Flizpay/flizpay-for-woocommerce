@@ -165,13 +165,8 @@ function flizpay_init_gateway_class()
                         $this->update_option('flizpay_webhook_key', $webhook_key);
                         $this->update_option('flizpay_webhook_url', $webhook_url);
                         $this->update_option('flizpay_api_key', $api_key);
+                        $this->update_option('flizpay_cashback', $cashback_data);
                         $this->cashback = $cashback_data;
-
-                        set_transient(
-                            'flizpay_cashback_transient',
-                            $cashback_data,
-                            600
-                        );
                     } else {
                         $this->update_option('flizpay_api_key', '');
                     }
@@ -234,7 +229,7 @@ function flizpay_init_gateway_class()
          */
         public function get_cashback_data()
         {
-            $cashback_data = get_transient('flizpay_cashback_transient');
+            $cashback_data = $this->get_option('flizpay_cashback');
 
             if (gettype($cashback_data) === "string")
                 return null;

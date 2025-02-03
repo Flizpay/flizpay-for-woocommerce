@@ -96,18 +96,12 @@ class Flizpay_Webhook_Helper
   {
     $first_purchase_amount = floatval($data['firstPurchaseAmount']);
     $standard_amount = floatval($data['amount']);
-    $this->gateway->cashback = array(
+    $cashback = array(
       'first_purchase_amount' => $first_purchase_amount,
       'standard_amount' => $standard_amount
     );
-    set_transient(
-      'flizpay_cashback_transient',
-      array(
-        'first_purchase_amount' => $first_purchase_amount,
-        'standard_amount' => $standard_amount
-      ),
-      600
-    );
+    $this->gateway->cashback = $cashback;
+    $this->gateway->update_option('flizpay_cashback', $cashback);
     $this->gateway->init_gateway_info();
   }
 
