@@ -35,6 +35,28 @@ class Flizpay_API_Service
     return $webhookUrlResponse;
   }
 
+  public function fetch_cashback_data()
+  {
+    $client = WC_Flizpay_API::get_instance($this->api_key);
+    $response = $client->dispatch('fetch_cashback_data', null, false);
+
+    if (isset($response['cashbacks']) && count($response['cashbacks']) > 0) {
+      foreach ($response['cashbacks'] as $cashback) {
+        $firstPurchaseAmount = floatval($cashback['firstPurchaseAmount']);
+        $amount = floatval($cashback['amount']);
+
+        if ($cashback['active'] && ($firstPurchaseAmount > 0 || $amount > 0)) {
+          return [
+            'first_purchase_amount' => $firstPurchaseAmount,
+            'standard_amount' => $amount
+          ];
+        }
+      }
+    }
+
+    return null;
+  }
+
   public function create_transaction($order, $source)
   {
     $customer = [

@@ -155,6 +155,7 @@ function flizpay_init_gateway_class()
                     $this->api_service = new Flizpay_API_Service($api_key);
                     $webhook_key = $this->api_service->get_webhook_key();
                     $webhook_url = $this->api_service->generate_webhook_url();
+                    $cashback_data = $this->api_service->fetch_cashback_data();
 
                     $this->update_option('enabled', 'no');
                     $this->update_option('flizpay_enabled', 'no');
@@ -164,6 +165,13 @@ function flizpay_init_gateway_class()
                         $this->update_option('flizpay_webhook_key', $webhook_key);
                         $this->update_option('flizpay_webhook_url', $webhook_url);
                         $this->update_option('flizpay_api_key', $api_key);
+                        $this->cashback = $cashback_data;
+
+                        set_transient(
+                            'flizpay_cashback_transient',
+                            $cashback_data,
+                            600
+                        );
                     } else {
                         $this->update_option('flizpay_api_key', '');
                     }
@@ -210,6 +218,9 @@ function flizpay_init_gateway_class()
                 } else {
                     $this->update_option('flizpay_express_checkout_theme', 'light');
                 }
+
+
+                $this->init_gateway_info();
             }
 
         }
