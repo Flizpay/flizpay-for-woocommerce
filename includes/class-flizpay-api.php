@@ -52,7 +52,7 @@ class WC_Flizpay_API
    */
   private function init()
   {
-    $this->base_url = 'https://api.flizpay.de';
+    $this->base_url = 'http://localhost:8080';
     $this->routes = array(
       'generate_webhook_key' => function ($body) {
         return array(
@@ -94,18 +94,6 @@ class WC_Flizpay_API
           )
         );
       },
-      'fetch_cashback_data' => function ($body) {
-        return array(
-          'path' => $this->base_url . '/business/cashback',
-          'method' => 'get',
-          'options' => array(
-            'headers' => array(
-              'Content-type' => 'application/json',
-              'x-api-key' => $this->api_key
-            )
-          )
-        );
-      }
     );
   }
 
