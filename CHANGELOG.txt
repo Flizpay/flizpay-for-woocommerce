@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-03-02 - version 2.0.6
+* Fix checkout buttons translations and implement instant cashback info update
+
 2025-18-01 - version 2.0.5
 * Fix express checkout button font size and customer/merchant e-mails for orders 
 
