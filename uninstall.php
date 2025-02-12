@@ -7,12 +7,14 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 require_once('includes/class-flizpay-api.php');
 
 $flizpay_settings = get_option('woocommerce_flizpay_settings');
-error_log(json_encode($flizpay_settings));
 $api_key = $flizpay_settings['flizpay_api_key'];
 
-$api_client = WC_Flizpay_API::get_instance($api_key);
+if ($api_key) {
+	$api_client = WC_Flizpay_API::get_instance($api_key);
 
-$api_client->dispatch('save_webhook_url', array("webhookUrl" => ''), false);
+	$api_client->dispatch('save_webhook_url', array("woocommerceActive" => false), false);
+	$api_client->dispatch('save_webhook_url', array("webhookUrl" => ''), false);
+}
 
 // Clean up options
 $options = array(
