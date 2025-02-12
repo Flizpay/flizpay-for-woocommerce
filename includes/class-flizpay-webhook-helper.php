@@ -67,8 +67,6 @@ class Flizpay_Webhook_Helper
 
     if ($status === 'completed') {
       $this->complete_order($order, $data);
-    } else {
-      return;
     }
 
     $order->save();
