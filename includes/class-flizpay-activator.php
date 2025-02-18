@@ -44,6 +44,6 @@ class Flizpay_Activator
 
         $api_client = WC_Flizpay_API::get_instance($api_key);
 
-        $api_client->dispatch('save_webhook_url', array("woocommerceActive" => true), false);
+        $api_client->dispatch('save_webhook_url', array("isActive" => true), false);
     }
 }
