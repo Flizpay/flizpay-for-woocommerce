@@ -14,7 +14,7 @@ class Flizpay_API_Service
     $client = WC_Flizpay_API::get_instance($this->api_key);
 
     $response = $client->dispatch('generate_webhook_key', null, false);
-    error_log(json_encode($response));
+
     return $response['webhookKey'] ?? null;
   }
 

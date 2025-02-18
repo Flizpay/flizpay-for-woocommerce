@@ -21,7 +21,7 @@ msgstr "Dokumentation"
 
 #: includes/class-flizpay-gateway.php:100
 msgid "cashback-title"
-msgstr "FLIZpay - %s%% Sofort-Cashback"
+msgstr "FLIZpay - Bis zu %s%% Rabatt"
 
 #: includes/class-flizpay-gateway.php:106
 msgid "cashback-description-both"
@@ -45,7 +45,7 @@ msgstr "Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank, deine Date
 
 #: includes/class-flizpay-gateway.php:144
 msgid "cashback-express-title"
-msgstr "Bis zu %s%% Sofort-Cashback"
+msgstr "Bis zu %s%% Rabatt"
 
 #: includes/class-flizpay-gateway.php:170
 msgid "express-title"
