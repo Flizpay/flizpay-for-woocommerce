@@ -8,7 +8,7 @@ function flizpay_init_gateway_class()
 
     class WC_Flizpay_Gateway extends WC_Payment_Gateway
     {
-        static $VERSION = "2.0.6";
+        static $VERSION = "2.0.7";
 
         public $icon;
         public $title;
@@ -46,7 +46,7 @@ function flizpay_init_gateway_class()
             $this->i18n = new Flizpay_i18n();
             $this->id = 'flizpay';
             $this->has_fields = true;
-            $this->method_title = 'FLIZpay Plugin';
+            $this->method_title = 'FLIZpay';
             $this->method_description = 'FLIZpay Plugin WooCommerce';
 
             // Method with all the options fields

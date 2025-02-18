@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.7
-Stable tag: 2.0.6
+Stable tag: 2.0.7
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -58,132 +58,92 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
 == Changelog ==
 
 - 1.0.0
-
-  - ADDED
-    - Plugin Settings
-    - Cashback info on Checkout
-    - Order management for cashback
+  - ADDED: Plugin Settings, Cashback info on Checkout Order management for cashback
 
 - 1.0.1
-
-  - FIXED
-    - Plugin Readme
-    - Docs and Data Privacy links
+  - FIXED: Plugin Readme, Docs and Data Privacy links
 
 - 1.0.2
-
-  - FIXED
-    - Fixed Logo size for some themes
-    - Updated checkout description and translations
+  - FIXED: Fixed Logo size for some themes, Updated checkout description and translations
 
 - 1.1.0
-  - ADDED
-    - Refund for discounted items
-    - New Logo
-
-  - FIXED
-    - Payment failed page adjustment
+  - ADDED: Refund for discounted items and New Logo
+  - FIXED: Payment failed page adjustment
 
 - 1.2.0
-  - ADDED
-    - Customization of the checkout button
-
-  - FIXED 
-    - Default translations for non supported languages
+  - ADDED: Customization of the checkout button
+  - FIXED: Default translations for non supported languages
 
 - 1.2.1
-  - FIXED
-    - Old payment page was still being displayed
+  - FIXED: Old payment page was still being displayed
 
 - 1.2.2
-  - ADDED
-    - Cancel button to mobile loading modal on checkout
+  - ADDED: Cancel button to mobile loading modal on checkout
 
 - 1.2.3
-  - HOTIFX
-    - FLIZ logo not showing on mobile loading checkout modal
+  - HOTIFX: FLIZ logo not showing on mobile loading checkout modal
 
 - 1.2.4
-  - ADDED
-    - Localstorage to store ongoing orders
-    - Properly translated the admin page 
-  - FIXED
-    - Loadin wheel layout
+  - ADDED: Localstorage to store ongoing orders, Properly translated the admin page 
+  - FIXED: Loadin wheel layout
 
 - 1.3.0
-  - CHANGED
-    - Admin page configuration UX
-  - REMOVED
-    - Payment Failed page
+  - CHANGED: Admin page configuration UX
+  - REMOVED: Payment Failed page
 
 - v1.4.0
-  - CHANGED 
-    - Admin page uses admin user language
-  - ADDED 
-    - Adding customer information to the transaction being created
-  - ADDED 
-    - Value with cashback applied, when active, is now displayed in the checkout page
+  - CHANGED: Admin page uses admin user language
+  - ADDED: Adding customer information to the transaction being created
+  - ADDED: Value with cashback applied, when active, is now displayed in the checkout page
 
 - v1.4.1
-  - REMOVED 
-    - Reverted value with cashback at the checkout page
-  - CHANGED 
-    - Increased time of the cashback cached value to 10 min
+  - REMOVED: Reverted value with cashback at the checkout page
+  - CHANGED: Increased time of the cashback cached value to 10 min
 
 - v1.4.2
-  - CHANGED 
-    - Create order in draft mode to prevent accountability softwares from picking the order in pending
+  - CHANGED: Create order in draft mode to prevent accountability softwares from picking the order in pending
 
 - v1.4.3
-  - CHANGED 
-    - Dynamic cashback value for first purchase and standard options
-    - Remove the webhook url on uninstall
-    - Disable new order emails for FLIZpay orders
+  - CHANGED: Dynamic cashback value for first purchase and standard options
+  - CHANGED: Remove the webhook url on uninstall
+  - CHANGED: Disable new order emails for FLIZpay orders
 
 - v1.4.4
-  - HOTFIX
-    - Cashback data typecheck for backwards compatibility
+  - HOTFIX: Cashback data typecheck for backwards compatibility
 
 - v1.4.5
-  - HOTFIX
-    - Total order value could have been stored incorrectly due to taxes variation
+  - HOTFIX: Total order value could have been stored incorrectly due to taxes variation
 
 - v2.0.0
-  - ADDED
-    - Express checkout functionality
+  - ADDED: Express checkout functionality
 
 - v2.0.1
-  - FIXED
-    - Express checkout functionality files
+  - FIXED: Express checkout functionality files
 
 - v2.0.2
-  - FIXED
-    - Express checkout button font size
+  - FIXED: Express checkout button font size
 
 - v2.0.3
-  - FIXED
-    - Fix express checkout shipping taxes
-    - Fix german market fees calculation
+  - FIXED: Fix express checkout shipping taxes, german market fees calculation
 
 - v2.0.4
-  - FIXED
-    - Fix express checkout for items on sale
-    - small adjustments on loading and translations
-  - ADDED
-    - Set business as active/inactive on plugin activation/deactivation
+  - FIXED: Fix express checkout for items on sale, small adjustments on loading and translations
+  - ADDED: Set business as active/inactive on plugin activation/deactivation
 
 - v2.0.5
-  - FIXED
-    - Express checkout button font size
-    - Emails not being sent for orders paid with FLIZpay
+  - FIXED: Express checkout button font size, and Emails not being sent for orders paid with FLIZpay
 
 - v2.0.6
-  - FIXED
-    - Translations for checkout buttons
-  - ADDED 
-    - Instant cashback info update when settings change on FLIZ web app
+  - FIXED: Translations for checkout buttons
+  - ADDED: Instant cashback info update when settings change on FLIZ web app
+
+- v2.0.7
+  - FIXED: German translation on loading wheel
 
 == Upgrade Notice ==
+
+= 2.0.7 =
+* Fix german translation on the mobile loading wheel
 
 = 2.0.6 =
 * Fix translation for checkout buttons and implement instant cashback info from FLIZ web app
