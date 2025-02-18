@@ -66,7 +66,7 @@ class WC_Flizpay_API
           )
         );
       },
-      'save_webhook_url' => function ($body) {
+      'edit_business' => function ($body) {
         return array(
           'path' => $this->base_url . '/business/edit',
           'method' => 'post',
