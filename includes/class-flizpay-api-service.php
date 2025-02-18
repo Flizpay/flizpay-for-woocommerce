@@ -24,7 +24,7 @@ class Flizpay_API_Service
 
     $client = WC_Flizpay_API::get_instance($this->api_key);
 
-    $response = $client->dispatch('save_webhook_url', array('webhookUrl' => $webhookUrl), false);
+    $response = $client->dispatch('edit_business', array('webhookUrl' => $webhookUrl), false);
 
     $webhookUrlResponse = $response['webhookUrl'] ?? null;
 

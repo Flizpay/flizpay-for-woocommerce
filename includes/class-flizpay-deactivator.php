@@ -74,7 +74,7 @@ class Flizpay_Deactivator
 
 		$api_client = WC_Flizpay_API::get_instance($api_key);
 
-		$api_client->dispatch('save_webhook_url', array("woocommerceActive" => false), false);
+		$api_client->dispatch('edit_business', array("isActive" => false), false);
 	}
 
 }
