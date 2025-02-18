@@ -5,7 +5,7 @@ jQuery(function ($) {
       localStorage.getItem("flizpay_stop_polling") || false;
     window.flizPay.refreshButtonLabel = navigator.language.includes("en")
       ? "Already paid? Click here to refresh"
-      : "Hast du schon bezahlt? Klickst du hier, um die Seite neu zu laden";
+      : "Hast du schon bezahlt? Klicke hier, um die Seite neu zu laden.";
     window.flizPay.cancelButtonLabel = navigator.language.includes("en")
       ? "Cancel"
       : "Abbrechen";
