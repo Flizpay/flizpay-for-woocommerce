@@ -37,13 +37,13 @@ class Flizpay_Cashback_Helper
     if ($this->is_default_translation($this->gateway->title)) {
       if ($this->gateway->flizpay_display_headline === 'yes') {
         $this->gateway->title = !is_null($this->gateway->cashback)
-          ? "FLIZpay - Biz zu $cashback_value% Sofort-Cashback"
+          ? "FLIZpay - Bis zu $cashback_value% Sofort-Cashback"
           : 'FLIZpay - Die Zahlungsrevolution';
       } else {
         $this->gateway->title = 'FLIZpay';
       }
       $this->gateway->flizpay_express_checkout_title = !is_null($this->gateway->cashback)
-        ? "FLIZpay - Biz zu $cashback_value% Sofort-Cashback"
+        ? "FLIZpay - Bis zu $cashback_value% Sofort-Cashback"
         : 'Jetzt zahlung mit FLIZpay';
     }
     $this->gateway->update_option('title', $this->gateway->title);
