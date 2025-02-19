@@ -90,6 +90,12 @@ class Flizpay_Public
         );
     }
 
+    public function is_express_checkout_enabled()
+    {
+        return $this->settings['flizpay_enable_express_checkout'] === "yes" &&
+            $this->settings['flizpay_webhook_alive'] === 'yes';
+    }
+
     /**
      * Register the JavaScript for the public-facing side of the site.
      * Only registers it on the checkout page
@@ -132,7 +138,7 @@ class Flizpay_Public
             'public_dir_path' => plugin_dir_url(__FILE__),
             'order_finish_nonce' => wp_create_nonce('order_finish_nonce'),
             'express_checkout_nonce' => wp_create_nonce('express_checkout_nonce'),
-            'enable_express_checkout' => $this->settings['flizpay_enable_express_checkout'] === "yes" ? true : null,
+            'enable_express_checkout' => $this->is_express_checkout_enabled(),
             'express_checkout_pages' => $this->settings['flizpay_express_checkout_pages'],
             'express_checkout_theme' => $this->settings['flizpay_express_checkout_theme'],
             'express_checkout_title' => $this->settings['flizpay_express_checkout_title'],
