@@ -15,11 +15,8 @@ class Flizpay_Cashback_Helper
     if ($this->is_cashback_available()) {
       $shop_name = get_bloginfo('name');
       $title = sprintf(__('cashback-title', 'flizpay-for-woocommerce'), $display_value);
-      $express_checkout_title = sprintf(__('cashback-express-title', 'flizpay-for-woocommerce'), $display_value);
-
       $description = $this->get_cashback_description($shop_name);
-
-      $this->gateway->update_option('flizpay_cashback', $this->gateway->cashback);
+      $express_checkout_title = sprintf(__('cashback-express-title', 'flizpay-for-woocommerce'), $display_value);
     } else {
       $title = __('title', 'flizpay-for-woocommerce');
       $description = __('description', 'flizpay-for-woocommerce');
@@ -37,14 +34,14 @@ class Flizpay_Cashback_Helper
     if ($this->is_default_translation($this->gateway->title)) {
       if ($this->gateway->flizpay_display_headline === 'yes') {
         $this->gateway->title = !is_null($this->gateway->cashback)
-          ? "FLIZpay - Biz zu $cashback_value% Sofort-Cashback"
+          ? "FLIZpay - Bis zu $cashback_value% Rabatt"
           : 'FLIZpay - Die Zahlungsrevolution';
       } else {
         $this->gateway->title = 'FLIZpay';
       }
       $this->gateway->flizpay_express_checkout_title = !is_null($this->gateway->cashback)
-        ? "FLIZpay - Biz zu $cashback_value% Sofort-Cashback"
-        : 'Jetzt zahlung mit FLIZpay';
+        ? "Bis zu $cashback_value% Rabatt"
+        : 'Die Zahlungsrevolution';
     }
     $this->gateway->update_option('title', $this->gateway->title);
     $this->gateway->update_option('flizpay_express_checkout_title', $this->gateway->flizpay_express_checkout_title);
@@ -54,7 +51,7 @@ class Flizpay_Cashback_Helper
   {
     if ($this->is_default_translation($this->gateway->description)) {
       if ($this->gateway->flizpay_display_description === 'yes') {
-        $this->gateway->description = 'Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank, unterstützung kleiner Unternehmen, und deine Daten bleiben privat und in Deutschland.';
+        $this->gateway->description = 'Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank, deine Daten bleiben privat und in Deutschland, und du unterstützt mit FLIZpay kleine Unternehmen.';
       }
     }
     $this->gateway->update_option('description', $this->gateway->description);
@@ -65,9 +62,9 @@ class Flizpay_Cashback_Helper
     if (!$this->gateway->cashback)
       return null;
 
-    return floatval($this->gateway->cashback['first_purchase_amount']) > 0
-      ? $this->gateway->cashback['first_purchase_amount']
-      : $this->gateway->cashback['standard_amount'];
+    if (floatval($this->gateway->cashback['first_purchase_amount']) > 0) {
+      return max(floatval($this->gateway->cashback['first_purchase_amount']), floatval($this->gateway->cashback['standard_amount']));
+    }
   }
 
   private function get_cashback_description($shop_name)
@@ -108,12 +105,25 @@ class Flizpay_Cashback_Helper
 
   private function is_cashback_available()
   {
-    return isset($this->gateway->webhook_key) &&
-      isset($this->gateway->webhook_url) &&
-      $this->gateway->flizpay_webhook_alive === 'yes' &&
-      !is_null($this->gateway->cashback) &&
-      (!is_null($this->gateway->cashback['first_purchase_amount']) ||
-        !is_null($this->gateway->cashback['standard_amount']));
+    if ($this->gateway->flizpay_webhook_alive !== 'yes')
+      return false;
+
+    if (!isset($this->gateway->webhook_key))
+      return false;
+
+    if (!isset($this->gateway->webhook_url))
+      return false;
+
+    if (!isset($this->gateway->cashback))
+      return false;
+
+    if (
+      !isset($this->gateway->cashback['first_purchase_amount']) &&
+      !isset($this->gateway->cashback['standard_amount'])
+    )
+      return false;
+
+    return true;
   }
 
   private function is_default_translation($value)
