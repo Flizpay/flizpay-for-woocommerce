@@ -20,6 +20,10 @@
   line-height: 116%;
 }
 
+.flizpay-express-checkout-button.flizpay-express-checkout-minicart-button {
+  font-size: 0.80rem !important;
+}
+
 .flizpay-express-checkout-light {
   color: #001F3F !important;
   background-color: #80ED99 !important;

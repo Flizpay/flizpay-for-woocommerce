@@ -152,6 +152,10 @@ jQuery(function ($) {
         );
         // Attach click event to the express checkout button
         expressCheckoutButton.addEventListener("click", mini_cart_submit);
+
+        // Reduce font class
+        expressCheckoutButton.classList.add('flizpay-express-checkout-minicart-button')
+
         //Render the classic mini cart button as it's always in the DOM
         if (classicMiniCartButtons) {
           classicMiniCartButtons.append(expressCheckoutContainer);
