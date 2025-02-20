@@ -71,11 +71,36 @@ class Flizpay_API_Service
       'successUrl' => $order->get_checkout_order_received_url(),
       'failureUrl' => 'https://checkout.flizpay.de/failed',
       'customer' => $customer,
-      'source' => $source
+      'source' => $source,
+      'products' => $this->get_products($order)
     ];
     $client = WC_Flizpay_API::get_instance($this->api_key);
     $response = $client->dispatch('create_transaction', $body, false);
 
     return $response['redirectUrl'] ?? null;
+  }
+
+  public function get_products($order)
+  {
+    $products = array();
+
+    foreach ($order->get_items() as $item_id => $item) {
+      $product = $item->get_product();
+      if (!$product) {
+        continue;
+      }
+
+      $name = $product->get_name();
+      $amount = $item->get_quantity();
+      $price = $product->get_price();
+
+      $products[] = array(
+        'name' => $name,
+        'amount' => $amount,
+        'price' => $price,
+      );
+    }
+
+    return $products;
   }
 }
