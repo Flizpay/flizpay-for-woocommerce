@@ -72,7 +72,8 @@ class Flizpay_API_Service
       'failureUrl' => 'https://checkout.flizpay.de/failed',
       'customer' => $customer,
       'source' => $source,
-      'products' => $this->get_products($order)
+      'products' => $this->get_products($order),
+      'needsShipping' => $this->needs_shipping($order)
     ];
     $client = WC_Flizpay_API::get_instance($this->api_key);
     $response = $client->dispatch('create_transaction', $body, false);
@@ -102,5 +103,20 @@ class Flizpay_API_Service
     }
 
     return $products;
+  }
+
+  public function needs_shipping($order)
+  {
+    foreach ($order->get_items() as $item_id => $item) {
+      $product = $item->get_product();
+      if (!$product) {
+        continue;
+      }
+
+      if (!$product->needs_shipping())
+        return false;
+    }
+
+    return true;
   }
 }
