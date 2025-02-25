@@ -362,8 +362,7 @@ function flizpay_init_gateway_class()
         public function process_payment($order_id, $source = 'plugin')
         {
             $order = wc_get_order($order_id);
-            // We set the status as draft here to avoid accountability softwares picking the Pending Payment order
-            $order->set_status('wc-checkout-draft', 'Waiting FLIZpay payment');
+            $order->update_status('wc-pending', 'FLIZpay Checkout initiated. Waiting for payment - ' . $source);
             $order->save();
 
             $redirectUrl = $this->api_service->create_transaction($order, $source);
@@ -442,7 +441,6 @@ function flizpay_init_gateway_class()
                 $order->remove_item($item_id);
             }
             $order->calculate_totals();
-            $order->update_status('wc-checkout-draft', 'FLIZpay Express Checkout initiated.');
             $order->save();
 
             echo esc_html(wp_send_json_success(
