@@ -91,8 +91,19 @@ function flizpay_deactivate()
 	Flizpay_Deactivator::deactivate();
 }
 
+function flizpay_upgrader($upgrader, $options)
+{
+	$plugin = plugin_basename(__FILE__);
+
+	if ($options['action'] == 'update' && $options['type'] == 'plugin' && $options['plugins'][0] == $plugin) {
+		require_once plugin_dir_path(__FILE__) . 'includes/class-flizpay-activator.php';
+		Flizpay_Activator::activate();
+	}
+}
+
 register_activation_hook(__FILE__, 'flizpay_activate');
 register_deactivation_hook(__FILE__, 'flizpay_deactivate');
+add_action('upgrader_process_complete', 'flizpay_upgrader');
 
 /**
  * The core plugin class that is used to define internationalization,
