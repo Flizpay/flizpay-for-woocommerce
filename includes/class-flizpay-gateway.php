@@ -1,4 +1,8 @@
 <?php
+if (!defined('FLIZPAY_VERSION')) {
+    define('FLIZPAY_VERSION', '2.1.0');
+}
+
 /**
  * The Payment Gateway class itself, please note that it is inside plugins_loaded action hook
  */
@@ -8,7 +12,7 @@ function flizpay_init_gateway_class()
 
     class WC_Flizpay_Gateway extends WC_Payment_Gateway
     {
-        static $VERSION = "2.1.0";
+        public static $VERSION = FLIZPAY_VERSION;
 
         public $icon;
         public $title;
