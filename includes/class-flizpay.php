@@ -50,15 +50,6 @@ class Flizpay
 	protected $plugin_name;
 
 	/**
-	 * The current version of the plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 * @var      string    $version    The current version of the plugin.
-	 */
-	protected $version;
-
-	/**
 	 * Define the core functionality of the plugin.
 	 *
 	 * Set the plugin name and the plugin version that can be used throughout the plugin.
@@ -69,11 +60,6 @@ class Flizpay
 	 */
 	public function __construct()
 	{
-		if (defined('FLIZPAY_VERSION')) {
-			$this->version = FLIZPAY_VERSION;
-		} else {
-			$this->version = '2.1.0';
-		}
 		$this->plugin_name = 'flizpay';
 
 		$this->load_dependencies();
@@ -208,7 +194,7 @@ class Flizpay
 	private function define_admin_hooks()
 	{
 
-		$plugin_admin = new Flizpay_Admin($this->get_plugin_name(), $this->get_version());
+		$plugin_admin = new Flizpay_Admin($this->get_plugin_name(), FLIZPAY_VERSION);
 
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
@@ -226,7 +212,7 @@ class Flizpay
 	private function define_public_hooks()
 	{
 
-		$plugin_public = new Flizpay_Public($this->get_plugin_name(), $this->get_version());
+		$plugin_public = new Flizpay_Public($this->get_plugin_name(), FLIZPAY_VERSION);
 
 		// Hook the custom function to the 'before woocommerce init' action
 		$this->loader->add_action('before_woocommerce_init', $plugin_public, 'declare_cart_checkout_blocks_compatibility');
@@ -272,18 +258,4 @@ class Flizpay
 	{
 		return $this->loader;
 	}
-
-	/**
-	 * Retrieve the version number of the plugin.
-	 *
-	 * @since     1.0.0
-	 * @return    string    The version number of the plugin.
-	 */
-	public function get_version()
-	{
-		return $this->version;
-	}
-
-
-
 }
