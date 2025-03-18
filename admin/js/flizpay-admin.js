@@ -26,6 +26,12 @@
     const failedConnectionText = flizpayParams.wp_locale.includes("en")
       ? `An error occurred while testing the connection. Please Try Again. <br />`
       : `Beim Testen der Verbindung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut. <br />`;
+    const flexibleShippingDisclaimer = flizpayParams.wp_locale.includes("en") ?
+      `Are you using the plugin <a href="https://wordpress.org/plugins/flexible-shipping/">"Flexible Shipping"</a>? 
+Then make sure you set the shipping calculation on the Package and not on the Cart. For express checkout the cart is not required and when Flexible Shipping is not configured for Package calculation it won't be presented as a shipping option in FLIZ app.`
+      : `Verwenden Sie das Plugin <a href="https://wordpress.org/plugins/flexible-shipping/">„Flexible Shipping“</a>?
+Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und nicht auf dem Warenkorb festlegen. Für den Express-Checkout ist der Warenkorb nicht erforderlich. Wenn „Flexible Shipping“ nicht für die Paketberechnung konfiguriert ist, wird er in der FLIZ-App nicht als Versandoption angezeigt.`;
+    const flexibleShippingParagraph = document.createElement("p");
     const testButton = document.createElement("div");
     const resultField = document.createElement("div");
     const apiKeyInput = document.querySelector(
@@ -139,6 +145,7 @@
           ":checked"
         )
       ) {
+        flexibleShippingParagraph.innerHTML = flexibleShippingDisclaimer;
         expressCheckoutButtonTheme.setAttribute("disabled", true);
         document
           .querySelector("#woocommerce_flizpay_flizpay_express_checkout_pages")
@@ -212,6 +219,7 @@
       dividerRow.append(exampleImage);
       dividerRow2.append(divider2);
       dividerRow2.appendChild(expressCheckoutSectionTitle);
+      dividerRow2.append(flexibleShippingParagraph);
       buttonExampleLabel.innerHTML = flizpayParams.wp_locale.includes("en")
         ? "Example:"
         : "Beispiel:";
