@@ -15,8 +15,8 @@ jQuery(function ($) {
     window.flizPay.FLIZ_LOADING_HTML = document.createElement("div");
     window.flizPay.FLIZ_LOGO = document.createElement("img");
     window.flizPay.FLIZ_LOADING_WHEEL = document.createElement("img");
-    window.flizPay.FLIZ_CANCEL_BUTTON = document.createElement("button");
-    window.flizPay.FLIZ_REFRESH_BUTTON = document.createElement("button");
+    window.flizPay.FLIZ_CANCEL_BUTTON = document.createElement("span");
+    window.flizPay.FLIZ_REFRESH_BUTTON = document.createElement("span");
 
     window.flizPay.FLIZ_LOGO.setAttribute("src", flizpay_frontend.fliz_logo);
     window.flizPay.FLIZ_LOGO.setAttribute("style", "margin-top: -10px;");

@@ -76,11 +76,12 @@
 
 .fliz-cancel-button {
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
   border: none;
   color: #001F3F;
   border-radius: 5%;
   background-color: white;
+  margin-top: 20px;
 }
 
 .fliz-refresh-button {
