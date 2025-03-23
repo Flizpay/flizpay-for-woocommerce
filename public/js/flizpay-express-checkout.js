@@ -8,7 +8,7 @@ jQuery(function ($) {
     //Futura Font
     document.head.insertAdjacentHTML(
       "beforeend",
-      `<link href="https://fonts.cdnfonts.com/css/futura-lt" rel="stylesheet">`
+      `<link href="https://fonts.cdnfonts.com/css/br-cobane" rel="stylesheet">`
     );
 
     function is_express_checkout() {
