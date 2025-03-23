@@ -71,6 +71,7 @@ function flizpay_init_gateway_class()
             $this->flizpay_enable_express_checkout = $this->get_option('flizpay_enable_express_checkout');
             $this->flizpay_express_checkout_pages = $this->get_option('flizpay_express_checkout_pages');
             $this->flizpay_express_checkout_theme = $this->get_option('flizpay_express_checkout_theme');
+            $this->flizpay_order_status = $this->get_option('flizpay_order_status');
             // Initialize helper classes
             $this->cashback_helper = new Flizpay_Cashback_Helper($this);
             $this->webhook_helper = new Flizpay_Webhook_Helper($this);
@@ -216,6 +217,13 @@ function flizpay_init_gateway_class()
                     $this->update_option('flizpay_express_checkout_theme', $express_checkout_theme ?? 'light');
                 } else {
                     $this->update_option('flizpay_express_checkout_theme', 'light');
+                }
+
+                if (isset($_POST['woocommerce_flizpay_flizpay_order_status'])) {
+                    $flizpay_order_status = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_order_status']));
+                    $this->update_option('flizpay_order_status', $flizpay_order_status ?? 'wc-pending');
+                } else {
+                    $this->update_option('flizpay_order_status', 'wc-pending');
                 }
 
 
@@ -366,7 +374,7 @@ function flizpay_init_gateway_class()
         public function process_payment($order_id, $source = 'plugin')
         {
             $order = wc_get_order($order_id);
-            $order->update_status('wc-pending', 'FLIZpay Checkout initiated. Waiting for payment - ' . $source);
+            $order->update_status($this->flizpay_order_status, 'FLIZpay Checkout initiated. Waiting for payment - ' . $source);
             $order->save();
 
             $redirectUrl = $this->api_service->create_transaction($order, $source);
