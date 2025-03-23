@@ -31,6 +31,7 @@
 Then make sure you set the shipping calculation on the Package and not on the Cart. For express checkout the cart is not required and when Flexible Shipping is not configured for Package calculation it won't be presented as a shipping option in FLIZ app.`
       : `Verwenden Sie das Plugin <a href="https://wordpress.org/plugins/flexible-shipping/">„Flexible Shipping“</a>?
 Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und nicht auf dem Warenkorb festlegen. Für den Express-Checkout ist der Warenkorb nicht erforderlich. Wenn „Flexible Shipping“ nicht für die Paketberechnung konfiguriert ist, wird er in der FLIZ-App nicht als Versandoption angezeigt.`;
+    const adminOptionTitle = flizpayParams.wp_locale.includes("en") ? "Admin Display Options" : "Anzeigeoptionen für Admins";
     const flexibleShippingParagraph = document.createElement("p");
     const testButton = document.createElement("div");
     const resultField = document.createElement("div");
@@ -54,16 +55,20 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
     const description = document.querySelector(
       "#connection-stablished-description"
     );
+    const orderStatus = document.querySelector("#woocommerce_flizpay_flizpay_order_status")
     const expressCheckoutButtonTheme = document.querySelector(
       "#woocommerce_flizpay_flizpay_express_checkout_theme"
     );
     const divider = document.createElement("hr");
     const divider2 = document.createElement("hr");
+    const divider3 = document.createElement("hr");
     const dividerRow = document.createElement("tr");
     const dividerRow2 = document.createElement("tr");
+    const dividerRow3 = document.createElement("tr");
     const exampleImage = document.createElement("img");
     const checkoutSectionTitle = document.createElement("h2");
     const expressCheckoutSectionTitle = document.createElement("h2");
+    const orderStatusLabel = document.createElement("h2");
     const expressCheckoutButtonLight = document.createElement("img");
     const expressCheckoutButtonDark = document.createElement("img");
     const buttonExampleLabel = document.createElement("p");
@@ -196,11 +201,16 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
       webhookAlive.setAttribute("disabled", true);
       divider.setAttribute("style", "width: 100%");
       divider2.setAttribute("style", "width: 100%");
+      divider3.setAttribute("style", "width: 100%");
       dividerRow.setAttribute(
         "style",
         "width: 80vw; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; padding: 10px; text-align: center;"
       );
       dividerRow2.setAttribute(
+        "style",
+        "width: 80vw; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; padding: 10px; text-align: center; gap: 20px;"
+      );
+      dividerRow3.setAttribute(
         "style",
         "width: 80vw; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; padding: 10px; text-align: center; gap: 20px;"
       );
@@ -226,12 +236,19 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
       expressCheckoutButtonTheme.parentNode.append(buttonExampleLabel);
       expressCheckoutButtonTheme.parentNode.append(expressCheckoutButtonDark);
       expressCheckoutButtonTheme.parentNode.append(expressCheckoutButtonLight);
+      orderStatusLabel.innerHTML = adminOptionTitle;
+      dividerRow3.append(divider3);
+      dividerRow3.append(orderStatusLabel);
+      orderStatus.append(dividerRow2);
       document
         .querySelector("table > tbody > tr:nth-child(3)")
         .insertAdjacentElement("afterend", dividerRow);
       document
-        .querySelector("table > tbody > tr:nth-child(8)")
+        .querySelector("table > tbody > tr:nth-child(9)")
         .insertAdjacentElement("afterend", dividerRow2);
+      document
+        .querySelector("table > tbody > tr:nth-child(8)")
+        .insertAdjacentElement("afterend", dividerRow3);
 
       if (webhookAlive.checked) {
         description.setAttribute(

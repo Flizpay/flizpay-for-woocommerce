@@ -167,19 +167,6 @@ class Flizpay_Admin
 				'default' => '',
 				'desc_tip' => false,
 			),
-			'flizpay_order_status' => array(
-				'title' => $this->is_english() ? 'Pending orders status' : 'Ausstehenden Auftragsstatus',
-				'type' => 'select',
-				'description' => $this->is_english()
-					? 'When "pending" orders will show in the order search with status pending. When draft orders won\'t show in the order search, unless you access the draft orders.'
-					: 'Ausstehende Bestellungen werden in der Bestellsuche mit dem Status „Ausstehend“ angezeigt. Entwürfe werden in der Bestellsuche nicht angezeigt, es sei denn, Sie greifen auf die Bestellentwürfe zu.',
-				'default' => 'wc-pending',
-				'options' => array(
-					'wc-pending' => $this->is_english() ? 'Pending' : 'Ausstehend',
-					'wc-checkout-draft' => $this->is_english() ? 'Draft' : 'Entwurf',
-				),
-				'desc_tip' => true,
-			),
 			'flizpay_display_logo' => array(
 				'title' => 'Logo',
 				'label' => $this->is_english()
@@ -207,6 +194,19 @@ class Flizpay_Admin
 				'description' => '',
 				'default' => 'yes',
 			),
+			'flizpay_order_status' => array(
+				'title' => $this->is_english() ? 'Pending Orders' : 'Ausstehende Zahlungen',
+				'type' => 'select',
+				'description' => $this->is_english()
+					? 'If someone doesn’t complete an order using FLIZpay, the order will appear in your admin system as “Payment Pending.” If you want such orders to be shown, select “Pending”. If you don’t want them to be displayed, select “Draft”'
+					: 'Falls jemand eine Bestellung mit FLIZpay nicht abgeschlossen hat, wird diese Bestellung in deinem Admin-System als „Zahlung ausstehend” angezeigt. Falls das gewünscht ist, wähle „Ausstehend”. Falls solche Bestellungen nicht angezeigt werden sollen, wähle „Entwurf”.',
+				'default' => 'wc-pending',
+				'options' => array(
+					'wc-pending' => $this->is_english() ? 'Pending' : 'Ausstehend',
+					'wc-checkout-draft' => $this->is_english() ? 'Draft' : 'Entwurf',
+				),
+				'desc_tip' => true,
+			),
 			'flizpay_enable_express_checkout' => array(
 				'title' => $this->is_english() ? 'Express checkout enabled' : 'Express-Checkout Aktiviert',
 				'type' => 'checkbox',
@@ -221,7 +221,7 @@ class Flizpay_Admin
 					'cart' => $this->is_english() ? 'Cart Page' : 'Warenkorbseite',
 				),
 				'desc_tip' => true,
-				'description' => $this->is_english() ? 'Select the pages where the express checkout button will appear.' : 'Wählen Sie die Seiten aus, auf denen die Schaltfläche für den Express-Checkout angezeigt wird.'
+				'description' => $this->is_english() ? 'Select the pages where the express checkout button will appear.' : 'Wähle die Seiten aus, auf denen die Schaltfläche für den Express-Checkout angezeigt werden soll.'
 			),
 			'flizpay_express_checkout_theme' => array(
 				'title' => $this->is_english() ? 'Express checkout button theme' : 'Design der Schaltfläche „Express-Checkout“',
