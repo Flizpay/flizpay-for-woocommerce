@@ -167,6 +167,19 @@ class Flizpay_Admin
 				'default' => '',
 				'desc_tip' => false,
 			),
+			'flizpay_order_status' => array(
+				'title' => $this->is_english() ? 'Pending orders status' : 'Ausstehenden Auftragsstatus',
+				'type' => 'select',
+				'description' => $this->is_english()
+					? 'When "pending" orders will show in the order search with status pending. When draft orders won\'t show in the order search, unless you access the draft orders.'
+					: 'Ausstehende Bestellungen werden in der Bestellsuche mit dem Status „Ausstehend“ angezeigt. Entwürfe werden in der Bestellsuche nicht angezeigt, es sei denn, Sie greifen auf die Bestellentwürfe zu.',
+				'default' => 'wc-pending',
+				'options' => array(
+					'wc-pending' => $this->is_english() ? 'Pending' : 'Ausstehend',
+					'wc-checkout-draft' => $this->is_english() ? 'Draft' : 'Entwurf',
+				),
+				'desc_tip' => true,
+			),
 			'flizpay_display_logo' => array(
 				'title' => 'Logo',
 				'label' => $this->is_english()
