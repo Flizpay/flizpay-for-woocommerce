@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-24-03 - version 2.2.1
+* Fixed plugin upgrader functionality compatibility with older versions
+
 2025-24-03 - version 2.2.0
 * Added support for custom order status and removed google fonts
 
