@@ -162,7 +162,7 @@ function flizpay_init_gateway_class()
                     $this->update_option('enabled', 'no');
                     $this->update_option('flizpay_enabled', 'no');
                     $this->update_option('flizpay_webhook_alive', 'no');
-                    sleep(0.5);
+                    usleep(500000); // Sleep for 0.5 seconds to wait for database update
                     $webhook_url = $this->api_service->generate_webhook_url();
                     $webhook_key = $this->api_service->get_webhook_key();
                     $cashback_data = $this->api_service->fetch_cashback_data();
