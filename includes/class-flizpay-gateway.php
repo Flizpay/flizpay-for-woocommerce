@@ -87,7 +87,7 @@ function flizpay_init_gateway_class()
             $this->init_gateway_info();
 
             //Admin options setup handler
-            add_action('woocommerce_update_options_checkout_flizpay', array($this, 'test_gateway_connection'));
+            add_action('woocommerce_settings_save_checkout', array($this, 'test_gateway_connection'));
 
             // Webhook handler
             add_action('init', array($this, 'register_webhook_endpoint'));
@@ -156,15 +156,16 @@ function flizpay_init_gateway_class()
             if (isset($_POST['woocommerce_flizpay_flizpay_api_key'])) {
                 $api_key = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_api_key']));
 
-                if ($api_key !== $this->get_option('flizpay_api_key')) {
+                if ($api_key !== $this->get_option('flizpay_api_key') || $this->get_option('flizpay_webhook_alive') === 'no') {
                     $this->api_service = new Flizpay_API_Service($api_key);
-                    $webhook_key = $this->api_service->get_webhook_key();
-                    $webhook_url = $this->api_service->generate_webhook_url();
-                    $cashback_data = $this->api_service->fetch_cashback_data();
 
                     $this->update_option('enabled', 'no');
                     $this->update_option('flizpay_enabled', 'no');
                     $this->update_option('flizpay_webhook_alive', 'no');
+                    usleep(500000); // Sleep for 0.5 seconds to wait for database update
+                    $webhook_url = $this->api_service->generate_webhook_url();
+                    $webhook_key = $this->api_service->get_webhook_key();
+                    $cashback_data = $this->api_service->fetch_cashback_data();
 
                     if ($webhook_key && $webhook_url) {
                         $this->update_option('flizpay_webhook_key', $webhook_key);
@@ -226,10 +227,8 @@ function flizpay_init_gateway_class()
                     $this->update_option('flizpay_order_status', 'wc-pending');
                 }
 
-
                 $this->init_gateway_info();
             }
-
         }
 
         /**
