@@ -62,7 +62,7 @@ class Flizpay_Cashback_Helper
     if (!$this->gateway->cashback)
       return null;
 
-    if (floatval($this->gateway->cashback['first_purchase_amount']) > 0) {
+    if (floatval($this->gateway->cashback['first_purchase_amount']) > 0 || floatval($this->gateway->cashback['standard_amount']) > 0) {
       return max(floatval($this->gateway->cashback['first_purchase_amount']), floatval($this->gateway->cashback['standard_amount']));
     }
   }
