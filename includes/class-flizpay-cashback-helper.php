@@ -4,9 +4,12 @@ class Flizpay_Cashback_Helper
 {
   private $gateway;
 
+  private $is_german;
+
   public function __construct($gateway)
   {
     $this->gateway = $gateway;
+    $this->is_german = str_contains(get_locale(), 'de');
   }
 
   public function set_cashback_info()
@@ -22,6 +25,13 @@ class Flizpay_Cashback_Helper
       $description = __('description', 'flizpay-for-woocommerce');
       $express_checkout_title = __('express-title', 'flizpay-for-woocommerce');
     }
+
+    // Use commas for german
+    if ($this->is_cashback_available() && $this->is_german) {
+      $title = str_replace('.', ',', $title);
+      $express_checkout_title = str_replace('.', ',', $express_checkout_title);
+    }
+
     $this->gateway->title = $this->gateway->flizpay_display_headline === 'yes' ? $title : 'FLIZpay';
     $this->gateway->description = $this->gateway->flizpay_display_description === 'yes' ? $description : null;
     $this->gateway->flizpay_express_checkout_title = $express_checkout_title;
@@ -29,9 +39,10 @@ class Flizpay_Cashback_Helper
 
   public function set_title()
   {
-    $cashback_value = $this->get_display_value();
 
     if ($this->is_default_translation($this->gateway->title)) {
+      $cashback_value = str_replace('.', ',', (string) $this->get_display_value());
+
       if ($this->gateway->flizpay_display_headline === 'yes') {
         $this->gateway->title = !is_null($this->gateway->cashback)
           ? "FLIZpay - Bis zu $cashback_value% Rabatt"
