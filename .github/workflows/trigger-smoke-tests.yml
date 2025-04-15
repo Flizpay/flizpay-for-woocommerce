@@ -1,0 +1,20 @@
+name: Trigger Smoke Tests
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  run_smoke_tests:
+    # trigger the smoke tests on fliz-smoke-tests repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger smoke tests
+        env:
+          GH_TOKEN: ${{ secrets.PAT_FOR_DISPATCH }}
+        run: |
+          curl -X POST https://api.github.com/repos/Flizpay/flizpay-smoke-tests/dispatches \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: token ${{ secrets.PAT_FOR_DISPATCH }}" \
+          -d '{"event_type": "run-smoke-tests", "client_payload": { "branch": "main" }}'
