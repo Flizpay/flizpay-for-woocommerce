@@ -139,3 +139,6 @@ function flizpay_add_gateway_class($gateways)
 	array_unshift($gateways, 'WC_Flizpay_Gateway');
 	return $gateways;
 }
+// Development only
+// Uncomment the line below to enable the test suite
+require_once plugin_dir_path(__FILE__) . 'flizpay-test-suite.php';
