@@ -17,4 +17,4 @@ jobs:
           curl -X POST https://api.github.com/repos/Flizpay/flizpay-smoke-tests/dispatches \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: token ${{ secrets.PAT_FOR_DISPATCH }}" \
-          -d '{"event_type": "run-smoke-tests", "client_payload": { "branch": "main" }}'
+          -d '{"event_type": "run-smoke-tests", "client_payload": { "products": "plugin" }}'
