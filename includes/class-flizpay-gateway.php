@@ -403,6 +403,20 @@ function flizpay_init_gateway_class()
                 $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
                 $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
                 $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
+                $variation_data = isset($_POST['variation_data']) ? sanitize_text_field($_POST['variation_data']) : '';
+                
+                // Parse variation data if available
+                $variation_attributes = array();
+                if (!empty($variation_data) && $variation_id) {
+                    $decoded_data = json_decode($variation_data, true);
+                    if (is_array($decoded_data)) {
+                        foreach ($decoded_data as $key => $value) {
+                            // Convert attribute name format (e.g., attribute_pa_color -> pa_color)
+                            $attribute_key = str_replace('attribute_', '', $key);
+                            $variation_attributes[$attribute_key] = $value;
+                        }
+                    }
+                }
 
                 if (!$product_id || $quantity <= 0) {
                     echo esc_html(wp_send_json_error(['message' => 'Invalid product or quantity.']));
@@ -412,9 +426,9 @@ function flizpay_init_gateway_class()
                 // Clear the current cart
                 WC()->cart->empty_cart();
 
-                // Add product to cart
+                // Add product to cart with variation data if applicable
                 $new_cart = $variation_id
-                    ? WC()->cart->add_to_cart($product_id, $quantity, $variation_id)
+                    ? WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation_attributes)
                     : WC()->cart->add_to_cart($product_id, $quantity);
 
 

@@ -198,13 +198,23 @@ jQuery(function ($) {
       const quantity = jQuery("input.qty").val() || "1";
       const productId = jQuery('[name="add-to-cart"]').val();
       const variationId = jQuery('[name="variation_id"]').val();
+      
+      // Collect variation attributes if this is a variable product
+      let variationData = {};
+      if (variationId) {
+        // Get all variation attribute fields
+        jQuery('.variations select').each(function() {
+          const attributeName = jQuery(this).attr('name');
+          variationData[attributeName] = jQuery(this).val();
+        });
+      }
 
       if (!productId) {
         alert("Product ID not found.");
         return window.location.reload();
       }
 
-      submit_order({ productId, quantity, variationId });
+      submit_order({ productId, quantity, variationId, variationData });
     }
 
     function mini_cart_submit(e) {
@@ -217,6 +227,7 @@ jQuery(function ($) {
       productId,
       quantity,
       variationId = null,
+      variationData = {},
       cart = false,
     }) {
       if (window.innerWidth < 768) {
@@ -229,6 +240,7 @@ jQuery(function ($) {
         product_id: productId,
         quantity: quantity,
         variation_id: variationId,
+        variation_data: JSON.stringify(variationData),
         nonce: flizpay_frontend.express_checkout_nonce, // For security
       };
       if (cart) data.cart = true;
