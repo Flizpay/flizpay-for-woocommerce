@@ -210,7 +210,10 @@ class Flizpay_Admin
 			'flizpay_enable_express_checkout' => array(
 				'title' => $this->is_english() ? 'Express checkout enabled' : 'Express-Checkout Aktiviert',
 				'type' => 'checkbox',
-				'default' => 'yes'
+				'default' => 'yes',
+				'description' => $this->is_english()
+					? 'When dealing with flat and non-taxable shipping fees, make sure the taxable option is set to “none” in the WooCommerce Shipping Zone Settings (WooCommerce > Settings > Shipping). Otherwise, the total cost calculation during express checkout may incur in taxes being applied to shipping fees.'
+					: 'Stelle für pauschale und nicht steuerpflichtige Versandkosten sicher, dass der Steuerstatus in den Einstellungen der Versandzonen (WooCommerce > Einstellungen > Versand) auf „Keine“ gesetzt ist. Andernfalls kann es bei der Berechnung der Gesamtkosten während des Express-Checkouts zu einer fehlerhaften Berechnung von Steuern auf die Versandkosten kommen.'
 			),
 			'flizpay_express_checkout_pages' => array(
 				'title' => $this->is_english() ? 'Pages where the express checkout is shown' : 'Seiten, auf denen der Express-Checkout angezeigt wird',
