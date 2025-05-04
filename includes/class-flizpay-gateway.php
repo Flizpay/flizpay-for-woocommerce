@@ -30,6 +30,11 @@ function flizpay_init_gateway_class()
         public $flizpay_express_checkout_pages;
         public $flizpay_express_checkout_theme;
         public $flizpay_express_checkout_title;
+        public $flizpay_order_status;
+        public $cashback_helper;
+        public $webhook_helper;
+        public $shipping_helper;
+        public $api_service;
 
         /**
          * The class constructor will set FLIZ id, load translations, description, icon and etc. 
@@ -404,7 +409,7 @@ function flizpay_init_gateway_class()
                 $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
                 $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
                 $variation_data = isset($_POST['variation_data']) ? sanitize_text_field($_POST['variation_data']) : '';
-                
+
                 // Parse variation data if available
                 $variation_attributes = array();
                 if (!empty($variation_data) && $variation_id) {
