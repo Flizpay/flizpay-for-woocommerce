@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-04-05 - version 2.4.1
+* Hotfix for gateway variables declaration and admin page inputs not loading correctly
+
 2025-05-04 - version 2.3.0
 * Improved the webhook registration flow
 

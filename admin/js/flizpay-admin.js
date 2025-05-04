@@ -8,6 +8,8 @@
    * @since 1.0.0
    */
   jQuery(document).ready(function ($) {
+    new Promise((resolve) => setTimeout(resolve, 1000)).then(() => { console.log("FlizPay Admin JS loaded"); });
+
     const connectionAttempts =
       Number.parseInt(
         localStorage.getItem("flizpay_admin_connection_attempts")
