@@ -110,6 +110,28 @@ jQuery(function ($) {
       }, 1700);
     }
 
+    function is_cart_empty() {
+      // Check for empty cart message
+      const emptyCartMessage = document.querySelector('.cart-empty.woocommerce-info');
+      if (emptyCartMessage) return true;
+      
+      // Check for cart items - standard WooCommerce
+      const cartItems = document.querySelector('.woocommerce-cart-form__cart-item');
+      if (cartItems) return false;
+      
+      // Check for cart items - WooCommerce Blocks
+      const blockCartItems = document.querySelector('.wc-block-cart-items__row');
+      if (blockCartItems) return false;
+      
+      // Check if we have a cart form but no checkout button
+      const cartForm = document.querySelector('.woocommerce-cart-form');
+      const checkoutButton = document.querySelector('.checkout-button');
+      if (cartForm && (!checkoutButton || checkoutButton.classList.contains('disabled'))) return true;
+      
+      // Default based on cart form presence
+      return !cartForm && !document.querySelector('.wc-block-cart__items');
+    }
+
     function render_cart_button() {
       setTimeout(() => {
         const [expressCheckoutButton, expressCheckoutContainer] =
@@ -124,7 +146,46 @@ jQuery(function ($) {
         const proceedToCheckoutBlock = document.querySelector(
           ".wp-block-woocommerce-proceed-to-checkout-block"
         );
-        expressCheckoutButton.addEventListener("click", cart_submit);
+        
+        // Check if cart is empty and disable button if it is
+        if (is_cart_empty()) {
+          expressCheckoutButton.classList.add('disabled');
+          expressCheckoutButton.style.pointerEvents = 'none';
+          expressCheckoutButton.style.cursor = 'not-allowed';
+        } else {
+          expressCheckoutButton.addEventListener("click", cart_submit);
+        }
+
+        // Simple function to update button state
+        const updateCartButton = () => {
+          const isEmpty = is_cart_empty();
+          if (isEmpty) {
+            expressCheckoutButton.classList.add('disabled');
+            expressCheckoutButton.style.pointerEvents = 'none';
+            expressCheckoutButton.style.cursor = 'not-allowed';
+            expressCheckoutButton.removeEventListener("click", cart_submit);
+          } else {
+            expressCheckoutButton.classList.remove('disabled');
+            expressCheckoutButton.style.pointerEvents = '';
+            expressCheckoutButton.style.cursor = '';
+            // Remove and reattach to prevent duplicate handlers
+            expressCheckoutButton.removeEventListener("click", cart_submit);
+            expressCheckoutButton.addEventListener("click", cart_submit);
+          }
+        };
+        
+        // Listen for standard WooCommerce cart update events
+        jQuery(document.body).on('updated_cart_totals updated_wc_div added_to_cart removed_from_cart', updateCartButton);
+        
+        // Setup a single mutation observer on the cart container
+        const cartContainer = document.querySelector('.woocommerce-cart-form, .wc-block-cart');
+        if (cartContainer) {
+          const cartObserver = new MutationObserver(updateCartButton);
+          cartObserver.observe(cartContainer, { 
+            childList: true, 
+            subtree: true 
+          });
+        }
 
         if (classicProceedToCheckoutButton) {
           classicProceedToCheckoutButton.parentNode.insertBefore(
@@ -150,16 +211,24 @@ jQuery(function ($) {
         const classicMiniCartButtons = document.querySelector(
           ".woocommerce-mini-cart"
         );
-        // Attach click event to the express checkout button
+        
+        // CRITICAL: Always attach the click handler first
         expressCheckoutButton.addEventListener("click", mini_cart_submit);
-
+        
         // Reduce font class
-        expressCheckoutButton.classList.add('flizpay-express-checkout-minicart-button')
+        expressCheckoutButton.classList.add('flizpay-express-checkout-minicart-button');
+
+        // Attach click handler and FORCE ENABLE the button by default
+        expressCheckoutButton.classList.remove('disabled');
+        expressCheckoutButton.style.pointerEvents = '';
+        expressCheckoutButton.style.cursor = '';
 
         //Render the classic mini cart button as it's always in the DOM
         if (classicMiniCartButtons) {
+          // ORIGINAL APPROACH - WORKING IN MOST THEMES
           classicMiniCartButtons.append(expressCheckoutContainer);
         } else {
+          // FIND THE BLOCKS MINI CART
           rebuild_minicart_button_loop(expressCheckoutContainer);
         }
 
@@ -174,13 +243,12 @@ jQuery(function ($) {
           const blocksMiniCartButton = document.querySelector(
             ".wp-block-woocommerce-filled-mini-cart-contents-block .flizpay-express-checkout-container-checkout"
           );
-              // Check if mini cart elements are now available
+          // Check if mini cart elements are now available
           if (blocksMiniCartFooter && !blocksMiniCartButton) {
             blocksMiniCartFooter.parentNode.insertBefore(
               expressCheckoutContainer,
               blocksMiniCartFooter.nextSibling
             );
-            
           }
         }, 650);
       }
