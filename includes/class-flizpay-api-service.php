@@ -9,6 +9,13 @@ class Flizpay_API_Service
     $this->api_key = $api_key;
   }
 
+  public function get_log_token()
+  {
+    $client = WC_Flizpay_API::get_instance($this->api_key);
+
+    return $client->dispatch('get_log_token', null, false);
+  }
+
   public function get_webhook_key()
   {
     $client = WC_Flizpay_API::get_instance($this->api_key);

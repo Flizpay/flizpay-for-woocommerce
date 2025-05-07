@@ -105,7 +105,19 @@ class WC_Flizpay_API
             )
           )
         );
-      }
+      },
+      'get_log_token' => function ($body) {
+        return array(
+          'path' => $this->base_url . '/business/get-plugin-log-token',
+          'method' => 'get',
+          'options' => array(
+            'headers' => array(
+              'Content-type' => 'application/json',
+              'x-api-key' => $this->api_key
+            )
+          )
+        );
+      },
     );
   }
 

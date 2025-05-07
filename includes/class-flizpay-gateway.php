@@ -158,27 +158,57 @@ function flizpay_init_gateway_class()
         public function test_gateway_connection()
         {
             wp_verify_nonce('_wpnonce');
+
+            // Get logger instance
+            $logger = Flizpay_Logger::get_instance();
+
             if (isset($_POST['woocommerce_flizpay_flizpay_api_key'])) {
                 $api_key = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_api_key']));
+                $logger->info('Testing gateway connection with API key', array('api_key_length' => strlen($api_key)));
 
                 if ($api_key !== $this->get_option('flizpay_api_key') || $this->get_option('flizpay_webhook_alive') === 'no') {
                     $this->api_service = new Flizpay_API_Service($api_key);
+                    $logger->info('API key was changed or webhook was not alive, reconfiguring connection');
 
                     $this->update_option('enabled', 'no');
                     $this->update_option('flizpay_enabled', 'no');
                     $this->update_option('flizpay_webhook_alive', 'no');
                     usleep(500000); // Sleep for 0.5 seconds to wait for database update
-                    $webhook_url = $this->api_service->generate_webhook_url();
-                    $webhook_key = $this->api_service->get_webhook_key();
-                    $cashback_data = $this->api_service->fetch_cashback_data();
 
-                    if ($webhook_key && $webhook_url) {
-                        $this->update_option('flizpay_webhook_key', $webhook_key);
-                        $this->update_option('flizpay_webhook_url', $webhook_url);
-                        $this->update_option('flizpay_api_key', $api_key);
-                        $this->update_option('flizpay_cashback', $cashback_data);
-                        $this->cashback = $cashback_data;
-                    } else {
+                    try {
+                        $log_data = $this->api_service->get_log_token();
+
+                        if ($log_data) {
+                            $this->update_option('flizpay_log_level', 0);
+                            $this->update_option('flizpay_log_token', $log_data['logToken'] ?? '');
+                            $this->update_option('flizpay_log_endpoint', $log_data['logEndpoint'] ?? '');
+                            $logger->init_settings();
+                        }
+                        // Save logging settings
+
+
+                        $webhook_url = $this->api_service->generate_webhook_url();
+                        $logger->info('Generated webhook URL', array('webhook_url' => $webhook_url));
+
+                        $webhook_key = $this->api_service->get_webhook_key();
+                        $logger->info('Retrieved webhook key', array('webhook_key_length' => $webhook_key ? strlen($webhook_key) : 0));
+
+                        $cashback_data = $this->api_service->fetch_cashback_data();
+                        $logger->info('Retrieved cashback data', array('cashback_data' => $cashback_data ? 'available' : 'unavailable'));
+
+                        if ($webhook_key && $webhook_url) {
+                            $this->update_option('flizpay_webhook_key', $webhook_key);
+                            $this->update_option('flizpay_webhook_url', $webhook_url);
+                            $this->update_option('flizpay_api_key', $api_key);
+                            $this->update_option('flizpay_cashback', $cashback_data);
+                            $this->cashback = $cashback_data;
+                            $logger->info('Connection to FLIZpay established successfully');
+                        } else {
+                            $this->update_option('flizpay_api_key', '');
+                            $logger->error('Failed to establish connection to FLIZpay - webhook key or URL missing');
+                        }
+                    } catch (Exception $e) {
+                        $logger->exception($e, 'Exception occurred while establishing connection to FLIZpay');
                         $this->update_option('flizpay_api_key', '');
                     }
                 }
@@ -227,9 +257,9 @@ function flizpay_init_gateway_class()
 
                 if (isset($_POST['woocommerce_flizpay_flizpay_order_status'])) {
                     $flizpay_order_status = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_order_status']));
-                    $this->update_option('flizpay_order_status', $flizpay_order_status ?? 'wc-pending');
+                    $this->update_option('flizpay_order_status', $flizpay_order_status ?? 'pending');
                 } else {
-                    $this->update_option('flizpay_order_status', 'wc-pending');
+                    $this->update_option('flizpay_order_status', 'pending');
                 }
 
                 $this->init_gateway_info();
@@ -377,22 +407,37 @@ function flizpay_init_gateway_class()
          */
         public function process_payment($order_id, $source = 'plugin')
         {
-            $order = wc_get_order($order_id);
-            $order->update_status($this->flizpay_order_status, 'FLIZpay Checkout initiated. Waiting for payment - ' . $source);
-            $order->save();
+            // Get logger instance
+            $logger = Flizpay_Logger::get_instance();
+            $logger->info('Starting payment process', array('order_id' => $order_id, 'source' => $source));
 
-            $redirectUrl = $this->api_service->create_transaction($order, $source);
+            try {
+                $order = wc_get_order($order_id);
+                $order->update_status($this->flizpay_order_status, 'FLIZpay Checkout initiated. Waiting for payment - ' . $source);
+                $order->save();
+                $logger->info('Order status updated', array('order_id' => $order_id, 'status' => $this->flizpay_order_status));
 
-            if ($redirectUrl) {
-                return array('result' => 'success', 'redirect' => $redirectUrl, 'order_id' => $order_id);
-            } else {
-                wc_add_notice('Error creating FLIZpay transaction. Please try again later.');
+                $redirectUrl = $this->api_service->create_transaction($order, $source);
+                $logger->info('Transaction created', array('order_id' => $order_id, 'redirect_url' => $redirectUrl ? 'available' : 'not available'));
+
+                if ($redirectUrl) {
+                    return array('result' => 'success', 'redirect' => $redirectUrl, 'order_id' => $order_id);
+                } else {
+                    $logger->error('Error creating FLIZpay transaction', array('order_id' => $order_id));
+                    wc_add_notice('Error creating FLIZpay transaction. Please try again later.');
+                    return array(
+                        'result' => 'failure',
+                        'redirect' => ''
+                    );
+                }
+            } catch (Exception $e) {
+                $logger->exception($e, 'Exception during payment processing', array('order_id' => $order_id));
+                wc_add_notice('Error processing payment. Please try again later.');
                 return array(
                     'result' => 'failure',
                     'redirect' => ''
                 );
             }
-
         }
 
         /**
