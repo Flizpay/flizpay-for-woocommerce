@@ -30,36 +30,6 @@ class Flizpay_Deactivator
 	 */
 	public static function deactivate()
 	{
-		$page_slug = 'flizpay-payment-fail';
-		$page = get_page_by_path($page_slug);
-		if ($page) {
-			wp_delete_post($page->ID, true);
-		}
-
-		$page_slug2 = 'flizpay-payment-fail-2';
-		$page2 = get_page_by_path($page_slug2);
-		if ($page2) {
-			wp_delete_post($page2->ID, true);
-		}
-
-		$page_slug3 = 'flizpay-payment-fail-3';
-		$page3 = get_page_by_path($page_slug3);
-		if ($page3) {
-			wp_delete_post($page3->ID, true);
-		}
-
-		$page_slug4 = 'flizpay-payment-fail-4';
-		$page4 = get_page_by_path($page_slug4);
-		if ($page4) {
-			wp_delete_post($page4->ID, true);
-		}
-
-		$payment_failed_slug = 'payment-failed';
-		$payment_failed_page = get_page_by_path($payment_failed_slug);
-		if ($payment_failed_page) {
-			wp_delete_post($payment_failed_page->ID, true);
-		}
-
 		require_once('class-flizpay-api.php');
 
 		$flizpay_settings = get_option('woocommerce_flizpay_settings');
