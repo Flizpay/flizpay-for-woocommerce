@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.7
-Stable tag: 2.4.1
+Stable tag: 2.4.2
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -159,7 +159,21 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - FIXED: Admin page inputs being loaded incorrectly
   - FIXED: Gateway variables declaration
 
+- v2.4.2
+  - FIXED: Order total value not being stored correctly due to taxes variation
+  - FIXED: Admin page inputs trying to be accessed before they were loaded
+  - REMOVED: Legacy failure page
+  - FIXED: Now disables the express checkout button if the cart is empty
+  - FIXED: Explicitly set FLIZpay as the payment method for orders created by the plugin
+
 == Upgrade Notice ==
+
+= 2.4.2 =
+* Hotfix for order total value not being stored correctly due to taxes variation
+* Hotfix for admin page inputs trying to be accessed before they were loaded
+* Removed legacy failure page
+* Hotfix for express checkout button being disabled if the cart is empty
+* Hotfix for explicitly setting FLIZpay as the payment method for orders created by the plugin
 
 = 2.4.1 =
 * Hotfix for gateway variables declaration and admin page inputs not loading correctly
