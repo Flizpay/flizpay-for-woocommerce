@@ -110,7 +110,7 @@ class Flizpay_Shipping_Helper
         'address' => $address['address_1'],
       ],
       'contents' => $contents,
-      'contents_cost' => $order->get_subtotal(),
+      'contents_cost' => $order->get_total(),
       'applied_coupons' => $order->get_coupon_codes(),
     ];
   }
