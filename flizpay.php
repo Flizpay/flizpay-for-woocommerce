@@ -112,6 +112,11 @@ add_action('upgrader_process_complete', 'flizpay_upgrader');
 require plugin_dir_path(__FILE__) . 'includes/class-flizpay.php';
 
 /**
+ * The logger class that is used for tracking and monitoring plugin activities
+ */
+require plugin_dir_path(__FILE__) . 'includes/class-flizpay-logger.php';
+
+/**
  * Begins execution of the plugin.
  *
  * Since everything within the plugin is registered via hooks,
@@ -122,10 +127,11 @@ require plugin_dir_path(__FILE__) . 'includes/class-flizpay.php';
  */
 function flizpay_run()
 {
-
+	// Initialize logger (singleton)
+	Flizpay_Logger::get_instance();
+	
 	$plugin = new Flizpay();
 	$plugin->run();
-
 }
 flizpay_run();
 
