@@ -65,6 +65,12 @@ class Flizpay_Webhook_Helper
       wp_send_json_error('Order not found', 404);
     }
 
+    // Ensure payment method is set correctly regardless of status
+    if ($order->get_payment_method() !== 'flizpay') {
+      $order->set_payment_method('flizpay');
+      $order->set_payment_method_title('FLIZpay');
+    }
+
     if ($status === 'completed') {
       $this->complete_order($order, $data);
     }
@@ -105,6 +111,10 @@ class Flizpay_Webhook_Helper
 
   private function complete_order($order, $data)
   {
+    // Explicitly set the payment method before completing payment
+    $order->set_payment_method('flizpay');
+    $order->set_payment_method_title('FLIZpay');
+
     $order->payment_complete($data['transactionId']);
     $fliz_discount = (float) $data['originalAmount'] - (float) $data['amount'];
     $cashback_value = (float) ($fliz_discount * 100) / $data['originalAmount'];

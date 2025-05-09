@@ -447,6 +447,10 @@ function flizpay_init_gateway_class()
             $order_id = wc_create_order();
             $order = wc_get_order($order_id);
 
+            // Set payment method explicitly for express checkout orders
+            $order->set_payment_method('flizpay');
+            $order->set_payment_method_title('FLIZpay');
+
             foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
                 $item = new WC_Order_Item_Product();
 
