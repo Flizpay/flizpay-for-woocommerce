@@ -40,7 +40,8 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
     const apiKeyInput = document.querySelector(
       "#woocommerce_flizpay_flizpay_api_key"
     );
-    const initialApiKeyValue = apiKeyInput.value;
+    // Safely access the value or default to empty string if element doesn't exist
+    const initialApiKeyValue = apiKeyInput ? apiKeyInput.value : '';
     const displayHeadlineInput = document.querySelector(
       "#woocommerce_flizpay_flizpay_display_headline"
     );
@@ -102,10 +103,12 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
     }
 
     function hasChangedApiKey() {
+      const currentApiKey = document.querySelector("#woocommerce_flizpay_flizpay_api_key");
       return (
+        webhookAlive && 
         webhookAlive.checked &&
-        document.querySelector("#woocommerce_flizpay_flizpay_api_key").value !==
-          initialApiKeyValue
+        currentApiKey && 
+        currentApiKey.value !== initialApiKeyValue
       );
     }
 
@@ -138,12 +141,18 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
 
     function isConnectionFailed() {
       return (
-        webhookURLInput.value.length !== 0 && apiKeyInput.value.length === 0
+        webhookURLInput && 
+        webhookURLInput.value.length !== 0 && 
+        (!apiKeyInput || apiKeyInput.value.length === 0)
       );
     }
 
     function isConnectionPending() {
-      return webhookURLInput.value.length !== 0 && !webhookAlive.checked;
+      return (
+        webhookURLInput && 
+        webhookURLInput.value.length !== 0 && 
+        (!webhookAlive || !webhookAlive.checked)
+      );
     }
 
     function initCustomAttributesAndStyles() {
@@ -195,12 +204,23 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
       expressCheckoutButtonLight.setAttribute("style", "margin-top: 10px;");
       testButton.setAttribute("id", "woocommerce_flizpay_test_connection");
       resultField.setAttribute("id", "woocommerce_flizpay_connection_result");
-      apiKeyInput.parentNode.appendChild(testButton);
-      apiKeyInput.parentNode.appendChild(resultField);
-      webhookURLInput.setAttribute("disabled", true);
-      webhookURLInput.setAttribute("type", "hidden");
-      enabledCheckbox.setAttribute("disabled", true);
-      webhookAlive.setAttribute("disabled", true);
+      // Only append if apiKeyInput exists
+      if (apiKeyInput && apiKeyInput.parentNode) {
+        apiKeyInput.parentNode.appendChild(testButton);
+        apiKeyInput.parentNode.appendChild(resultField);
+      }
+      // Safely set attributes on elements, checking if they exist first
+      if (webhookURLInput) {
+        webhookURLInput.setAttribute("disabled", true);
+        webhookURLInput.setAttribute("type", "hidden");
+      }
+      if (enabledCheckbox) {
+        enabledCheckbox.setAttribute("disabled", true);
+      }
+      if (webhookAlive) {
+        webhookAlive.setAttribute("disabled", true);
+      }
+      
       divider.setAttribute("style", "width: 100%");
       divider2.setAttribute("style", "width: 100%");
       divider3.setAttribute("style", "width: 100%");
@@ -235,74 +255,97 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
       buttonExampleLabel.innerHTML = flizpayParams.wp_locale.includes("en")
         ? "Example:"
         : "Beispiel:";
-      expressCheckoutButtonTheme.parentNode.append(buttonExampleLabel);
-      expressCheckoutButtonTheme.parentNode.append(expressCheckoutButtonDark);
-      expressCheckoutButtonTheme.parentNode.append(expressCheckoutButtonLight);
+      
+      // Only append elements if parent exists
+      if (expressCheckoutButtonTheme && expressCheckoutButtonTheme.parentNode) {
+        expressCheckoutButtonTheme.parentNode.append(buttonExampleLabel);
+        expressCheckoutButtonTheme.parentNode.append(expressCheckoutButtonDark);
+        expressCheckoutButtonTheme.parentNode.append(expressCheckoutButtonLight);
+      }
+      
       orderStatusLabel.innerHTML = adminOptionTitle;
       dividerRow3.append(divider3);
       dividerRow3.append(orderStatusLabel);
-      orderStatus.append(dividerRow2);
-      document
-        .querySelector("table > tbody > tr:nth-child(3)")
-        .insertAdjacentElement("afterend", dividerRow);
-      document
-        .querySelector("table > tbody > tr:nth-child(9)")
-        .insertAdjacentElement("afterend", dividerRow2);
-      document
-        .querySelector("table > tbody > tr:nth-child(8)")
-        .insertAdjacentElement("afterend", dividerRow3);
+      
+      if (orderStatus) {
+        orderStatus.append(dividerRow2);
+      }
+      
+      const table = document.querySelector("table > tbody");
+      if (table) {
+        const tr3 = table.querySelector("tr:nth-child(3)");
+        const tr9 = table.querySelector("tr:nth-child(9)");
+        const tr8 = table.querySelector("tr:nth-child(8)");
+        
+        if (tr3) tr3.insertAdjacentElement("afterend", dividerRow);
+        if (tr9) tr9.insertAdjacentElement("afterend", dividerRow2);
+        if (tr8) tr8.insertAdjacentElement("afterend", dividerRow3);
+      }
 
-      if (webhookAlive.checked) {
+      if (webhookAlive && webhookAlive.checked && description) {
         description.setAttribute(
           "style",
           "color: #001F3F; background-color: #80ED99; padding: 10px; font-weight: bold; margin-top: 30px;"
         );
         description.innerHTML = descriptionText;
       }
-      displayHeadlineLabel.setAttribute(
-        "style",
-        displayHeadlineInput.checked ? "display: none;" : "display: block;"
-      );
+      
+      if (displayHeadlineLabel && displayHeadlineInput) {
+        displayHeadlineLabel.setAttribute(
+          "style",
+          displayHeadlineInput.checked ? "display: none;" : "display: block;"
+        );
+      }
 
-      expressCheckoutButtonTheme.value === "light"
-        ? (expressCheckoutButtonDark.style.display = "none")
-        : (expressCheckoutButtonLight.style.display = "none");
+      if (expressCheckoutButtonTheme) {
+        expressCheckoutButtonTheme.value === "light"
+          ? (expressCheckoutButtonDark.style.display = "none")
+          : (expressCheckoutButtonLight.style.display = "none");
 
-      jQuery(expressCheckoutButtonTheme).on("change", function () {
-        if (this.value === "light") {
-          jQuery(expressCheckoutButtonDark).hide();
-          jQuery(expressCheckoutButtonLight).show();
-        } else {
-          jQuery(expressCheckoutButtonLight).hide();
-          jQuery(expressCheckoutButtonDark).show();
-        }
-      });
+        jQuery(expressCheckoutButtonTheme).on("change", function () {
+          if (this.value === "light") {
+            jQuery(expressCheckoutButtonDark).hide();
+            jQuery(expressCheckoutButtonLight).show();
+          } else {
+            jQuery(expressCheckoutButtonLight).hide();
+            jQuery(expressCheckoutButtonDark).show();
+          }
+        });
+      }
 
-      jQuery(displayHeadlineInput).on("change", () => {
-        if (!displayHeadlineInput.checked) {
-          displayHeadlineLabel.setAttribute("style", "display: block;");
-        } else {
-          displayHeadlineLabel.setAttribute("style", "display: none;");
-        }
-      });
+      if (displayHeadlineInput && displayHeadlineLabel) {
+        jQuery(displayHeadlineInput).on("change", () => {
+          if (!displayHeadlineInput.checked) {
+            displayHeadlineLabel.setAttribute("style", "display: block;");
+          } else {
+            displayHeadlineLabel.setAttribute("style", "display: none;");
+          }
+        });
+      }
 
       jQuery("#woocommerce_flizpay_flizpay_enable_express_checkout").on(
         "change",
         function () {
           if (!this.checked) {
-            expressCheckoutButtonTheme.setAttribute("disabled", true);
-            document
-              .querySelector(
-                "#woocommerce_flizpay_flizpay_express_checkout_pages"
-              )
-              .setAttribute("disabled", true);
+            if (expressCheckoutButtonTheme) {
+              expressCheckoutButtonTheme.setAttribute("disabled", true);
+            }
+            const expressCheckoutPages = document.querySelector(
+              "#woocommerce_flizpay_flizpay_express_checkout_pages"
+            );
+            if (expressCheckoutPages) {
+              expressCheckoutPages.setAttribute("disabled", true);
+            }
           } else {
-            expressCheckoutButtonTheme.removeAttribute("disabled");
-            document
-              .querySelector(
-                "#woocommerce_flizpay_flizpay_express_checkout_pages"
-              )
-              .removeAttribute("disabled");
+            if (expressCheckoutButtonTheme) {
+              expressCheckoutButtonTheme.removeAttribute("disabled");
+            }
+            const expressCheckoutPages = document.querySelector(
+              "#woocommerce_flizpay_flizpay_express_checkout_pages"
+            );
+            if (expressCheckoutPages) {
+              expressCheckoutPages.removeAttribute("disabled");
+            }
           }
         }
       );
