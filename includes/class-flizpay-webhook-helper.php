@@ -24,7 +24,7 @@ class Flizpay_Webhook_Helper
     global $wp;
 
     // Get logger instance
-    $logger = Flizpay_Logger::get_instance();
+    $logger = Flizpay_Logger::get_instance($this->gateway);
 
     if (isset($wp->query_vars['flizpay-webhook'])) {
       $logger->info('Webhook request received');
@@ -154,7 +154,7 @@ class Flizpay_Webhook_Helper
   private function complete_order($order, $data)
   {
     // Get logger instance
-    $logger = Flizpay_Logger::get_instance();
+    $logger = Flizpay_Logger::get_instance($this->gateway);
     $logger->info('Completing order', array(
       'order_id' => $order->get_id(),
       'transaction_id' => $data['transactionId'],

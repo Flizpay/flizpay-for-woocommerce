@@ -79,13 +79,25 @@ class Flizpay_Logger
     public static $instance;
 
     /**
+     * The gateway instance
+     *
+     * @since    2.4.2
+     * @access   public
+     * @var      WC_Flizpay_Gateway $gateway    The gateway instance
+     */
+    public static $gateway;
+
+    /**
      * Get the singleton instance
      *
      * @since    2.4.2
      * @return   Flizpay_Logger    The singleton instance
      */
-    public static function get_instance()
+    public static function get_instance($gateway)
     {
+        if (isset($gateway)) {
+            self::$gateway = $gateway;
+        }
         if (null === self::$instance) {
             self::$instance = new self();
         }
@@ -112,9 +124,9 @@ class Flizpay_Logger
     public function init_settings()
     {
         $this->enabled = true; // always enabled
-        $this->log_level = get_option('woocommerce_flizpay_flizpay_log_level', 'debug');
-        $this->log_token = get_option('woocommerce_flizpay_flizpay_log_token', '');
-        $this->log_endpoint = get_option('woocommerce_flizpay_flizpay_log_endpoint', '');
+        $this->log_level = self::$gateway->get_option('flizpay_log_level', 'debug');
+        $this->log_token = self::$gateway->get_option('flizpay_log_token', '');
+        $this->log_endpoint = self::$gateway->get_option('flizpay_log_endpoint', '');
     }
 
     /**

@@ -157,10 +157,15 @@ function flizpay_init_gateway_class()
          */
         public function test_gateway_connection()
         {
-            wp_verify_nonce('_wpnonce');
+            if (
+                !isset($_POST['_wpnonce']) ||
+                !wp_verify_nonce(wp_unslash($_POST['_wpnonce']), 'woocommerce-settings')
+            ) {
+                return;
+            }
 
             // Get logger instance
-            $logger = Flizpay_Logger::get_instance();
+            $logger = Flizpay_Logger::get_instance($this);
 
             if (isset($_POST['woocommerce_flizpay_flizpay_api_key'])) {
                 $api_key = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_api_key']));
@@ -170,16 +175,14 @@ function flizpay_init_gateway_class()
                     $this->api_service = new Flizpay_API_Service($api_key);
                     $logger->info('API key was changed or webhook was not alive, reconfiguring connection');
 
-                    $this->update_option('enabled', 'no');
                     $this->update_option('flizpay_enabled', 'no');
                     $this->update_option('flizpay_webhook_alive', 'no');
-                    usleep(500000); // Sleep for 0.5 seconds to wait for database update
 
                     try {
                         $log_data = $this->api_service->get_log_token();
 
                         if ($log_data) {
-                            $this->update_option('flizpay_log_level', 0);
+                            $this->update_option('flizpay_log_level', 'debug');
                             $this->update_option('flizpay_log_token', $log_data['logToken'] ?? '');
                             $this->update_option('flizpay_log_endpoint', $log_data['logEndpoint'] ?? '');
                             $logger->init_settings();
@@ -408,7 +411,7 @@ function flizpay_init_gateway_class()
         public function process_payment($order_id, $source = 'plugin')
         {
             // Get logger instance
-            $logger = Flizpay_Logger::get_instance();
+            $logger = Flizpay_Logger::get_instance($this);
             $logger->info('Starting payment process', array('order_id' => $order_id, 'source' => $source));
 
             try {
