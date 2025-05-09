@@ -104,9 +104,6 @@ function flizpay_init_gateway_class()
             // Express checkout handler
             add_action("wp_ajax_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
             add_action("wp_ajax_nopriv_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
-
-            // Order status filtering
-            add_filter('woocommerce_reports_order_statuses', array($this, 'add_custom_order_statuses_to_reports'), 10, 1);
         }
 
         /**
@@ -484,23 +481,6 @@ function flizpay_init_gateway_class()
                 $this->process_payment($order->get_id(), 'express_checkout')
             ));
             die();
-        }
-
-        /**
-         * Add custom FLIZ order statuses to WooCommerce reports
-         * This ensures orders with custom statuses appear in reports
-         * 
-         * @param array $statuses
-         * @return array
-         * 
-         * @since 2.4.2
-         */
-        public function add_custom_order_statuses_to_reports($statuses)
-        {
-            // Add checkout-draft status to reports for FLIZ orders
-            $statuses[] = 'checkout-draft';
-            $statuses[] = 'wc-checkout-draft';
-            return $statuses;
         }
     }
 }

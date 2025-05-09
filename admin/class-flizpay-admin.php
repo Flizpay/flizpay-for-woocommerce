@@ -202,8 +202,8 @@ class Flizpay_Admin
 					: 'Falls jemand eine Bestellung mit FLIZpay nicht abgeschlossen hat, wird diese Bestellung in deinem Admin-System als „Zahlung ausstehend” angezeigt. Falls das gewünscht ist, wähle „Ausstehend”. Falls solche Bestellungen nicht angezeigt werden sollen, wähle „Entwurf”.',
 				'default' => 'wc-pending',
 				'options' => array(
-					'pending' => $this->is_english() ? 'Pending' : 'Ausstehend',
-					'checkout-draft' => $this->is_english() ? 'Draft' : 'Entwurf',
+					'wc-pending' => $this->is_english() ? 'Pending' : 'Ausstehend',
+					'wc-checkout-draft' => $this->is_english() ? 'Draft' : 'Entwurf',
 				),
 				'desc_tip' => true,
 			),
