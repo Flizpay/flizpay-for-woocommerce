@@ -1,5 +1,12 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-09-05 - version 2.4.2
+* Fixed - Order total value not being stored correctly due to taxes variation
+* Fixed - Admin page inputs trying to be accessed before they were loaded
+* Removed - Legacy failure page
+* Fixed - Now disables the express checkout button if the cart is empty
+* Fixed - Explicitly set FLIZpay as the payment method for orders created by the plugin
+
 2025-04-05 - version 2.4.1
 * Hotfix for gateway variables declaration and admin page inputs not loading correctly
 
