@@ -65,7 +65,7 @@ class Flizpay_API_Service
       'lastName' => $order->get_billing_last_name()
     ];
     $body = [
-      'amount' => $order->get_subtotal(),
+      'amount' => $order->get_total(),
       'currency' => $order->get_currency(),
       'externalId' => $order->get_id(),
       'successUrl' => $order->get_checkout_order_received_url(),
