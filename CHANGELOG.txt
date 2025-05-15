@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-15-05 - version 2.4.3
+* Fixed - Shipping costs sometimes not appearing in total cost
+
 2025-09-05 - version 2.4.2
 * Fixed - Order total value not being stored correctly due to taxes variation
 * Fixed - Admin page inputs trying to be accessed before they were loaded
