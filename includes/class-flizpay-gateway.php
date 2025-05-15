@@ -475,7 +475,7 @@ function flizpay_init_gateway_class()
             foreach ($order->get_items('shipping') as $item_id => $shipping_item) {
                 $order->remove_item($item_id);
             }
-            $order->calculate_totals();
+            $order->calculate_totals(true);
             $order->save();
 
             echo esc_html(wp_send_json_success(
