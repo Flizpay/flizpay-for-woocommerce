@@ -160,7 +160,7 @@ class Flizpay_Shipping_Helper
     $this->remove_existing_shipping_items($order);
     $this->add_selected_shipping_method($order, $selected_method);
 
-    $order->calculate_totals();
+    $order->calculate_totals(true);
     $order->save();
 
     return $order->get_total();

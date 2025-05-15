@@ -152,7 +152,7 @@ class Flizpay_Webhook_Helper
     }
 
     $order->calculate_taxes();
-    $order->calculate_totals();
+    $order->calculate_totals(true);
     $order->set_total($data['amount']);
     $order->add_order_note('FLIZ Cashback Applied: ' . $currency . sanitize_text_field($fliz_discount));
     WC()->cart->empty_cart();
