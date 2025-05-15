@@ -378,6 +378,7 @@ function flizpay_init_gateway_class()
         public function process_payment($order_id, $source = 'plugin')
         {
             $order = wc_get_order($order_id);
+            $order->calculate_totals(true);
             $order->update_status($this->flizpay_order_status, 'FLIZpay Checkout initiated. Waiting for payment - ' . $source);
             $order->save();
 
