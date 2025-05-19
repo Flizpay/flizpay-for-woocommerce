@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-19-05 - version 2.4.4
+* Added - Plugin version to frontend
+
 2025-15-05 - version 2.4.3
 * Fixed - Shipping costs sometimes not appearing in total cost
 
