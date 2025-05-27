@@ -22,7 +22,7 @@ class Flizpay_API_Service
   {
     $webhookUrl = home_url('/flizpay-webhook?flizpay-webhook=1&source=woocommerce');
 
-    if (str_contains($webhookUrl, 'https://') === false) {
+    if (str_contains($webhookUrl, 'https://') === false && str_contains($webhookUrl, 'http://') === false) {
       $webhookUrl = "https://" . $webhookUrl;
     }
 
