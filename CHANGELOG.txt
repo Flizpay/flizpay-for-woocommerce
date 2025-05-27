@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-27-05 - version 2.4.5
+* Fixed - Webhook URL missing HTTPS protocol
+
 2025-19-05 - version 2.4.4
 * Added - Plugin version to frontend
 
