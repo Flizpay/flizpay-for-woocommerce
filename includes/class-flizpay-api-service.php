@@ -88,8 +88,8 @@ class Flizpay_API_Service
         continue;
       }
 
-      if (!$product->needs_shipping())
-        return false;
+      if ($product->needs_shipping())
+        return true;
     }
 
     return true;
