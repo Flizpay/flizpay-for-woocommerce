@@ -14,9 +14,30 @@ class Flizpay_Webhook_Helper
     add_rewrite_tag('%flizpay-webhook%', '([^&]+)');
     add_rewrite_rule('^flizpay-webhook/?', 'index.php?flizpay-webhook=1&source=woocommerce', 'top');
 
-    if (empty($this->gateway->get_option('flizpay_webhook_key'))) {
+    // Check if rewrite rules need to be flushed
+    if ($this->should_flush_rewrite_rules()) {
       flush_rewrite_rules();
+      update_option('flizpay_rewrite_rules_flushed', true);
     }
+  }
+
+  private function should_flush_rewrite_rules()
+  {
+    // Always flush if rules haven't been flushed before
+    if (!get_option('flizpay_rewrite_rules_flushed')) {
+      return true;
+    }
+
+    // Flush if webhook key is empty
+    if (empty($this->gateway->get_option('flizpay_webhook_key'))) {
+      return true;
+    }
+
+    // Check if our rewrite rule exists in WordPress rewrite rules
+    global $wp_rewrite;
+    $current_rules = $wp_rewrite->wp_rewrite_rules();
+
+    return !is_array($current_rules) || !isset($current_rules['^flizpay-webhook/?']);
   }
 
   public function handle_webhook_request()
