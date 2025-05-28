@@ -32,6 +32,9 @@ class Flizpay_Activator
     {
         require_once('class-flizpay-api.php');
 
+        // Force rewrite rules flush on activation
+        delete_option('flizpay_rewrite_rules_flushed');
+
         $flizpay_settings = get_option('woocommerce_flizpay_settings');
 
         if (!$flizpay_settings)
