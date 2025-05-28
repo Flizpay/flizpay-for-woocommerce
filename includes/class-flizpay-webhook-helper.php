@@ -36,8 +36,8 @@ class Flizpay_Webhook_Helper
     // Check if our rewrite rule exists in WordPress rewrite rules
     global $wp_rewrite;
     $current_rules = $wp_rewrite->wp_rewrite_rules();
-    
-    return !isset($current_rules['^flizpay-webhook/?']);
+
+    return !is_array($current_rules) || !isset($current_rules['^flizpay-webhook/?']);
   }
 
   public function handle_webhook_request()
