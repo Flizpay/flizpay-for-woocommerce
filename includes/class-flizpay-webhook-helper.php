@@ -59,7 +59,7 @@ class Flizpay_Webhook_Helper
           wp_send_json_success(array('totalCost' => $total_cost), 200);
         } else if (isset($data['updateCashbackInfo'])) {
           $this->update_cashback_info($data);
-          wp_send_json_success('Cashback information updated', 200);
+          wp_send_json_success('Discount information updated', 200);
         } else {
           $this->finish_order($data);
           wp_send_json_success('Order updated successfully', 200);
@@ -175,7 +175,7 @@ class Flizpay_Webhook_Helper
     $order->calculate_taxes();
     $order->calculate_totals(true);
     $order->set_total($data['amount']);
-    $order->add_order_note('FLIZ Cashback Applied: ' . $currency . sanitize_text_field($fliz_discount));
+    $order->add_order_note('FLIZ Discount Applied: ' . $currency . sanitize_text_field($fliz_discount));
     WC()->cart->empty_cart();
   }
 

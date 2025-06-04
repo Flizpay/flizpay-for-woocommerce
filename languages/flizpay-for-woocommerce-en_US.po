@@ -25,15 +25,15 @@ msgstr "FLIZpay - Up to %s%% off"
 
 #: includes/class-flizpay-gateway.php:106
 msgid "cashback-description-both"
-msgstr "Secure payments in direct collaboration with your bank. After your first FLIZ payment at %s, you will continue to receive %s%% Instant-Cashback."
+msgstr "Secure payments in direct collaboration with your bank. After your first FLIZ payment at %s, you will continue to receive %s%% Instant-Discount."
 
 #: includes/class-flizpay-gateway.php:108
 msgid "cashback-description-standard"
-msgstr "Secure payments in direct collaboration with your bank.\n %s%% Instant-Cashback for every FLIZ-payment at %s."
+msgstr "Secure payments in direct collaboration with your bank.\n %s%% Instant-Discount for every FLIZ-payment at %s."
 
 #: includes/class-flizpay-gateway.php:113
 msgid "cashback-description-first"
-msgstr "Secure payments in direct collaboration with your bank. No additional cashback after your first FLIZ-payment at %s."
+msgstr "Secure payments in direct collaboration with your bank. No additional discount after your first FLIZ-payment at %s."
 
 #: includes/class-flizpay-gateway.php:47
 msgid "title"

@@ -181,10 +181,10 @@ class Flizpay_Admin
 				'label' => $this->is_english() ? 'Show description in title' : 'Beschreibung im Titel anzeigen',
 				'type' => 'checkbox',
 				'description' => $this->is_english()
-					? '<div id="displayHeadline"><p style="font-style: italic; color: red;">The option to hide the description in the title has been selected. When cashback is enabled, '
-					. 'the information about cashback, such as "FLIZpay – 5% Cashback", is therefore missing"</p></div>'
-					: '<div id="displayHeadline"><p style="font-style: italic; color: red;">Es wurde ausgewählt, die Beschreibung im Titel nicht anzuzeigen. Wenn Cashback aktiviert ist, fehlt dadurch die Information zum Cashback, '
-					. 'wie z.B. „FLIZpay – 5 % Cashback“</p></div>',
+					? '<div id="displayHeadline"><p style="font-style: italic; color: red;">The option to hide the description in the title has been selected. When discount is enabled, '
+					. 'the information about discount, such as "FLIZpay – 5% Discount", is therefore missing"</p></div>'
+					: '<div id="displayHeadline"><p style="font-style: italic; color: red;">Es wurde ausgewählt, die Beschreibung im Titel nicht anzuzeigen. Wenn Rabatt aktiviert ist, fehlt dadurch die Information zum Rabatt, '
+					. 'wie z.B. „FLIZpay – 5 % Rabatt“</p></div>',
 				'default' => 'yes',
 			),
 			'flizpay_display_description' => array(
@@ -262,7 +262,7 @@ class Flizpay_Admin
 						<li>Warte etwa 5 Sekunden, bis die Seite automatisch neu lädt.</li>
 						<li>Nach dem Neuladen der Seite erscheint unten eine grüne Box, die die erfolgreiche Konfiguration des FLIZpay-Plugins anzeigt. Du bist jetzt bereit, gebührenfreie Zahlungen zu empfangen.</li>
 						<li>Stelle sicher, dass du mit FLIZ so viele Gebühren wie möglich sparst. Vergiss also nicht, FLIZpay in der für Kunden zur Auswahl stehenden Liste an Zahlungsmethoden an die erste Stelle zu setzen. Klicke im linken Menü auf “WooCommerce”, dann im Untermenü auf “Einstellungen”. Klicke anschließend im Menü oben auf den Tab “Zahlungen”. Auf dieser Seite kannst du per Drag-and-Drop oder mit den Pfeilen die Position von FLIZpay in der Liste der verfügbaren Zahlungsmethoden anpassen. Klicke zum Schluss unten links auf “Änderungen speichern”.</li>
-						<li>Darüber hinaus empfehlen wir dir, Cashback für deine Kunden zu aktivieren. Ändere das Zahlungsverhalten deiner Kunden, damit sie FLIZ nutzen - denn FLIZ ist gebührenfrei. Um das zu erreichen, kannst du einen prozentualen Cashback festlegen, der als Rabatt von jedem Einkauf abgezogen wird, den deine Kunden mit FLIZ tätigen. Je mehr Cashback du gibst, desto höher wird der Anteil von FLIZ an deiner Kasse, was bedeutet, dass deine Kundenbasis zu einer gebührenfreien Zahlungsmethode gewechselt ist. Du kannst Cashback in deinem FLIZ-Firmenkonto aktivieren, <a href='https://app.flizpay.de/cashback' target='_blank'>klicke hier.</a></li>
+						<li>Darüber hinaus empfehlen wir dir, Rabatt für deine Kunden zu aktivieren. Ändere das Zahlungsverhalten deiner Kunden, damit sie FLIZ nutzen - denn FLIZ ist gebührenfrei. Um das zu erreichen, kannst du einen prozentualen Rabatt festlegen, der als Rabatt von jedem Einkauf abgezogen wird, den deine Kunden mit FLIZ tätigen. Je mehr Rabatt du gibst, desto höher wird der Anteil von FLIZ an deiner Kasse, was bedeutet, dass deine Kundenbasis zu einer gebührenfreien Zahlungsmethode gewechselt ist. Du kannst Rabatt in deinem FLIZ-Firmenkonto aktivieren, <a href='https://app.flizpay.de/cashback' target='_blank'>klicke hier.</a></li>
 					</ol>
 						Du hast noch Fragen? <a 
 							href='https://flizpay.de/#faq'
@@ -287,7 +287,7 @@ class Flizpay_Admin
 						<li>Wait about 5 seconds and the page will reload automatically.</li>
 						<li>After the page reloaded, a green box will appear at the bottom, indicating the successful configuration of the FLIZpay plugin. You are now ready to receive fee-free payments.</li>
 						<li>Make sure you save as many fees as possible with fee-free FLIZ. Don’t forget to put FLIZpay first in the list of payment methods presented to customers. To do this go to the left menu and click on “WooCommerce”, then click on the sub-menu “Settings”. Now click on the tab “Payments” in the menu at the top of the page. Here, you can drag and drop or use the arrows to adjust the position of FLIZpay in the list of available payment methods. When you are finished, go to the bottom left of that page and click “Save changes”.</li>
-						<li>Moreover, we advise you to activate cashback for your customers. With cashback, you change your customers’ payment behavior to ensure they use fee-free payment method FLIZ. This way, customers support your bottom line and optimize their own finances at the same time. You can activate cashback in your FLIZ company account, <a href='https://app.flizpay.de/cashback' target='_blank'>click here.</a></li>
+						<li>Moreover, we advise you to activate discount for your customers. With discount, you change your customers’ payment behavior to ensure they use fee-free payment method FLIZ. This way, customers support your bottom line and optimize their own finances at the same time. You can activate discount in your FLIZ company account, <a href='https://app.flizpay.de/cashback' target='_blank'>click here.</a></li>
 					</ol>
 					<p>
 							Still have questions? <a 
