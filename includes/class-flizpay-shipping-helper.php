@@ -110,7 +110,7 @@ class Flizpay_Shipping_Helper
         'address' => $address['address_1'],
       ],
       'contents' => $contents,
-      'contents_cost' => $order->get_total(),
+      'contents_cost' => $order->get_subtotal(),
       'applied_coupons' => $order->get_coupon_codes(),
     ];
   }
@@ -139,8 +139,7 @@ class Flizpay_Shipping_Helper
     $tax  = array_sum($rate->get_taxes());
     $gross = $net + $tax;
 
-
-    return wc_format_decimal($gross, wc_get_price_decimals());
+    return $gross;
   }
 
   private function apply_selected_shipping_method($order, $package, $shipping_method_id)
