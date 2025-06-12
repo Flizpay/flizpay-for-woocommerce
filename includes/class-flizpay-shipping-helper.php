@@ -110,40 +110,36 @@ class Flizpay_Shipping_Helper
         'address' => $address['address_1'],
       ],
       'contents' => $contents,
-      'contents_cost' => $order->get_total(),
+      'contents_cost' => $order->get_subtotal(),
       'applied_coupons' => $order->get_coupon_codes(),
     ];
   }
 
   private function get_available_shipping_methods($package)
   {
-    $prices_include_tax = ('yes' === get_option('woocommerce_prices_include_tax'));
-
     $shipping = new WC_Shipping();
     $shipping_packages = $shipping->calculate_shipping_for_package($package);
 
     $available_methods = [];
+
     foreach ($shipping_packages['rates'] as $rate_id => $rate) {
-      $shipping_cost_incl_tax = $this->calculate_shipping_cost_incl_tax($rate, $prices_include_tax);
       $available_methods[] = [
-        'name' => $rate->get_label(),
-        'totalCost' => $shipping_cost_incl_tax,
-        'id' => $rate_id,
+        'name'      => $rate->get_label(),
+        'totalCost' => $this->calculate_shipping_cost_incl_tax($rate), // <-- gross
+        'id'        => $rate_id,
       ];
     }
 
     return $available_methods;
   }
 
-  private function calculate_shipping_cost_incl_tax($rate, $prices_include_tax)
+  private function calculate_shipping_cost_incl_tax(WC_Shipping_Rate $rate): float
   {
-    if (!$prices_include_tax) {
-      $tax_rates = WC_Tax::get_shipping_tax_rates();
-      $calculated_taxes = WC_Tax::calc_shipping_tax($rate->get_cost(), $tax_rates);
-      return (float) $rate->get_cost() + array_sum($calculated_taxes);
-    } else {
-      return (float) $rate->get_cost();
-    }
+    $net  = (float) $rate->get_cost();
+    $tax  = array_sum($rate->get_taxes());
+    $gross = $net + $tax;
+
+    return $gross;
   }
 
   private function apply_selected_shipping_method($order, $package, $shipping_method_id)
@@ -166,7 +162,7 @@ class Flizpay_Shipping_Helper
     return $order->get_total();
   }
 
-  private function find_selected_shipping_method($shipping_packages, $shipping_method_id)
+  private function find_selected_shipping_method($shipping_packages, $shipping_method_id): WC_Shipping_Rate | null
   {
     foreach ($shipping_packages['rates'] as $rate_id => $rate) {
       if ($rate_id === $shipping_method_id) {
@@ -181,12 +177,13 @@ class Flizpay_Shipping_Helper
     $order->remove_order_items('shipping');
   }
 
-  private function add_selected_shipping_method($order, $selected_method)
+  private function add_selected_shipping_method(WC_Order $order, WC_Shipping_Rate $rate): void
   {
     $item = new WC_Order_Item_Shipping();
-    $item->set_method_id($selected_method->get_method_id());
-    $item->set_method_title($selected_method->get_label());
-    $item->set_total($this->calculate_shipping_cost_incl_tax($selected_method, ('yes' === get_option('woocommerce_prices_include_tax'))));
+    $item->set_method_id($rate->get_method_id());
+    $item->set_instance_id($rate->get_instance_id());
+    $item->set_method_title($rate->get_label());
+    $item->set_total((float) $rate->get_cost());
     $item->save();
 
     $order->add_item($item);
