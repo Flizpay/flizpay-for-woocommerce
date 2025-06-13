@@ -25,15 +25,15 @@ msgstr "FLIZpay - Bis zu %s%% Rabatt"
 
 #: includes/class-flizpay-gateway.php:106
 msgid "cashback-description-both"
-msgstr "Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank. Nach deiner ersten FLIZ-Zahlung bei %s gibt es weiterhin %s%% Sofort-Cashback."
+msgstr "Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank. Nach deiner ersten FLIZ-Zahlung bei %s gibt es weiterhin %s%% Sofort-Rabatt."
 
 #: includes/class-flizpay-gateway.php:108
 msgid "cashback-description-standard"
-msgstr "Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank.\n %s%% Sofort-Cashback für jede FLIZ-Zahlung bei %s."
+msgstr "Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank.\n %s%% Sofort-Rabatt für jede FLIZ-Zahlung bei %s."
 
 #: includes/class-flizpay-gateway.php:113
 msgid "cashback-description-first"
-msgstr "Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank. Nach deiner ersten FLIZ-Zahlung bei %s gibt es keinen weiteren Cashback."
+msgstr "Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank. Nach deiner ersten FLIZ-Zahlung bei %s gibt es keinen weiteren Rabatt."
 
 #: includes/class-flizpay-gateway.php:47
 msgid "title"

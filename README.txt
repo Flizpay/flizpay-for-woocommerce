@@ -1,6 +1,6 @@
 === FLIZpay Gateway für WooCommerce ===
 Contributors: Flizpay
-Tags: kostenlos, payments, Zahlung, cashback, no-fee
+Tags: kostenlos, payments, Zahlung, discount, no-fee
 Requires at least: 4.4
 Tested up to: 6.7
 Stable tag: 2.4.5
@@ -15,9 +15,9 @@ Mit dem FLIZpay-Plugin kannst du die Zahlungsmethode FLIZ in deinen Checkout int
 
 FLIZ ist die erste kostenlose Zahlungsmethode in Deutschland. Deine Kunden zahlen mit der FLIZpay App, und du erhältst diese Zahlungen ohne Gebühren mit dem FLIZpay Plugin. Du kannst FLIZ ohne technisches Wissen in weniger als 30 Minuten installieren und sofort Zahlungen annehmen.
 
-### Verbessere deine Conversion und Kundenbindung mit Cashback
+### Verbessere deine Conversion und Kundenbindung mit Rabatt
 
-Ändere das Zahlungsverhalten deiner Kunden, damit sie FLIZ nutzen. Denn FLIZ ist gebührenfrei. Um dies zu erreichen, kannst du einen prozentualen Cashback festlegen, der als Rabatt von jedem Einkauf abgezogen wird, den deine Kunden mit FLIZ tätigen. So unterstützen deine Kunden dein Geschäftsergebnis und optimieren gleichzeitig ihre eigenen Finanzen.
+Ändere das Zahlungsverhalten deiner Kunden, damit sie FLIZ nutzen. Denn FLIZ ist gebührenfrei. Um dies zu erreichen, kannst du einen prozentualen Rabatt festlegen, der als Rabatt von jedem Einkauf abgezogen wird, den deine Kunden mit FLIZ tätigen. So unterstützen deine Kunden dein Geschäftsergebnis und optimieren gleichzeitig ihre eigenen Finanzen.
 
 ### Sichere Zahlungen
 
@@ -31,7 +31,7 @@ Dieses Plugin nutzt den FLIZpay-API-Service zur Abwicklung von Zahlungen. Bei de
 Wenn ein Nutzer eine Zahlung über das Plugin abschließt, werden folgende Daten zur Verarbeitung an FLIZpay übermittelt:
 
 - Transaktionsdetails (Betrag, Währung, usw.)
-- Name des Händlers und, falls festgelegt, der Cashback-Wert.
+- Name des Händlers und, falls festgelegt, der Rabatt-Wert.
 
 ### Service Informationen:
 - **Service**: [FLIZpay API](https://api.flizpay.de)
