@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-17-06 - version 2.4.6
+* Hotfix - Checkout script renamed to avoid Germanized conflicts
+
 2025-27-05 - version 2.4.5
 * Fixed - Webhook URL missing HTTPS protocol
 
