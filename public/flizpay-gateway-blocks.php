@@ -39,7 +39,7 @@ final class Flizpay_Gateway_Blocks extends AbstractPaymentMethodType
     {
         wp_register_script(
             'flizpay-blocks-integration',
-            plugin_dir_url(__FILE__) . 'js/checkout.js',
+            plugin_dir_url(__FILE__) . 'js/flizpay-checkout.js',
             [
                 'wc-blocks-registry',
                 'wc-settings',
