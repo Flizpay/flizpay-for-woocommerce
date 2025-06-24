@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-24-06 - version 2.4.7
+* Fixed - Total cost mismatch issue. Calculations now happen only in woocommerce
+
 2025-17-06 - version 2.4.6
 * Hotfix - Checkout script renamed to avoid Germanized conflicts
 
