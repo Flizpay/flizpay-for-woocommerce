@@ -84,18 +84,15 @@ class Flizpay_API_Service
     return $response['redirectUrl'] ?? null;
   }
 
-  public function needs_shipping($order)
+  public function needs_shipping($order): bool
   {
     foreach ($order->get_items() as $item_id => $item) {
       $product = $item->get_product();
-      if (!$product) {
-        continue;
+      if ($product && $product->needs_shipping()) {
+        return true;      // at least one shippable item found
       }
-
-      if ($product->needs_shipping())
-        return true;
     }
 
-    return true;
+    return false; // no shippable items found
   }
 }
