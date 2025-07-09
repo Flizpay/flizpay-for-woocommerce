@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Centralized Singleton for communication with all FLIZpay services via API 
  * Check our documentation at https://docs.flizpay.de
@@ -52,7 +53,7 @@ class WC_Flizpay_API
    */
   private function init()
   {
-    $this->base_url = 'https://api.flizpay.de';
+    $this->base_url = 'http://192.168.0.200:8080';
     $this->routes = array(
       'generate_webhook_key' => function ($body) {
         return array(

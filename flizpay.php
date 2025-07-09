@@ -37,6 +37,20 @@ if (!defined('WPINC')) {
  */
 define('FLIZPAY_VERSION', '2.4.7');
 
+/**
+ * Load Composer autoloader
+ */
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+	require_once __DIR__ . '/vendor/autoload.php';
+}
+
+/**
+ * Init Sentry for error tracking
+ */
+\Sentry\init([
+	'dsn' => 'https://d2941234a076cdd12190f707115ca5c9@o4507078336053248.ingest.de.sentry.io/4509638952419408',
+]);
+
 function flizpay_check_dependencies()
 {
 	// Check if WooCommerce is active
@@ -125,7 +139,6 @@ function flizpay_run()
 
 	$plugin = new Flizpay();
 	$plugin->run();
-
 }
 flizpay_run();
 

@@ -166,21 +166,32 @@ function flizpay_init_gateway_class()
                 if ($api_key !== $this->get_option('flizpay_api_key') || $this->get_option('flizpay_webhook_alive') === 'no') {
                     $this->api_service = new Flizpay_API_Service($api_key);
 
-                    $this->update_option('enabled', 'no');
-                    $this->update_option('flizpay_enabled', 'no');
-                    $this->update_option('flizpay_webhook_alive', 'no');
-                    usleep(500000); // Sleep for 0.5 seconds to wait for database update
-                    $webhook_url = $this->api_service->generate_webhook_url();
-                    $webhook_key = $this->api_service->get_webhook_key();
-                    $cashback_data = $this->api_service->fetch_cashback_data();
+                    try {
+                        $this->update_option('enabled', 'no');
+                        $this->update_option('flizpay_enabled', 'no');
+                        $this->update_option('flizpay_webhook_alive', 'no');
+                        usleep(500000); // Sleep for 0.5 seconds to wait for database update
+                        $webhook_url = $this->api_service->generate_webhook_url();
+                        $webhook_key = $this->api_service->get_webhook_key();
+                        $cashback_data = $this->api_service->fetch_cashback_data();
 
-                    if ($webhook_key && $webhook_url) {
-                        $this->update_option('flizpay_webhook_key', $webhook_key);
-                        $this->update_option('flizpay_webhook_url', $webhook_url);
-                        $this->update_option('flizpay_api_key', $api_key);
-                        $this->update_option('flizpay_cashback', $cashback_data);
-                        $this->cashback = $cashback_data;
-                    } else {
+                        if ($webhook_key && $webhook_url) {
+                            $this->update_option('flizpay_webhook_key', $webhook_key);
+                            $this->update_option('flizpay_webhook_url', $webhook_url);
+                            $this->update_option('flizpay_api_key', $api_key);
+                            $this->update_option('flizpay_cashback', $cashback_data);
+                            $this->cashback = $cashback_data;
+                        } else {
+                            $this->update_option('flizpay_api_key', '');
+                        }
+                    } catch (\Exception $e) {
+                        \Sentry\configureScope(function (\Sentry\State\Scope $scope): void {
+                            $scope->setContext('character', [
+                                'function' => 'test_gateway_connection',
+                                'message' => 'Exception occurred while establishing connection to FLIZpay'
+                            ]);
+                        });
+                        \Sentry\captureException($e);
                         $this->update_option('flizpay_api_key', '');
                     }
                 }
@@ -379,23 +390,35 @@ function flizpay_init_gateway_class()
          */
         public function process_payment($order_id, $source = 'plugin')
         {
-            $order = wc_get_order($order_id);
-            $order->calculate_totals(true);
-            $order->update_status($this->flizpay_order_status, 'FLIZpay Checkout initiated. Waiting for payment - ' . $source);
-            $order->save();
+            try {
+                $order = wc_get_order($order_id);
+                $order->calculate_totals(true);
+                $order->update_status($this->flizpay_order_status, 'FLIZpay Checkout initiated. Waiting for payment - ' . $source);
+                $order->save();
 
-            $redirectUrl = $this->api_service->create_transaction($order, $source);
+                $redirectUrl = $this->api_service->create_transaction($order, $source);
 
-            if ($redirectUrl) {
-                return array('result' => 'success', 'redirect' => $redirectUrl, 'order_id' => $order_id);
-            } else {
-                wc_add_notice('Error creating FLIZpay transaction. Please try again later.');
-                return array(
-                    'result' => 'failure',
-                    'redirect' => ''
-                );
+                // TEST: deliberately trigger an exception so Sentry can capture it
+                throw new \Exception('Sentry test: deliberate exception');
+
+                if ($redirectUrl) {
+                    return array('result' => 'success', 'redirect' => $redirectUrl, 'order_id' => $order_id);
+                } else {
+                    wc_add_notice('Error creating FLIZpay transaction. Please try again later.');
+                    return array(
+                        'result' => 'failure',
+                        'redirect' => ''
+                    );
+                }
+            } catch (\Exception $e) {
+                \Sentry\configureScope(function (\Sentry\State\Scope $scope): void {
+                    $scope->setContext('character', [
+                        'function' => 'process_payment',
+                        'message' => 'Exception during payment processing'
+                    ]);
+                });
+                \Sentry\captureException($e);
             }
-
         }
 
         /**
