@@ -390,7 +390,7 @@ function flizpay_init_gateway_class()
          * 
          * @since 1.0.0
          */
-        public function process_payment($order_id, $source = 'plugin')
+        public function process_payment($order_id, $source = 'plugin'): array
         {
             try {
                 $order = wc_get_order($order_id);
@@ -421,6 +421,11 @@ function flizpay_init_gateway_class()
 
                     \Sentry\captureException($e);
                 });
+                wc_add_notice('Error creating FLIZpay transaction. Please try again later.');
+                return array(
+                    'result' => 'failure',
+                    'redirect' => ''
+                );
             }
         }
 
@@ -521,6 +526,7 @@ function flizpay_init_gateway_class()
 
                     \Sentry\captureException($e);
                 });
+                wp_send_json_error(['message' => 'Express checkout failed. Please try again.']);
                 die();
             }
         }
