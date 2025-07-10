@@ -122,7 +122,7 @@ function flizpay_init_gateway_class()
                 ($order->get_status() === 'checkout-draft' || $order->get_status() === 'pending') &&
                 'flizpay' === $order->get_payment_method()
             ) {
-                // If FLIZ order is not yed paid, disable the New Order email
+                // If FLIZ order is not yet paid, disable the New Order email
                 return false;
             }
             return $enabled;
@@ -185,13 +185,15 @@ function flizpay_init_gateway_class()
                             $this->update_option('flizpay_api_key', '');
                         }
                     } catch (\Exception $e) {
-                        \Sentry\configureScope(function (\Sentry\State\Scope $scope): void {
-                            $scope->setContext('character', [
-                                'function' => 'test_gateway_connection',
-                                'message' => 'Exception occurred while establishing connection to FLIZpay'
+                        \Sentry\withScope(static function (\Sentry\State\Scope $scope) use ($e): void {
+                            $scope->setExtras([
+                                'function_name' => 'test_gateway_connection',
+                                'message' => 'Exception occurred while establishing connection to FLIZpay',
+                                'plugin_version' => self::$VERSION,
                             ]);
+
+                            \Sentry\captureException($e);
                         });
-                        \Sentry\captureException($e);
                         $this->update_option('flizpay_api_key', '');
                     }
                 }
@@ -398,9 +400,6 @@ function flizpay_init_gateway_class()
 
                 $redirectUrl = $this->api_service->create_transaction($order, $source);
 
-                // TEST: deliberately trigger an exception so Sentry can capture it
-                throw new \Exception('Sentry test: deliberate exception');
-
                 if ($redirectUrl) {
                     return array('result' => 'success', 'redirect' => $redirectUrl, 'order_id' => $order_id);
                 } else {
@@ -411,13 +410,17 @@ function flizpay_init_gateway_class()
                     );
                 }
             } catch (\Exception $e) {
-                \Sentry\configureScope(function (\Sentry\State\Scope $scope): void {
-                    $scope->setContext('character', [
-                        'function' => 'process_payment',
-                        'message' => 'Exception during payment processing'
+                \Sentry\withScope(static function (\Sentry\State\Scope $scope) use ($e, $order, $order_id): void {
+                    $scope->setExtras([
+                        'function_name' => 'process_payment',
+                        'message' => 'Exception during payment processing',
+                        'order_id' => $order_id ?? null,
+                        'email' => $order->get_billing_email() ?? null,
+                        'plugin_version' => self::$VERSION,
                     ]);
+
+                    \Sentry\captureException($e);
                 });
-                \Sentry\captureException($e);
             }
         }
 
@@ -428,85 +431,98 @@ function flizpay_init_gateway_class()
          */
         public function flizpay_express_checkout(): never
         {
-            check_ajax_referer('express_checkout_nonce', 'nonce');
+            try {
+                check_ajax_referer('express_checkout_nonce', 'nonce');
 
-            if (!isset($_POST['cart'])) {
-                $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
-                $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
-                $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
-                $variation_data = isset($_POST['variation_data']) ? sanitize_text_field($_POST['variation_data']) : '';
+                if (!isset($_POST['cart'])) {
+                    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+                    $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
+                    $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
+                    $variation_data = isset($_POST['variation_data']) ? sanitize_text_field($_POST['variation_data']) : '';
 
-                // Parse variation data if available
-                $variation_attributes = array();
-                if (!empty($variation_data) && $variation_id) {
-                    $decoded_data = json_decode($variation_data, true);
-                    if (is_array($decoded_data)) {
-                        foreach ($decoded_data as $key => $value) {
-                            // Convert attribute name format (e.g., attribute_pa_color -> pa_color)
-                            $attribute_key = str_replace('attribute_', '', $key);
-                            $variation_attributes[$attribute_key] = $value;
+                    // Parse variation data if available
+                    $variation_attributes = array();
+                    if (!empty($variation_data) && $variation_id) {
+                        $decoded_data = json_decode($variation_data, true);
+                        if (is_array($decoded_data)) {
+                            foreach ($decoded_data as $key => $value) {
+                                // Convert attribute name format (e.g., attribute_pa_color -> pa_color)
+                                $attribute_key = str_replace('attribute_', '', $key);
+                                $variation_attributes[$attribute_key] = $value;
+                            }
                         }
+                    }
+
+                    if (!$product_id || $quantity <= 0) {
+                        echo esc_html(wp_send_json_error(['message' => 'Invalid product or quantity.']));
+                        die();
+                    }
+
+                    // Clear the current cart
+                    WC()->cart->empty_cart();
+
+                    // Add product to cart with variation data if applicable
+                    $new_cart = $variation_id
+                        ? WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation_attributes)
+                        : WC()->cart->add_to_cart($product_id, $quantity);
+
+
+                    if (!$new_cart) {
+                        echo esc_html(wp_send_json_error(['message' => 'Unable to add product to cart.']));
+                        die();
                     }
                 }
 
-                if (!$product_id || $quantity <= 0) {
-                    echo esc_html(wp_send_json_error(['message' => 'Invalid product or quantity.']));
-                    die();
+                // Create order from cart
+                $order_id = wc_create_order();
+                $order = wc_get_order($order_id);
+
+                // Set payment method explicitly for express checkout orders
+                $order->set_payment_method('flizpay');
+                $order->set_payment_method_title('FLIZpay');
+
+                foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
+                    $item = new WC_Order_Item_Product();
+
+                    $item->set_props(array(
+                        'product_id' => $cart_item['product_id'],
+                        'variation_id' => $cart_item['variation_id'],
+                        'quantity' => $cart_item['quantity'],
+
+                        // Use the cart's exact line subtotals/line totals (reflects discounts & sale prices)
+                        'subtotal' => $cart_item['line_subtotal'],
+                        'total' => $cart_item['line_total'],
+                        'subtotal_tax' => $cart_item['line_subtotal_tax'],
+                        'total_tax' => $cart_item['line_tax'],
+                        'taxes' => $cart_item['line_tax_data'],
+                    ));
+
+                    $order->add_item($item);
                 }
 
-                // Clear the current cart
-                WC()->cart->empty_cart();
-
-                // Add product to cart with variation data if applicable
-                $new_cart = $variation_id
-                    ? WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation_attributes)
-                    : WC()->cart->add_to_cart($product_id, $quantity);
-
-
-                if (!$new_cart) {
-                    echo esc_html(wp_send_json_error(['message' => 'Unable to add product to cart.']));
-                    die();
+                // Remove shipping
+                foreach ($order->get_items('shipping') as $item_id => $shipping_item) {
+                    $order->remove_item($item_id);
                 }
-            }
+                $order->calculate_totals(true);
+                $order->save();
 
-            // Create order from cart
-            $order_id = wc_create_order();
-            $order = wc_get_order($order_id);
-
-            // Set payment method explicitly for express checkout orders
-            $order->set_payment_method('flizpay');
-            $order->set_payment_method_title('FLIZpay');
-
-            foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
-                $item = new WC_Order_Item_Product();
-
-                $item->set_props(array(
-                    'product_id' => $cart_item['product_id'],
-                    'variation_id' => $cart_item['variation_id'],
-                    'quantity' => $cart_item['quantity'],
-
-                    // Use the cart's exact line subtotals/line totals (reflects discounts & sale prices)
-                    'subtotal' => $cart_item['line_subtotal'],
-                    'total' => $cart_item['line_total'],
-                    'subtotal_tax' => $cart_item['line_subtotal_tax'],
-                    'total_tax' => $cart_item['line_tax'],
-                    'taxes' => $cart_item['line_tax_data'],
+                echo esc_html(wp_send_json_success(
+                    $this->process_payment($order->get_id(), 'express_checkout')
                 ));
+                die();
+            } catch (\Exception $e) {
+                \Sentry\withScope(static function (\Sentry\State\Scope $scope) use ($e): void {
+                    $scope->setExtras([
+                        'function_name' => 'flizpay_express_checkout',
+                        'message' => 'Exception occurred while processing express checkout',
+                        'plugin_version' => self::$VERSION,
+                    ]);
 
-                $order->add_item($item);
+                    \Sentry\captureException($e);
+                });
+                die();
             }
-
-            // Remove shipping
-            foreach ($order->get_items('shipping') as $item_id => $shipping_item) {
-                $order->remove_item($item_id);
-            }
-            $order->calculate_totals(true);
-            $order->save();
-
-            echo esc_html(wp_send_json_success(
-                $this->process_payment($order->get_id(), 'express_checkout')
-            ));
-            die();
         }
     }
 }
