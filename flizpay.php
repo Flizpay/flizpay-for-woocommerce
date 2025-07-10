@@ -37,6 +37,35 @@ if (!defined('WPINC')) {
  */
 define('FLIZPAY_VERSION', '2.4.7');
 
+/**
+ * Load Composer autoloader
+ */
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+	require_once __DIR__ . '/vendor/autoload.php';
+}
+
+/**
+ * Sentry error tracking integration.
+ * This integration is used to capture errors and performance data.
+ */
+\Sentry\init([
+	'dsn' => 'https://d2941234a076cdd12190f707115ca5c9@o4507078336053248.ingest.de.sentry.io/4509638952419408',
+
+	// Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
+	'traces_sample_rate' => 1,
+
+	// Decide whether to send certain events to Sentry or disable logging at all.
+	'before_send' => static function (\Sentry\Event $event): ?\Sentry\Event {
+		// (a) should ignore per-event flag
+		$should_ignore_event = ($event->getExtra()['ignore_for_sentry'] ?? 'false') === 'true';
+
+		// (b) global switch living in the options table
+		$enabled = get_option('flizpay_sentry_enabled', 'true') === 'true';
+
+		return (!$should_ignore_event && $enabled) ? $event : null;
+	}
+]);
+
 function flizpay_check_dependencies()
 {
 	// Check if WooCommerce is active
@@ -125,7 +154,6 @@ function flizpay_run()
 
 	$plugin = new Flizpay();
 	$plugin->run();
-
 }
 flizpay_run();
 

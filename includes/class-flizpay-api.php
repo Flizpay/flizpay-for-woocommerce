@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Centralized Singleton for communication with all FLIZpay services via API 
  * Check our documentation at https://docs.flizpay.de
