@@ -60,7 +60,9 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 		$should_ignore_event = ($event->getExtra()['ignore_for_sentry'] ?? 'false') === 'true';
 
 		// (b) global switch living in the options table
-		$enabled = get_option('flizpay_sentry_enabled', 'true') === 'true';
+		// Check in WooCommerce settings array
+		$flizpay_settings = get_option('woocommerce_flizpay_settings', []);
+		$enabled = ($flizpay_settings['flizpay_sentry_enabled'] ?? 'yes') === 'yes';
 
 		return (!$should_ignore_event && $enabled) ? $event : null;
 	}
@@ -108,7 +110,71 @@ function flizpay_activate()
 	require_once plugin_dir_path(__FILE__) . 'includes/class-flizpay-activator.php';
 	Flizpay_Activator::activate();
 	flizpay_check_dependencies();
+	// Show the telemetry opt-in notice once
+	add_option('flizpay_show_telemetry_notice', 1, '', false);
 }
+
+/**
+ * Telemetry opt-in notice
+ * This notice is shown once after activation
+ */
+
+function flizpay_telemetry_notice()
+{
+	// only if the flag is set **and** the current user can decide
+	if (! current_user_can('manage_options') || ! get_option('flizpay_show_telemetry_notice')) {
+		return;
+	}
+
+	// secure action URLs
+	$accept   = wp_nonce_url(add_query_arg('flizpay_telemetry', 'yes'), 'flizpay_telemetry_action');
+	$decline = wp_nonce_url(add_query_arg('flizpay_telemetry', 'no'), 'flizpay_telemetry_action');
+
+?>
+	<div class="notice notice-info is-dismissible">
+		<p><strong>Help improve FLIZpay</strong> &mdash; allow us to collect
+			<em>anonymous</em> usage and error data (Sentry). <a href="https://flizpay.de/privacy-policy" target="_blank" rel="noreferrer">Learn&nbsp;more</a>
+		</p>
+		<p>
+			<a class="button button-primary" href="<?php echo esc_url($accept); ?>">
+				Enable telemetry
+			</a>
+			<a class="button" href="<?php echo esc_url($decline); ?>">
+				No&nbsp;thanks
+			</a>
+		</p>
+	</div>
+<?php
+}
+add_action('admin_notices',       	'flizpay_telemetry_notice');
+add_action('network_admin_notices', 'flizpay_telemetry_notice');
+
+function flizpay_handle_telemetry_choice()
+{
+
+	if (
+		empty($_GET['flizpay_telemetry']) ||
+		! wp_verify_nonce($_GET['_wpnonce'] ?? '', 'flizpay_telemetry_action')
+	) {
+		return;
+	}
+
+	// store consent in WooCommerce settings array
+	$consent = $_GET['flizpay_telemetry'] === 'yes' ? 'yes' : 'no';
+	$flizpay_settings = get_option('woocommerce_flizpay_settings', []);
+	$flizpay_settings['flizpay_sentry_enabled'] = $consent;
+	update_option('woocommerce_flizpay_settings', $flizpay_settings);
+
+	// clear the flag so notice never shows again
+	delete_option('flizpay_show_telemetry_notice');
+
+	// clean URL
+	wp_safe_redirect(remove_query_arg(['flizpay_telemetry', '_wpnonce']));
+	exit;
+}
+add_action('admin_init', 'flizpay_handle_telemetry_choice');
+
+
 
 /**
  * The code that runs during plugin deactivation.

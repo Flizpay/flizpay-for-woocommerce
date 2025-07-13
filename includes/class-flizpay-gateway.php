@@ -247,6 +247,13 @@ function flizpay_init_gateway_class()
                     $this->update_option('flizpay_order_status', 'wc-pending');
                 }
 
+                if (isset($_POST['woocommerce_flizpay_flizpay_sentry_enabled'])) {
+                    $flizpay_sentry_enabled = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_sentry_enabled']));
+                    $this->update_option('flizpay_sentry_enabled', $flizpay_sentry_enabled === '1' ? 'yes' : 'no');
+                } else {
+                    $this->update_option('flizpay_sentry_enabled', 'no');
+                }
+
                 $this->init_gateway_info();
             }
         }

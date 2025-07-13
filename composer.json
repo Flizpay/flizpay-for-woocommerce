@@ -1,4 +1,8 @@
 {
+    "name": "flizpay-for-woocommerce",
+    "description": "WordPress plugin for Wocommerce FLIZpay support.",
+    "license": "GPL-2.0-or-later",
+    "type": "wordpress-plugin",
     "require": {
         "sentry/sentry": "^4.14"
     }
