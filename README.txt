@@ -46,6 +46,23 @@ Für weitere Informationen zur FLIZpay-API und wie deine Daten verarbeitet werde
 Dieses Plugin erfordert Folgendes:
 - WooCommerce (Version 9.0.0 oder höher): [https://wordpress.org/plugins/woocommerce/](https://wordpress.org/plugins/woocommerce/)
 
+## Telemetrie & anonyme Fehlerberichte (Opt-out)
+Um die Stabilität und Sicherheit des FLIZpay-Plugins weiter zu verbessern, kannst du freiwillig **anonyme Nutzungs- und Fehlerdaten** an unseren Sentry-Server übermitteln lassen.
+- **Welche Daten werden erfasst?**
+  – zufällige, nicht zurückverfolgbare Instanz-ID
+  – WordPress-, WooCommerce-, PHP- und Plugin-Version
+  – aktive Theme-/Plugin-Liste (nur Slugs, keine Lizenz- oder Zugangsdaten)
+  – Zeitstempel, Fehlermeldung, Stack-Trace
+- **Was *nicht* übertragen wird?**
+  Keine personenbezogenen Daten (PII), keine Bestelldetails, keine IP-Adresse (wird gehasht), kein Kunden-Name, keine E-Mail.
+- **Wann wird gesendet?**
+  **Nur nach ausdrücklicher Zustimmung** (Opt-in). Du kannst die Zustimmung jederzeit unter
+  „WooCommerce → Einstellungen → Zahlungen → FLIZpay → Fehlerberichte.
+- **Drittanbieter-Service**
+  – **Service:** Sentry Error Monitoring (sentry.io)
+  – **Datenschutzerklärung:** <https://sentry.io/privacy/>
+Weitere Informationen findest du in unserer [Datenschutzerklärung](https://flizpay.de/privacy-policy).
+
 == Screenshots ==
 
 1. Ansicht, wenn FLIZpay in deinem Checkout ausgewählt ist.

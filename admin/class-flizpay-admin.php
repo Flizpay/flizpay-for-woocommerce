@@ -62,7 +62,6 @@ class Flizpay_Admin
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 		$this->assets_url = plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images';
-
 	}
 
 	/**
@@ -74,7 +73,6 @@ class Flizpay_Admin
 	{
 
 		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/flizpay-admin.css', array(), $this->version, 'all');
-
 	}
 
 	/**
@@ -94,7 +92,6 @@ class Flizpay_Admin
 			'express_checkout_button_dark' => $this->is_english() ? "$this->assets_url/fliz-express-checkout-example-dark-en.png" : "$this->assets_url/fliz-express-checkout-example-dark-de.png",
 			'express_checkout_button_light' => $this->is_english() ? "$this->assets_url/fliz-express-checkout-example-light-en.png" : "$this->assets_url/fliz-express-checkout-example-light-de.png",
 		));
-
 	}
 
 	/**
@@ -205,6 +202,16 @@ class Flizpay_Admin
 					'wc-pending' => $this->is_english() ? 'Pending' : 'Ausstehend',
 					'wc-checkout-draft' => $this->is_english() ? 'Draft' : 'Entwurf',
 				),
+				'desc_tip' => true,
+			),
+			'flizpay_sentry_enabled' => array(
+				'title' => $this->is_english() ? 'Error Reporting' : 'Fehlerberichte',
+				'label' => $this->is_english() ? 'Enable error reporting to improve plugin stability' : 'Fehlerberichte aktivieren, um die Plugin-Stabilität zu verbessern',
+				'type' => 'checkbox',
+				'description' => $this->is_english()
+					? 'Help us improve the plugin by automatically reporting errors. No personal data is collected.'
+					: 'Helfen Sie uns, das Plugin zu verbessern, indem Sie Fehler automatisch melden. Es werden keine persönlichen Daten gesammelt.',
+				'default' => 'yes',
 				'desc_tip' => true,
 			),
 			'flizpay_enable_express_checkout' => array(

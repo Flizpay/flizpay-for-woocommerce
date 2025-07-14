@@ -37,6 +37,54 @@ if (!defined('WPINC')) {
  */
 define('FLIZPAY_VERSION', '2.4.7');
 
+/**
+ * Load Composer autoloader
+ */
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+	require_once __DIR__ . '/vendor/autoload.php';
+}
+
+/**
+ * Check for user consent for using telemetry (Sentry)
+ * This is used to collect anonymous usage and error data.
+ * If the user has not made a choice yet, we will save the default setting
+ * to 'yes' so that we can collect data.
+ * If the user has made a choice, we will respect that choice.
+ * The setting is stored in the WooCommerce settings array.
+ */
+$flizpay_settings = get_option('woocommerce_flizpay_settings', []);
+
+
+if (!isset($flizpay_settings['flizpay_sentry_enabled'])) {
+	// If the setting does not exist, set it to 'yes' by default
+	$flizpay_settings['flizpay_sentry_enabled'] = 'yes';
+	update_option('woocommerce_flizpay_settings', $flizpay_settings);
+}
+
+/**
+ * Sentry error tracking integration.
+ * This integration is used to capture errors and performance data.
+ */
+\Sentry\init([
+	'dsn' => 'https://d2941234a076cdd12190f707115ca5c9@o4507078336053248.ingest.de.sentry.io/4509638952419408',
+
+	// Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
+	'traces_sample_rate' => 1,
+
+	// Decide whether to send certain events to Sentry or disable logging at all.
+	'before_send' => static function (\Sentry\Event $event): ?\Sentry\Event {
+		// (a) should ignore per-event flag
+		$should_ignore_event = ($event->getExtra()['ignore_for_sentry'] ?? 'false') === 'true';
+
+		// (b) global switch living in the options table
+		// Check in WooCommerce settings array
+		$flizpay_settings = get_option('woocommerce_flizpay_settings', []);
+		$enabled = $flizpay_settings['flizpay_sentry_enabled'] === 'yes';
+
+		return (!$should_ignore_event && $enabled) ? $event : null;
+	}
+]);
+
 function flizpay_check_dependencies()
 {
 	// Check if WooCommerce is active
@@ -125,7 +173,6 @@ function flizpay_run()
 
 	$plugin = new Flizpay();
 	$plugin->run();
-
 }
 flizpay_run();
 
