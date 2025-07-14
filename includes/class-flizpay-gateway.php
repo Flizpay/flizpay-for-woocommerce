@@ -31,6 +31,7 @@ function flizpay_init_gateway_class()
         public $flizpay_express_checkout_theme;
         public $flizpay_express_checkout_title;
         public $flizpay_order_status;
+        public $flizpay_sentry_enabled;
         public $cashback_helper;
         public $webhook_helper;
         public $shipping_helper;
@@ -77,6 +78,7 @@ function flizpay_init_gateway_class()
             $this->flizpay_express_checkout_pages = $this->get_option('flizpay_express_checkout_pages');
             $this->flizpay_express_checkout_theme = $this->get_option('flizpay_express_checkout_theme');
             $this->flizpay_order_status = $this->get_option('flizpay_order_status');
+            $this->flizpay_sentry_enabled = $this->get_option('flizpay_sentry_enabled');
             // Initialize helper classes
             $this->cashback_helper = new Flizpay_Cashback_Helper($this);
             $this->webhook_helper = new Flizpay_Webhook_Helper($this);
@@ -422,7 +424,7 @@ function flizpay_init_gateway_class()
                         'function_name' => 'process_payment',
                         'message' => 'Exception during payment processing',
                         'order_id' => $order_id ?? null,
-                        'email' => $order->get_billing_email() ?? null,
+                        'shop_url' => home_url() ?? null,
                         'plugin_version' => self::$VERSION,
                     ]);
 
@@ -528,6 +530,7 @@ function flizpay_init_gateway_class()
                     $scope->setExtras([
                         'function_name' => 'flizpay_express_checkout',
                         'message' => 'Exception occurred while processing express checkout',
+                        'shop_url' => home_url() ?? null,
                         'plugin_version' => self::$VERSION,
                     ]);
 
