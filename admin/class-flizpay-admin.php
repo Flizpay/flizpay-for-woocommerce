@@ -148,16 +148,6 @@ class Flizpay_Admin
 					: 'Gib deinen API KEY ein.  Der API KEY ist ein sensibler Datensatz und sollte wie ein Passwort behandelt werden',
 				'desc_tip' => false,
 			),
-			'flizpay_sentry_enabled' => array(
-				'title' => $this->is_english() ? 'Error Reporting' : 'Fehlerberichterstattung',
-				'label' => $this->is_english() ? 'Enable error reporting to improve plugin stability' : 'Fehlerberichterstattung aktivieren, um die Plugin-Stabilität zu verbessern',
-				'type' => 'checkbox',
-				'description' => $this->is_english()
-					? 'Help us improve the plugin by automatically reporting errors. No personal data is collected.'
-					: 'Helfen Sie uns, das Plugin zu verbessern, indem Sie Fehler automatisch melden. Es werden keine persönlichen Daten gesammelt.',
-				'default' => 'yes',
-				'desc_tip' => true,
-			),
 			'flizpay_webhook_alive' => array(
 				'title' => $this->is_english() ? 'Connection Established' : 'Verbindung hergestellt',
 				'type' => 'checkbox',
@@ -212,6 +202,16 @@ class Flizpay_Admin
 					'wc-pending' => $this->is_english() ? 'Pending' : 'Ausstehend',
 					'wc-checkout-draft' => $this->is_english() ? 'Draft' : 'Entwurf',
 				),
+				'desc_tip' => true,
+			),
+			'flizpay_sentry_enabled' => array(
+				'title' => $this->is_english() ? 'Error Reporting' : 'Fehlerberichte',
+				'label' => $this->is_english() ? 'Enable error reporting to improve plugin stability' : 'Fehlerberichte aktivieren, um die Plugin-Stabilität zu verbessern',
+				'type' => 'checkbox',
+				'description' => $this->is_english()
+					? 'Help us improve the plugin by automatically reporting errors. No personal data is collected.'
+					: 'Helfen Sie uns, das Plugin zu verbessern, indem Sie Fehler automatisch melden. Es werden keine persönlichen Daten gesammelt.',
+				'default' => 'yes',
 				'desc_tip' => true,
 			),
 			'flizpay_enable_express_checkout' => array(
