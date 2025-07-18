@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.7
-Stable tag: 2.4.7
+Stable tag: 2.4.8
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -198,7 +198,19 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
 - v2.4.7
   - FIXED - Total cost calculation for express checkout now happens only in WooCommerce, preventing mismatches
 
+- v2.4.8
+  - FIXED - German localization: Corrected the cashback description and payment confirmation message,
+  - FIXED - Shipping API: Ensured needs_shipping_method now always returns a boolean.
+  - ADDED - Sentry integration: Enabled error tracking for both checkout and product flows.
+  - ADDED - Admin option: Introduced a new “Error Reporting” toggle in the admin panel to turn Sentry on or off.
+
 == Upgrade Notice ==
+
+= 2.4.8 =
+* FIXED - German localization: Corrected the cashback description and payment confirmation message,
+* FIXED - Shipping API: Ensured needs_shipping_method now always returns a boolean.
+* ADDED - Sentry integration: Enabled error tracking for both checkout and product flows.
+* ADDED - Admin option: Introduced a new “Error Reporting” toggle in the admin panel to turn Sentry on or off.
 
 = 2.4.7 =
 * FIXED - Total cost calculation for express checkout now happens only in WooCommerce, preventing mismatches
