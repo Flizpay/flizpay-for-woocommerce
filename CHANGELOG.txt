@@ -1,11 +1,5 @@
 == FLIZpay for WooCommerce Changelog ==
 
-2025-18-07 - version 2.4.8
-* Fixed - German localization: Corrected the cashback description and payment confirmation message,
-* Fixed - Shipping API: Ensured needs_shipping_method now always returns a boolean.
-* Added - Sentry integration: Enabled error tracking for both checkout and product flows.
-* Added - Admin option: Introduced a new “Error Reporting” toggle in the admin panel to turn Sentry on or off.
-
 2025-24-06 - version 2.4.7
 * Fixed - Total cost mismatch issue. Calculations now happen only in woocommerce
 
