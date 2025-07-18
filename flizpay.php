@@ -73,15 +73,67 @@ if (!isset($flizpay_settings['flizpay_sentry_enabled'])) {
 
 	// Decide whether to send certain events to Sentry or disable logging at all.
 	'before_send' => static function (\Sentry\Event $event): ?\Sentry\Event {
-		// (a) should ignore per-event flag
-		$should_ignore_event = ($event->getExtra()['ignore_for_sentry'] ?? 'false') === 'true';
-
-		// (b) global switch living in the options table
-		// Check in WooCommerce settings array
+		//  --------------------------------------------
+		//  1) global switch living in the options table
+		//  Check in WooCommerce settings array
+		//  --------------------------------------------
 		$flizpay_settings = get_option('woocommerce_flizpay_settings', []);
-		$enabled = $flizpay_settings['flizpay_sentry_enabled'] === 'yes';
+		$disabled = ($flizpay_settings['flizpay_sentry_enabled'] ?? '') !== 'yes';
+		if ($disabled) {
+			return null;
+		}
 
-		return (!$should_ignore_event && $enabled) ? $event : null;
+
+		//  --------------------------------------------
+		//  2) Per-event ignore flag
+		//  --------------------------------------------
+		$should_ignore_event = ($event->getExtra()['ignore_for_sentry'] ?? 'false') === 'true';
+		if ($should_ignore_event) {
+			return null;
+		}
+
+		//  --------------------------------------------
+		//  3) Send only errors which originated from FLIZpay plugin
+		//  --------------------------------------------
+		$pluginPath = plugin_dir_path(__FILE__);
+
+
+		//  --------------------------------------------
+		// 	3.1) Look for a plugin frame in exceptions…
+		//  --------------------------------------------
+		foreach ($event->getExceptions() ?? [] as $exc) {
+			if (! $stack = $exc->getStacktrace()) {
+				continue;
+			}
+			foreach ($stack->getFrames() as $frame) {
+				if (
+					($file = $frame->getFile())
+					&& strpos($file, $pluginPath) === 0
+				) {
+					// Found one: send it
+					return $event;
+				}
+			}
+		}
+
+		//  --------------------------------------------
+		// 	3.2) …and for “message” events (no exceptions), inspect the event’s own stacktrace
+		//  --------------------------------------------
+		if ($stack = $event->getStacktrace()) {
+			foreach ($stack->getFrames() as $frame) {
+				if (
+					($file = $frame->getFile())
+					&& strpos($file, $pluginPath) === 0
+				) {
+					return $event;
+				}
+			}
+		}
+
+		//  --------------------------------------------
+		//  No frames under our plugin dir → drop the event
+		//  --------------------------------------------
+		return null;
 	}
 ]);
 
