@@ -38,104 +38,21 @@ if (!defined('WPINC')) {
 define('FLIZPAY_VERSION', '2.4.10');
 
 /**
- * Load Composer autoloader
+ * Load Composer autoloader only if PHP version meets requirements
  */
-if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+if (file_exists(__DIR__ . '/vendor/autoload.php') && version_compare(PHP_VERSION, '8.2.0', '>=')) {
 	require_once __DIR__ . '/vendor/autoload.php';
 }
 
 /**
- * Check for user consent for using telemetry (Sentry)
- * This is used to collect anonymous usage and error data.
- * If the user has not made a choice yet, we will save the default setting
- * to 'yes' so that we can collect data.
- * If the user has made a choice, we will respect that choice.
- * The setting is stored in the WooCommerce settings array.
+ * Load Sentry helper class
  */
-$flizpay_settings = get_option('woocommerce_flizpay_settings', []);
-
-
-if (!isset($flizpay_settings['flizpay_sentry_enabled'])) {
-	// If the setting does not exist, set it to 'yes' by default
-	$flizpay_settings['flizpay_sentry_enabled'] = 'yes';
-	update_option('woocommerce_flizpay_settings', $flizpay_settings);
-}
+require_once plugin_dir_path(__FILE__) . 'includes/class-flizpay-sentry.php';
 
 /**
- * Sentry error tracking integration.
- * This integration is used to capture errors and performance data.
+ * Initialize Sentry after WordPress is loaded
  */
-\Sentry\init([
-	'dsn' => 'https://d2941234a076cdd12190f707115ca5c9@o4507078336053248.ingest.de.sentry.io/4509638952419408',
-
-	// Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-	'traces_sample_rate' => 1,
-
-	// Decide whether to send certain events to Sentry or disable logging at all.
-	'before_send' => static function (\Sentry\Event $event): ?\Sentry\Event {
-		//  --------------------------------------------
-		//  1) global switch living in the options table
-		//  Check in WooCommerce settings array
-		//  --------------------------------------------
-		$flizpay_settings = get_option('woocommerce_flizpay_settings', []);
-		$disabled = ($flizpay_settings['flizpay_sentry_enabled'] ?? '') !== 'yes';
-		if ($disabled) {
-			return null;
-		}
-
-
-		//  --------------------------------------------
-		//  2) Per-event ignore flag
-		//  --------------------------------------------
-		$should_ignore_event = ($event->getExtra()['ignore_for_sentry'] ?? 'false') === 'true';
-		if ($should_ignore_event) {
-			return null;
-		}
-
-		//  --------------------------------------------
-		//  3) Send only errors which originated from FLIZpay plugin
-		//  --------------------------------------------
-		$pluginPath = plugin_dir_path(__FILE__);
-
-
-		//  --------------------------------------------
-		// 	3.1) Look for a plugin frame in exceptions…
-		//  --------------------------------------------
-		foreach ($event->getExceptions() ?? [] as $exc) {
-			if (! $stack = $exc->getStacktrace()) {
-				continue;
-			}
-			foreach ($stack->getFrames() as $frame) {
-				if (
-					($file = $frame->getFile())
-					&& strpos($file, $pluginPath) === 0
-				) {
-					// Found one: send it
-					return $event;
-				}
-			}
-		}
-
-		//  --------------------------------------------
-		// 	3.2) …and for “message” events (no exceptions), inspect the event’s own stacktrace
-		//  --------------------------------------------
-		if ($stack = $event->getStacktrace()) {
-			foreach ($stack->getFrames() as $frame) {
-				if (
-					($file = $frame->getFile())
-					&& strpos($file, $pluginPath) === 0
-				) {
-					return $event;
-				}
-			}
-		}
-
-		//  --------------------------------------------
-		//  No frames under our plugin dir → drop the event
-		//  --------------------------------------------
-		return null;
-	}
-]);
+add_action('plugins_loaded', array('Flizpay_Sentry', 'init'), 1);
 
 function flizpay_check_dependencies()
 {
