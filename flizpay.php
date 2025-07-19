@@ -38,9 +38,9 @@ if (!defined('WPINC')) {
 define('FLIZPAY_VERSION', '2.4.10');
 
 /**
- * Load Composer autoloader
+ * Load Composer autoloader only if PHP version meets requirements
  */
-if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+if (file_exists(__DIR__ . '/vendor/autoload.php') && version_compare(PHP_VERSION, '8.2.0', '>=')) {
 	require_once __DIR__ . '/vendor/autoload.php';
 }
 
@@ -48,6 +48,17 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
  * Initialize Sentry error tracking after WordPress is loaded
  */
 function flizpay_init_sentry() {
+	// Check PHP version requirement (8.2.0 or higher)
+	if (version_compare(PHP_VERSION, '8.2.0', '<')) {
+		// PHP version is too low, skip Sentry initialization
+		return;
+	}
+
+	// Check if Sentry init function exists (autoloader was loaded successfully)
+	if (!function_exists('\Sentry\init')) {
+		return;
+	}
+
 	/**
 	 * Check for user consent for using telemetry (Sentry)
 	 * This is used to collect anonymous usage and error data.
