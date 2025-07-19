@@ -35,7 +35,7 @@ if (!defined('WPINC')) {
  * Currently plugin version.
  * Start at version 1.0.0 and use SemVer - https://semver.org
  */
-define('FLIZPAY_VERSION', '2.4.10');
+define('FLIZPAY_VERSION', '2.4.11');
 
 /**
  * Load Composer autoloader only if PHP version meets requirements

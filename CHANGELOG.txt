@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-18-07 - version 2.4.11
+* Fixed - Sentry Integration: Fixed sentry loading error
+
 2025-18-07 - version 2.4.10
 * Fixed - Sentry Integration: Ensured only FLIZpay errors are caught
 
