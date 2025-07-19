@@ -155,6 +155,30 @@ function flizpay_init_sentry() {
 // Hook Sentry initialization to plugins_loaded to ensure WordPress is ready
 add_action('plugins_loaded', 'flizpay_init_sentry', 1);
 
+/**
+ * Safe wrapper for Sentry\withScope
+ * Only executes if Sentry is available
+ */
+function flizpay_sentry_with_scope($callback) {
+	if (function_exists('\Sentry\withScope')) {
+		return \Sentry\withScope($callback);
+	}
+	// If Sentry is not available, just return null
+	return null;
+}
+
+/**
+ * Safe wrapper for Sentry\captureException
+ * Only executes if Sentry is available
+ */
+function flizpay_sentry_capture_exception($exception) {
+	if (function_exists('\Sentry\captureException')) {
+		return \Sentry\captureException($exception);
+	}
+	// If Sentry is not available, just return null
+	return null;
+}
+
 function flizpay_check_dependencies()
 {
 	// Check if WooCommerce is active

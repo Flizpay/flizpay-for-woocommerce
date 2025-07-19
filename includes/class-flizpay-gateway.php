@@ -187,14 +187,16 @@ function flizpay_init_gateway_class()
                             $this->update_option('flizpay_api_key', '');
                         }
                     } catch (\Exception $e) {
-                        \Sentry\withScope(static function (\Sentry\State\Scope $scope) use ($e): void {
-                            $scope->setExtras([
-                                'function_name' => 'test_gateway_connection',
-                                'message' => 'Exception occurred while establishing connection to FLIZpay',
-                                'plugin_version' => self::$VERSION,
-                            ]);
+                        flizpay_sentry_with_scope(static function ($scope) use ($e): void {
+                            if ($scope && method_exists($scope, 'setExtras')) {
+                                $scope->setExtras([
+                                    'function_name' => 'test_gateway_connection',
+                                    'message' => 'Exception occurred while establishing connection to FLIZpay',
+                                    'plugin_version' => self::$VERSION,
+                                ]);
+                            }
 
-                            \Sentry\captureException($e);
+                            flizpay_sentry_capture_exception($e);
                         });
                         $this->update_option('flizpay_api_key', '');
                     }
@@ -419,16 +421,18 @@ function flizpay_init_gateway_class()
                     );
                 }
             } catch (\Exception $e) {
-                \Sentry\withScope(static function (\Sentry\State\Scope $scope) use ($e, $order, $order_id): void {
-                    $scope->setExtras([
-                        'function_name' => 'process_payment',
-                        'message' => 'Exception during payment processing',
-                        'order_id' => $order_id ?? null,
-                        'shop_url' => home_url() ?? null,
-                        'plugin_version' => self::$VERSION,
-                    ]);
+                flizpay_sentry_with_scope(static function ($scope) use ($e, $order, $order_id): void {
+                    if ($scope && method_exists($scope, 'setExtras')) {
+                        $scope->setExtras([
+                            'function_name' => 'process_payment',
+                            'message' => 'Exception during payment processing',
+                            'order_id' => $order_id ?? null,
+                            'shop_url' => home_url() ?? null,
+                            'plugin_version' => self::$VERSION,
+                        ]);
+                    }
 
-                    \Sentry\captureException($e);
+                    flizpay_sentry_capture_exception($e);
                 });
                 wc_add_notice('Error creating FLIZpay transaction. Please try again later.');
                 return array(
@@ -526,15 +530,17 @@ function flizpay_init_gateway_class()
                 ));
                 die();
             } catch (\Exception $e) {
-                \Sentry\withScope(static function (\Sentry\State\Scope $scope) use ($e): void {
-                    $scope->setExtras([
-                        'function_name' => 'flizpay_express_checkout',
-                        'message' => 'Exception occurred while processing express checkout',
-                        'shop_url' => home_url() ?? null,
-                        'plugin_version' => self::$VERSION,
-                    ]);
+                flizpay_sentry_with_scope(static function ($scope) use ($e): void {
+                    if ($scope && method_exists($scope, 'setExtras')) {
+                        $scope->setExtras([
+                            'function_name' => 'flizpay_express_checkout',
+                            'message' => 'Exception occurred while processing express checkout',
+                            'shop_url' => home_url() ?? null,
+                            'plugin_version' => self::$VERSION,
+                        ]);
+                    }
 
-                    \Sentry\captureException($e);
+                    flizpay_sentry_capture_exception($e);
                 });
                 wp_send_json_error(['message' => 'Express checkout failed. Please try again.']);
                 die();
