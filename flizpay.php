@@ -16,7 +16,7 @@
  * Plugin Name:       FLIZpay Gateway für WooCommerce
  * Plugin URI:        https://www.flizpay.de/companies
  * Description:       FLIZpay: 100% free!
- * Version:           2.4.10
+ * Version:           2.4.11
  * Author:            FLIZpay
  * Author URI:        https://www.flizpay.de/companies
  * License:           GPL-2.0+
