@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.7
-Stable tag: 2.4.10
+Stable tag: 2.4.11
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -207,7 +207,13 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
 - v2.4.10
   - FIXED - Sentry Integration: Ensured only FLIZpay errors are caught.
 
+- v2.4.11
+  - Fixed - Sentry Integration: Fixed sentry loading error.
+
 == Upgrade Notice ==
+
+= 2.4.11 =
+* Fixed - Sentry Integration: Fixed sentry loading error.
 
 = 2.4.10 =
 * FIXED - Sentry Integration: Ensured only FLIZpay errors are caught.
