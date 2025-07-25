@@ -501,18 +501,20 @@ function flizpay_init_gateway_class()
 
                 foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
                     $item = new WC_Order_Item_Product();
+                    $product = wc_get_product($cart_item['product_id']);
 
                     $item->set_props(array(
-                        'product_id' => $cart_item['product_id'],
+                        'name'         => $product ? $product->get_name() : '',
+                        'product_id'   => $cart_item['product_id'],
                         'variation_id' => $cart_item['variation_id'],
-                        'quantity' => $cart_item['quantity'],
+                        'quantity'     => $cart_item['quantity'],
 
                         // Use the cart's exact line subtotals/line totals (reflects discounts & sale prices)
-                        'subtotal' => $cart_item['line_subtotal'],
-                        'total' => $cart_item['line_total'],
+                        'subtotal'     => $cart_item['line_subtotal'],
+                        'total'        => $cart_item['line_total'],
                         'subtotal_tax' => $cart_item['line_subtotal_tax'],
-                        'total_tax' => $cart_item['line_tax'],
-                        'taxes' => $cart_item['line_tax_data'],
+                        'total_tax'    => $cart_item['line_tax'],
+                        'taxes'        => $cart_item['line_tax_data'],
                     ));
 
                     $order->add_item($item);
