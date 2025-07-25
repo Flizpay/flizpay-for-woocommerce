@@ -1,5 +1,9 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-25-07 - version 2.4.12
+* Added - Product name to express checkout order
+* Fixed – Shipping options not shown for addresses with house number/sub-unit format.
+
 2025-18-07 - version 2.4.11
 * Fixed - Sentry Integration: Fixed sentry loading error
 
