@@ -45,9 +45,22 @@ class Flizpay_Webhook_Helper
     global $wp;
 
     if (isset($wp->query_vars['flizpay-webhook'])) {
-      $data = json_decode(file_get_contents('php://input'), true);
+      $data = $this->get_webhook_data();
 
-      if (json_last_error() === JSON_ERROR_NONE && $this->webhook_authenticate($data)) {
+      if (! $data) {
+        wp_send_json_error('Invalid JSON', 422);
+        return;
+      }
+
+      $authenticated = $this->webhook_authenticate($data);
+
+      if (! $authenticated) {
+        wp_send_json_error('Authentication failed', 401);
+        return;
+      }
+
+
+      if (json_last_error() === JSON_ERROR_NONE && $authenticated) {
         if (isset($data['test'])) {
           $this->update_webhook_status(true);
           wp_send_json_success(array('alive' => true), 200);
@@ -105,7 +118,7 @@ class Flizpay_Webhook_Helper
 
     if (isset($_SERVER['HTTP_X_FLIZ_SIGNATURE'])) {
       $signature = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FLIZ_SIGNATURE']));
-      $signedData = hash_hmac('sha256', wp_json_encode($data, JSON_UNESCAPED_UNICODE), $key);
+      $signedData = hash_hmac('sha256', wp_json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $key);
       return hash_equals($signature, $signedData);
     }
   }
@@ -192,6 +205,37 @@ class Flizpay_Webhook_Helper
     }
     if (!empty($emails['WC_Email_New_Order'])) {
       $emails['WC_Email_New_Order']->trigger($order_id);
+    }
+  }
+
+  protected function get_webhook_data()
+  {
+    // Step 1: Read the raw POST body input (JSON or other) from the request.
+    $raw = file_get_contents('php://input');
+
+    // Step 2: Fallback for WordPress behavior where some requests might use form-encoded POST.
+    if (isset($_POST['data'])) {
+      $raw = stripslashes($_POST['data']);
+    }
+
+    // Step 3: Remove BOM (Byte Order Mark) if it exists at the start of the string.
+    $raw = preg_replace('/^\x{FEFF}/u', '', $raw);
+
+    // Step 4: Decode the JSON into an associative array.
+    try {
+      return json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+    } catch (\JsonException $e) {
+      Flizpay_Sentry::with_scope(static function ($scope) use ($e): void {
+        if ($scope && method_exists($scope, 'setExtras')) {
+          $scope->setExtras([
+            'function_name' => 'get_webhook_data',
+            'message' => 'Exception during extracting webhook data',
+          ]);
+        }
+
+        Flizpay_Sentry::capture_exception($e);
+      });
+      return null;
     }
   }
 }
