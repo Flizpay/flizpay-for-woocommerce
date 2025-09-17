@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.8
-Stable tag: 2.4.12
+Stable tag: 2.4.13
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -214,7 +214,13 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - Added - Product name to express checkout order
   - Fixed – Shipping options not shown for addresses with house number/sub-unit format.
 
+- v2.4.13
+  - Added - Support for Wordpress version 6.8
+
 == Upgrade Notice ==
+
+= 2.4.13 =
+* Added - Support for Wordpress version 6.8
 
 = 2.4.12 =
 * Added - Product name to express checkout order
