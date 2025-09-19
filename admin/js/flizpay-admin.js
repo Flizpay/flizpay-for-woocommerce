@@ -68,7 +68,7 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
     const expressCheckoutButtonTheme = document.querySelector(
       "#woocommerce_flizpay_flizpay_express_checkout_theme"
     );
-    const isEnabledExpressCheckout = !!expressCheckoutButtonTheme;
+    const isExpressCheckoutEnabled = !!expressCheckoutButtonTheme;
     const divider = document.createElement("hr");
     const divider2 = document.createElement("hr");
     const divider3 = document.createElement("hr");
@@ -209,7 +209,7 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
       exampleImage.setAttribute("src", flizpayParams.example_image);
       exampleImage.setAttribute("width", "40%");
 
-      if (isEnabledExpressCheckout) {
+      if (isExpressCheckoutEnabled) {
         expressCheckoutButtonDark.setAttribute(
           "src",
           flizpayParams.express_checkout_button_dark
