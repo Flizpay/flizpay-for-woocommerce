@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-19-09 - version 2.4.14
+* Removed - Express checkout feature
+
 2025-17-09 - version 2.4.13
 * Added - Support for Wordpress version 6.8
 
