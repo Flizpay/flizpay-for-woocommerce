@@ -90,8 +90,20 @@ class Flizpay_Public
         );
     }
 
+    /**
+     * Check if express checkout should be enabled
+     * Respects both the developer flag and admin settings
+     *
+     * @return bool
+     */
     public function is_express_checkout_enabled()
     {
+        // First check the developer flag - if it's false, always disable express checkout
+        if (defined('FLIZPAY_EXPRESS_CHECKOUT_ENABLED') && FLIZPAY_EXPRESS_CHECKOUT_ENABLED === false) {
+            return false;
+        }
+
+        // Otherwise, use the admin setting
         return $this->settings['flizpay_enable_express_checkout'] === "yes" &&
             $this->settings['flizpay_webhook_alive'] === 'yes';
     }
@@ -106,7 +118,6 @@ class Flizpay_Public
     {
 
         $this->enqueue_checkout_scripts();
-
     }
 
     // Enqueues the public script for the checkout page
@@ -213,5 +224,4 @@ class Flizpay_Public
             $payment_method_registry->register(new Flizpay_Gateway_Blocks);
         });
     }
-
 }

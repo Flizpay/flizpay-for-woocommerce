@@ -103,9 +103,11 @@ function flizpay_init_gateway_class()
             // Order placed e-mail handler
             add_filter('woocommerce_email_enabled_new_order', array($this, 'disable_new_order_email_for_flizpay'), 10, 2);
 
-            // Express checkout handler
-            add_action("wp_ajax_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
-            add_action("wp_ajax_nopriv_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
+            // Express checkout handler - only register if feature is available
+            if ($this->is_express_checkout_available()) {
+                add_action("wp_ajax_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
+                add_action("wp_ajax_nopriv_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
+            }
         }
 
         /**
@@ -267,6 +269,28 @@ function flizpay_init_gateway_class()
          * 
          * @return array | null
          * 
+         * @since 1.0.0
+         */
+        /**
+         * Checks if express checkout should be available based on settings and developer flag
+         *
+         * @return boolean
+         */
+        private function is_express_checkout_available()
+        {
+            // First check the developer flag
+            if (defined('FLIZPAY_EXPRESS_CHECKOUT_ENABLED') && FLIZPAY_EXPRESS_CHECKOUT_ENABLED === false) {
+                return false;
+            }
+
+            return $this->flizpay_enable_express_checkout === 'yes';
+        }
+
+        /**
+         * Obtain the current cashback value of the merchant from the transient
+         *
+         * @return array | null
+         *
          * @since 1.0.0
          */
         public function get_cashback_data()

@@ -38,6 +38,14 @@ if (!defined('WPINC')) {
 define('FLIZPAY_VERSION', '2.4.13');
 
 /**
+ * Developer feature flag to control express checkout functionality.
+ * Set to false to disable express checkout entirely, regardless of admin settings.
+ */
+if (!defined('FLIZPAY_EXPRESS_CHECKOUT_ENABLED')) {
+	define('FLIZPAY_EXPRESS_CHECKOUT_ENABLED', false);
+}
+
+/**
  * Load Composer autoloader only if PHP version meets requirements
  */
 if (file_exists(__DIR__ . '/vendor/autoload.php') && version_compare(PHP_VERSION, '8.2.0', '>=')) {
