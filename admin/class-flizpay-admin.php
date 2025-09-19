@@ -126,7 +126,7 @@ class Flizpay_Admin
 	 */
 	public function load_form_fields()
 	{
-		return array(
+		$fields = array(
 			'description_banner' => array(
 				'title' => '', // Empty title, used for HTML output
 				'type' => 'title', // Using 'title' as a workaround to insert HTML
@@ -214,15 +214,20 @@ class Flizpay_Admin
 				'default' => 'yes',
 				'desc_tip' => true,
 			),
-			'flizpay_enable_express_checkout' => array(
+		);
+
+		// Add express checkout feature fields if FLIZPAY_EXPRESS_CHECKOUT_ENABLED feature flag is enabled.
+		if (!defined('FLIZPAY_EXPRESS_CHECKOUT_ENABLED') || FLIZPAY_EXPRESS_CHECKOUT_ENABLED === true) {
+			$fields['flizpay_enable_express_checkout'] = array(
 				'title' => $this->is_english() ? 'Express checkout enabled' : 'Express-Checkout Aktiviert',
 				'type' => 'checkbox',
 				'default' => 'yes',
 				'description' => $this->is_english()
 					? 'When dealing with flat and non-taxable shipping fees, make sure the taxable option is set to “none” in the WooCommerce Shipping Zone Settings (WooCommerce > Settings > Shipping). Otherwise, the total cost calculation during express checkout may incur in taxes being applied to shipping fees.'
 					: 'Stelle für pauschale und nicht steuerpflichtige Versandkosten sicher, dass der Steuerstatus in den Einstellungen der Versandzonen (WooCommerce > Einstellungen > Versand) auf „Keine“ gesetzt ist. Andernfalls kann es bei der Berechnung der Gesamtkosten während des Express-Checkouts zu einer fehlerhaften Berechnung von Steuern auf die Versandkosten kommen.'
-			),
-			'flizpay_express_checkout_pages' => array(
+			);
+
+			$fields['flizpay_express_checkout_pages'] = array(
 				'title' => $this->is_english() ? 'Pages where the express checkout is shown' : 'Seiten, auf denen der Express-Checkout angezeigt wird',
 				'type' => 'multiselect', // Change to 'multiselect' to allow multiple selections
 				'default' => array('product', 'cart'),
@@ -232,8 +237,9 @@ class Flizpay_Admin
 				),
 				'desc_tip' => true,
 				'description' => $this->is_english() ? 'Select the pages where the express checkout button will appear.' : 'Wähle die Seiten aus, auf denen die Schaltfläche für den Express-Checkout angezeigt werden soll.'
-			),
-			'flizpay_express_checkout_theme' => array(
+			);
+
+			$fields['flizpay_express_checkout_theme'] = array(
 				'title' => $this->is_english() ? 'Express checkout button theme' : 'Design der Schaltfläche „Express-Checkout“',
 				'type' => 'select',
 				'default' => 'light',
@@ -241,8 +247,10 @@ class Flizpay_Admin
 					'light' => $this->is_english() ? 'Light' : 'Hell',
 					'dark' => $this->is_english() ? 'Dark' : 'Dunkel',
 				)
-			),
-		);
+			);
+		}
+
+		return $fields;
 	}
 
 	/**

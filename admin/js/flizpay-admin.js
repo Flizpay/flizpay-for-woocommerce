@@ -68,6 +68,7 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
     const expressCheckoutButtonTheme = document.querySelector(
       "#woocommerce_flizpay_flizpay_express_checkout_theme"
     );
+    const isEnabledExpressCheckout = !!expressCheckoutButtonTheme;
     const divider = document.createElement("hr");
     const divider2 = document.createElement("hr");
     const divider3 = document.createElement("hr");
@@ -82,10 +83,18 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
     const expressCheckoutButtonDark = document.createElement("img");
     const buttonExampleLabel = document.createElement("p");
 
-    // Remove the express checkout theme selection from the settings page
-    document.querySelector(
+    const expressCheckoutThemeRow = document.querySelector(
       "#woocommerce_flizpay_flizpay_express_checkout_theme"
-    ).parentNode.parentElement.parentElement.style.display = "none";
+    );
+    if (
+      expressCheckoutThemeRow &&
+      expressCheckoutThemeRow.parentNode &&
+      expressCheckoutThemeRow.parentNode.parentElement &&
+      expressCheckoutThemeRow.parentElement.parentElement
+    ) {
+      expressCheckoutThemeRow.parentNode.parentElement.parentElement.style.display =
+        "none";
+    }
 
     initCustomAttributesAndStyles();
 
@@ -172,10 +181,15 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
         )
       ) {
         flexibleShippingParagraph.innerHTML = flexibleShippingDisclaimer;
-        expressCheckoutButtonTheme.setAttribute("disabled", true);
-        document
-          .querySelector("#woocommerce_flizpay_flizpay_express_checkout_pages")
-          .setAttribute("disabled", true);
+        if (expressCheckoutButtonTheme) {
+          expressCheckoutButtonTheme.setAttribute("disabled", true);
+        }
+        const expressCheckoutPages = document.querySelector(
+          "#woocommerce_flizpay_flizpay_express_checkout_pages"
+        );
+        if (expressCheckoutPages) {
+          expressCheckoutPages.setAttribute("disabled", true);
+        }
       }
       jQuery("#woocommerce_flizpay_flizpay_express_checkout_pages").select2({
         placeholder: flizpayParams.wp_locale.includes("en")
@@ -194,24 +208,28 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
             .setAttribute("style", "display: none;");
       exampleImage.setAttribute("src", flizpayParams.example_image);
       exampleImage.setAttribute("width", "40%");
-      expressCheckoutButtonDark.setAttribute(
-        "src",
-        flizpayParams.express_checkout_button_dark
-      );
-      expressCheckoutButtonDark.setAttribute(
-        "width",
-        expressCheckoutButtonTheme.offsetWidth
-      );
-      expressCheckoutButtonDark.setAttribute("style", "margin-top: 10px;");
-      expressCheckoutButtonLight.setAttribute(
-        "src",
-        flizpayParams.express_checkout_button_light
-      );
-      expressCheckoutButtonLight.setAttribute(
-        "width",
-        expressCheckoutButtonTheme.offsetWidth
-      );
-      expressCheckoutButtonLight.setAttribute("style", "margin-top: 10px;");
+
+      if (isEnabledExpressCheckout) {
+        expressCheckoutButtonDark.setAttribute(
+          "src",
+          flizpayParams.express_checkout_button_dark
+        );
+        expressCheckoutButtonDark.setAttribute(
+          "width",
+          expressCheckoutButtonTheme.offsetWidth
+        );
+        expressCheckoutButtonDark.setAttribute("style", "margin-top: 10px;");
+        expressCheckoutButtonLight.setAttribute(
+          "src",
+          flizpayParams.express_checkout_button_light
+        );
+        expressCheckoutButtonLight.setAttribute(
+          "width",
+          expressCheckoutButtonTheme.offsetWidth
+        );
+        expressCheckoutButtonLight.setAttribute("style", "margin-top: 10px;");
+      }
+
       testButton.setAttribute("id", "woocommerce_flizpay_test_connection");
       resultField.setAttribute("id", "woocommerce_flizpay_connection_result");
       // Only append if apiKeyInput exists
@@ -231,23 +249,34 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
         webhookAlive.setAttribute("disabled", true);
       }
 
+      // Add unique classes to our divider rows to make them easier to find/remove
+      dividerRow.classList.add("flizpay-divider", "checkout-section");
+      dividerRow2.classList.add("flizpay-divider", "express-checkout-section");
+      dividerRow3.classList.add("flizpay-divider", "admin-options-section");
+
+      // Remove any existing dividers first to avoid duplicates
+      const existingDividers = document.querySelectorAll(".flizpay-divider");
+      existingDividers.forEach((div) => {
+        if (div.parentNode) {
+          div.parentNode.removeChild(div);
+        }
+      });
+
+      // Set styles for dividers and titles
       divider.setAttribute("style", "width: 100%");
       divider2.setAttribute("style", "width: 100%");
       divider3.setAttribute("style", "width: 100%");
-      dividerRow.setAttribute(
-        "style",
-        "width: 80vw; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; padding: 10px; text-align: center;"
-      );
-      dividerRow2.setAttribute(
-        "style",
-        "width: 80vw; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; padding: 10px; text-align: center; gap: 20px;"
-      );
-      dividerRow3.setAttribute(
-        "style",
-        "width: 80vw; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; padding: 10px; text-align: center; gap: 20px;"
-      );
+
+      const dividerStyle =
+        "width: 80vw; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; padding: 10px; text-align: center;";
+      dividerRow.setAttribute("style", dividerStyle);
+      dividerRow2.setAttribute("style", dividerStyle + " gap: 20px;");
+      dividerRow3.setAttribute("style", dividerStyle + " gap: 20px;");
+
       checkoutSectionTitle.setAttribute("style", "width: 100%;");
       expressCheckoutSectionTitle.setAttribute("style", "width: 100%;");
+
+      // Set section titles
       checkoutSectionTitle.innerHTML = flizpayParams.wp_locale.includes("en")
         ? "Checkout Settings"
         : "Kasse Einstellung";
@@ -256,12 +285,23 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
       )
         ? "Express Checkout Settings"
         : "Express-Checkout Einstellung";
+      orderStatusLabel.innerHTML = adminOptionTitle;
+
+      // Build checkout section divider
       dividerRow.append(divider);
       dividerRow.appendChild(checkoutSectionTitle);
       dividerRow.append(exampleImage);
+
+      // Build express checkout section divider
       dividerRow2.append(divider2);
       dividerRow2.appendChild(expressCheckoutSectionTitle);
       dividerRow2.append(flexibleShippingParagraph);
+
+      // Build admin options section divider
+      dividerRow3.append(divider3);
+      dividerRow3.append(orderStatusLabel);
+
+      // Set button example label
       buttonExampleLabel.innerHTML = flizpayParams.wp_locale.includes("en")
         ? "Example:"
         : "Beispiel:";
@@ -275,23 +315,63 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
         );
       }
 
-      orderStatusLabel.innerHTML = adminOptionTitle;
-      dividerRow3.append(divider3);
-      dividerRow3.append(orderStatusLabel);
+      // Find the main settings table
+      const table = document.querySelector("table.form-table > tbody");
+      if (!table) return;
 
-      if (orderStatus) {
-        orderStatus.append(dividerRow2);
+      // Add checkout section after Connection Established section
+      const connectionEstablishedRow = table.querySelector(
+        "tr:has(#woocommerce_flizpay_flizpay_webhook_alive)"
+      );
+
+      // Try finding the row with the connection description
+      const connectionDescriptionRow =
+        connectionEstablishedRow ||
+        (description ? description.closest("tr") : null);
+
+      if (connectionDescriptionRow) {
+        connectionDescriptionRow.insertAdjacentElement("afterend", dividerRow);
+      } else {
+        // Fallback: use the original approach if connection row not found
+        const apiKeyRow =
+          table.querySelector("tr:has(#woocommerce_flizpay_flizpay_api_key)") ||
+          table.querySelector("tr:nth-child(3)");
+        if (apiKeyRow) {
+          apiKeyRow.insertAdjacentElement("afterend", dividerRow);
+        }
       }
 
-      const table = document.querySelector("table > tbody");
-      if (table) {
-        const tr3 = table.querySelector("tr:nth-child(3)");
-        const tr9 = table.querySelector("tr:nth-child(9)");
-        const tr7 = table.querySelector("tr:nth-child(7)");
+      // Add admin options section before order status
+      const orderStatusRow = table.querySelector(
+        "tr:has(#woocommerce_flizpay_flizpay_order_status)"
+      );
+      if (orderStatusRow) {
+        orderStatusRow.insertAdjacentElement("beforebegin", dividerRow3);
+      }
 
-        if (tr3) tr3.insertAdjacentElement("afterend", dividerRow);
-        if (tr9) tr9.insertAdjacentElement("afterend", dividerRow2);
-        if (tr7) tr7.insertAdjacentElement("afterend", dividerRow3);
+      // Check if express checkout settings are visible
+      const expressCheckoutRow = document.querySelector(
+        "#woocommerce_flizpay_flizpay_enable_express_checkout"
+      );
+
+      if (expressCheckoutRow && expressCheckoutRow.closest("tr")) {
+        const expressRow = expressCheckoutRow.closest("tr");
+        const isVisible =
+          window.getComputedStyle(expressRow).display !== "none";
+
+        // Only add express checkout section if it's visible
+        if (isVisible) {
+          // Find sentry row to insert before it
+          const sentryRow = table.querySelector(
+            "tr:has(#woocommerce_flizpay_flizpay_sentry_enabled)"
+          );
+          if (sentryRow) {
+            sentryRow.insertAdjacentElement("beforebegin", dividerRow2);
+          } else {
+            // Fallback: append to end of table
+            table.appendChild(dividerRow2);
+          }
+        }
       }
 
       if (webhookAlive && webhookAlive.checked && description) {
