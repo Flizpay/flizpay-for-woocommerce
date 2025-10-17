@@ -88,8 +88,12 @@ class Flizpay_Admin
 			return;
 		}
 
-		// Additional check to ensure we're on the FLIZpay settings section
-		if (!isset($_GET['section']) || $_GET['section'] !== 'flizpay') {
+		// Additional check to ensure we're on the payment methods settings tab (WooCommerce uses 'checkout' as the tab name for payment methods in admin)
+		// URL: admin.php?page=wc-settings&tab=checkout&section=flizpay
+		$tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
+		$section = isset($_GET['section']) ? sanitize_text_field($_GET['section']) : '';
+
+		if ($tab !== 'checkout' || $section !== 'flizpay') {
 			return;
 		}
 
