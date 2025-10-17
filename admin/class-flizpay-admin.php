@@ -82,6 +82,17 @@ class Flizpay_Admin
 	 */
 	public function enqueue_scripts()
 	{
+		// Only load on WooCommerce settings page for FLIZpay
+		$screen = get_current_screen();
+		if (!$screen || $screen->id !== 'woocommerce_page_wc-settings') {
+			return;
+		}
+
+		// Additional check to ensure we're on the FLIZpay settings section
+		if (!isset($_GET['section']) || $_GET['section'] !== 'flizpay') {
+			return;
+		}
+
 		wp_enqueue_script('select2');
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-admin.js', array('jquery', 'select2'), $this->version, false);
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
