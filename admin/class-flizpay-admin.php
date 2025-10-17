@@ -82,6 +82,21 @@ class Flizpay_Admin
 	 */
 	public function enqueue_scripts()
 	{
+		// Only load on WooCommerce settings page for FLIZpay
+		$screen = get_current_screen();
+		if (!$screen || $screen->id !== 'woocommerce_page_wc-settings') {
+			return;
+		}
+
+		// Additional check to ensure we're on the payment methods settings tab (WooCommerce uses 'checkout' as the tab name for payment methods in admin)
+		// URL: admin.php?page=wc-settings&tab=checkout&section=flizpay
+		$tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
+		$section = isset($_GET['section']) ? sanitize_text_field($_GET['section']) : '';
+
+		if ($tab !== 'checkout' || $section !== 'flizpay') {
+			return;
+		}
+
 		wp_enqueue_script('select2');
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-admin.js', array('jquery', 'select2'), $this->version, false);
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
