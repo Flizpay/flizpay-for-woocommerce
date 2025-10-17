@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2025-17-10 - version 2.4.15
+* Fixed - Admin JavaScript now only loads on FLIZpay admin screens instead of every dashboard page
+
 2025-19-09 - version 2.4.14
 * Removed - Express checkout feature
 
