@@ -223,13 +223,13 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
 - v2.4.15
   - Fixed - Admin JavaScript now only loads on FLIZpay admin screens instead of every dashboard page
 
-- v2.4.16
-  - Added - FLIZpay banner images for WordPress
+ - v2.4.16
+   - Added - WordPress.org plugin directory banner images (.wordpress-org/)
 
-== Upgrade Notice ==
+ == Upgrade Notice ==
 
-= 2.4.16 =
-* Added - FLIZpay banner images for WordPress
+ = 2.4.16 =
+* Added - WordPress.org plugin directory banner images
 
 = 2.4.15 =
 * Fixed - Admin JavaScript now only loads on FLIZpay admin screens instead of every dashboard page
