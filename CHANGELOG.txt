@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2026-02-19 - version 2.4.16
+* Added - FLIZpay banner images for WordPress
+
 2025-17-10 - version 2.4.15
 * Fixed - Admin JavaScript now only loads on FLIZpay admin screens instead of every dashboard page
 

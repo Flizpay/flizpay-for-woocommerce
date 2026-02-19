@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.8
-Stable tag: 2.4.15
+Stable tag: 2.4.16
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -223,7 +223,13 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
 - v2.4.15
   - Fixed - Admin JavaScript now only loads on FLIZpay admin screens instead of every dashboard page
 
+- v2.4.16
+  - Added - FLIZpay banner images for WordPress
+
 == Upgrade Notice ==
+
+= 2.4.16 =
+* Added - FLIZpay banner images for WordPress
 
 = 2.4.15 =
 * Fixed - Admin JavaScript now only loads on FLIZpay admin screens instead of every dashboard page
