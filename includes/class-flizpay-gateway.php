@@ -26,15 +26,10 @@ function flizpay_init_gateway_class()
         public $flizpay_display_logo;
         public $flizpay_display_description;
         public $flizpay_display_headline;
-        public $flizpay_enable_express_checkout;
-        public $flizpay_express_checkout_pages;
-        public $flizpay_express_checkout_theme;
-        public $flizpay_express_checkout_title;
         public $flizpay_order_status;
         public $flizpay_sentry_enabled;
         public $cashback_helper;
         public $webhook_helper;
-        public $shipping_helper;
         public $api_service;
 
         /**
@@ -50,7 +45,6 @@ function flizpay_init_gateway_class()
         {
             require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-cashback-helper.php';
             require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-webhook-helper.php';
-            require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-shipping-helper.php';
             require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-api-service.php';
 
             $this->i18n = new Flizpay_i18n();
@@ -74,15 +68,11 @@ function flizpay_init_gateway_class()
             $this->flizpay_display_logo = $this->get_option('flizpay_display_logo');
             $this->flizpay_display_description = $this->get_option('flizpay_display_description');
             $this->flizpay_display_headline = $this->get_option('flizpay_display_headline');
-            $this->flizpay_enable_express_checkout = $this->get_option('flizpay_enable_express_checkout');
-            $this->flizpay_express_checkout_pages = $this->get_option('flizpay_express_checkout_pages');
-            $this->flizpay_express_checkout_theme = $this->get_option('flizpay_express_checkout_theme');
             $this->flizpay_order_status = $this->get_option('flizpay_order_status');
             $this->flizpay_sentry_enabled = $this->get_option('flizpay_sentry_enabled');
             // Initialize helper classes
             $this->cashback_helper = new Flizpay_Cashback_Helper($this);
             $this->webhook_helper = new Flizpay_Webhook_Helper($this);
-            $this->shipping_helper = new Flizpay_Shipping_Helper($this);
             $this->api_service = new Flizpay_API_Service($this->api_key);
 
             if ($this->flizpay_display_logo === 'yes') {
@@ -102,12 +92,6 @@ function flizpay_init_gateway_class()
 
             // Order placed e-mail handler
             add_filter('woocommerce_email_enabled_new_order', array($this, 'disable_new_order_email_for_flizpay'), 10, 2);
-
-            // Express checkout handler - only register if feature is available
-            if ($this->is_express_checkout_available()) {
-                add_action("wp_ajax_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
-                add_action("wp_ajax_nopriv_flizpay_express_checkout", array($this, "flizpay_express_checkout"));
-            }
         }
 
         /**
@@ -225,27 +209,6 @@ function flizpay_init_gateway_class()
                     $this->update_option('flizpay_display_headline', 'no');
                 }
 
-                if (isset($_POST['woocommerce_flizpay_flizpay_enable_express_checkout'])) {
-                    $enable_express_checkout = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_enable_express_checkout']));
-                    $this->update_option('flizpay_enable_express_checkout', $enable_express_checkout ? 'yes' : 'no');
-                } else {
-                    $this->update_option('flizpay_enable_express_checkout', 'no');
-                }
-
-                if (isset($_POST['woocommerce_flizpay_flizpay_express_checkout_pages'])) {
-                    $express_checkout_pages = array_map('sanitize_text_field', wp_unslash($_POST['woocommerce_flizpay_flizpay_express_checkout_pages']));
-                    $this->update_option('flizpay_express_checkout_pages', $express_checkout_pages ?? array());
-                } else {
-                    $this->update_option('flizpay_express_checkout_pages', array());
-                }
-
-                if (isset($_POST['woocommerce_flizpay_flizpay_express_checkout_theme'])) {
-                    $express_checkout_theme = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_express_checkout_theme']));
-                    $this->update_option('flizpay_express_checkout_theme', $express_checkout_theme ?? 'light');
-                } else {
-                    $this->update_option('flizpay_express_checkout_theme', 'light');
-                }
-
                 if (isset($_POST['woocommerce_flizpay_flizpay_order_status'])) {
                     $flizpay_order_status = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_order_status']));
                     $this->update_option('flizpay_order_status', $flizpay_order_status ?? 'wc-pending');
@@ -262,28 +225,6 @@ function flizpay_init_gateway_class()
 
                 $this->init_gateway_info();
             }
-        }
-
-        /**
-         * Obtain the current cashback value of the merchant from the transient
-         * 
-         * @return array | null
-         * 
-         * @since 1.0.0
-         */
-        /**
-         * Checks if express checkout should be available based on settings and developer flag
-         *
-         * @return boolean
-         */
-        private function is_express_checkout_available()
-        {
-            // First check the developer flag
-            if (defined('FLIZPAY_EXPRESS_CHECKOUT_ENABLED') && FLIZPAY_EXPRESS_CHECKOUT_ENABLED === false) {
-                return false;
-            }
-
-            return $this->flizpay_enable_express_checkout === 'yes';
         }
 
         /**
@@ -339,33 +280,6 @@ function flizpay_init_gateway_class()
         public function handle_webhook_request()
         {
             $this->webhook_helper->handle_webhook_request();
-        }
-
-        /**
-         * Function responsible for calculating the shipping fees and available methods
-         * given the customer address
-         * 
-         * @param array $data
-         * @return mixed
-         * 
-         * @since 2.0.0
-         */
-        public function calculate_shipping($data)
-        {
-            return $this->shipping_helper->calculate_shipping($data);
-        }
-
-        /**
-         * Function responsible for setting the shipping method of the customer choice
-         * 
-         * @param array $data
-         * @return mixed
-         * 
-         * @since 2.0.0
-         */
-        public function set_shipping_method($data)
-        {
-            return $this->shipping_helper->set_shipping_method($data);
         }
 
         /**
@@ -466,111 +380,5 @@ function flizpay_init_gateway_class()
             }
         }
 
-        /**
-         * Handler function for flizpay express checkout
-         * @return never
-         * @since 2.0.0
-         */
-        public function flizpay_express_checkout(): never
-        {
-            try {
-                check_ajax_referer('express_checkout_nonce', 'nonce');
-
-                if (!isset($_POST['cart'])) {
-                    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
-                    $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
-                    $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
-                    $variation_data = isset($_POST['variation_data']) ? sanitize_text_field($_POST['variation_data']) : '';
-
-                    // Parse variation data if available
-                    $variation_attributes = array();
-                    if (!empty($variation_data) && $variation_id) {
-                        $decoded_data = json_decode($variation_data, true);
-                        if (is_array($decoded_data)) {
-                            foreach ($decoded_data as $key => $value) {
-                                // Convert attribute name format (e.g., attribute_pa_color -> pa_color)
-                                $attribute_key = str_replace('attribute_', '', $key);
-                                $variation_attributes[$attribute_key] = $value;
-                            }
-                        }
-                    }
-
-                    if (!$product_id || $quantity <= 0) {
-                        echo esc_html(wp_send_json_error(['message' => 'Invalid product or quantity.']));
-                        die();
-                    }
-
-                    // Clear the current cart
-                    WC()->cart->empty_cart();
-
-                    // Add product to cart with variation data if applicable
-                    $new_cart = $variation_id
-                        ? WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation_attributes)
-                        : WC()->cart->add_to_cart($product_id, $quantity);
-
-
-                    if (!$new_cart) {
-                        echo esc_html(wp_send_json_error(['message' => 'Unable to add product to cart.']));
-                        die();
-                    }
-                }
-
-                // Create order from cart
-                $order_id = wc_create_order();
-                $order = wc_get_order($order_id);
-
-                // Set payment method explicitly for express checkout orders
-                $order->set_payment_method('flizpay');
-                $order->set_payment_method_title('FLIZpay');
-
-                foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
-                    $item = new WC_Order_Item_Product();
-                    $product = wc_get_product($cart_item['product_id']);
-
-                    $item->set_props(array(
-                        'name'         => $product ? $product->get_name() : '',
-                        'product_id'   => $cart_item['product_id'],
-                        'variation_id' => $cart_item['variation_id'],
-                        'quantity'     => $cart_item['quantity'],
-
-                        // Use the cart's exact line subtotals/line totals (reflects discounts & sale prices)
-                        'subtotal'     => $cart_item['line_subtotal'],
-                        'total'        => $cart_item['line_total'],
-                        'subtotal_tax' => $cart_item['line_subtotal_tax'],
-                        'total_tax'    => $cart_item['line_tax'],
-                        'taxes'        => $cart_item['line_tax_data'],
-                    ));
-
-                    $order->add_item($item);
-                }
-
-                // Remove shipping
-                foreach ($order->get_items('shipping') as $item_id => $shipping_item) {
-                    $order->remove_item($item_id);
-                }
-                $order->calculate_totals(true);
-                $order->save();
-
-                echo esc_html(wp_send_json_success(
-                    $this->process_payment($order->get_id(), 'express_checkout')
-                ));
-                die();
-            } catch (\Exception $e) {
-                Flizpay_Sentry::with_scope(static function ($scope) use ($e): void {
-                    if ($scope && method_exists($scope, 'setExtras')) {
-                        $scope->setExtras([
-                            'function_name' => 'flizpay_express_checkout',
-                            'message' => 'Exception occurred while processing express checkout',
-                            'shop_url' => home_url() ?? null,
-                            'plugin_version' => self::$VERSION,
-                        ]);
-                    }
-
-                    Flizpay_Sentry::capture_exception($e);
-                });
-                wp_send_json_error(['message' => 'Express checkout failed. Please try again.']);
-                die();
-            }
-        }
     }
 }

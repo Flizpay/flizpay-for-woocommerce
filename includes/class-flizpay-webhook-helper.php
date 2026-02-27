@@ -64,12 +64,6 @@ class Flizpay_Webhook_Helper
         if (isset($data['test'])) {
           $this->update_webhook_status(true);
           wp_send_json_success(array('alive' => true), 200);
-        } else if (isset($data['shippingInfo'])) {
-          $shipping_info = $this->gateway->calculate_shipping($data);
-          wp_send_json_success($shipping_info, 200);
-        } else if (isset($data['shippingMethodId'])) {
-          $total_cost = $this->gateway->set_shipping_method($data);
-          wp_send_json_success(array('totalCost' => $total_cost), 200);
         } else if (isset($data['updateCashbackInfo'])) {
           $this->update_cashback_info($data);
           wp_send_json_success('Cashback information updated', 200);

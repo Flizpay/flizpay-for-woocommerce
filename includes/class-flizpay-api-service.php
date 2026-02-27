@@ -76,23 +76,10 @@ class Flizpay_API_Service
       'failureUrl' => 'https://checkout.flizpay.de/failed',
       'customer' => $customer,
       'source' => $source,
-      'needsShipping' => $this->needs_shipping($order)
     ];
     $client = WC_Flizpay_API::get_instance($this->api_key);
     $response = $client->dispatch('create_transaction', $body, false);
 
     return $response['redirectUrl'] ?? null;
-  }
-
-  public function needs_shipping($order): bool
-  {
-    foreach ($order->get_items() as $item_id => $item) {
-      $product = $item->get_product();
-      if ($product && $product->needs_shipping()) {
-        return true;      // at least one shippable item found
-      }
-    }
-
-    return false; // no shippable items found
   }
 }

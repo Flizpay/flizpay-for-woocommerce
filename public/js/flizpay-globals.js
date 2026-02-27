@@ -43,15 +43,7 @@ jQuery(function ($) {
     window.flizPay.FLIZ_LOADING_HTML.append(window.flizPay.FLIZ_REFRESH_BUTTON);
     window.flizPay.FLIZ_LOADING_HTML.append(window.flizPay.FLIZ_CANCEL_BUTTON);
 
-    window.flizPay.flizLoadingButton = function flizLoadingButton() {
-      const flizPayButton = document.querySelector(".flizpay-express-checkout-button");
-      flizPayButton.setAttribute("disabled", "true");
-      flizPayButton.style.cursor = "not-allowed";
-      flizPayButton.style.pointerEvents = "none";
-      flizPayButton.innerHTML = `<span class="flizpay-loader"></span>`;
-    };
-
-    window.flizPay.fliz_block_ui = function fliz_block_ui(options) {
+    window.flizPay.fliz_block_ui = function fliz_block_ui() {
       setTimeout(
         () => {
           jQuery.blockUI({
@@ -97,7 +89,7 @@ jQuery(function ($) {
             },
           });
         },
-        options?.express ? 100 : 2700
+        2700
       );
     };
 

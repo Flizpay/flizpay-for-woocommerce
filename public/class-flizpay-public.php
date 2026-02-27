@@ -42,11 +42,11 @@ class Flizpay_Public
     private $version;
 
     /**
-     * The FLIZpay settings, containing express checkout config
+     * The FLIZpay settings
      *
      * @since    1.4.0
      * @access   private
-     * @var      string    $settings    The current version of this plugin.
+     * @var      array    $settings    The plugin settings.
      */
     private $settings;
 
@@ -91,24 +91,6 @@ class Flizpay_Public
     }
 
     /**
-     * Check if express checkout should be enabled
-     * Respects both the developer flag and admin settings
-     *
-     * @return bool
-     */
-    public function is_express_checkout_enabled()
-    {
-        // First check the developer flag - if it's false, always disable express checkout
-        if (defined('FLIZPAY_EXPRESS_CHECKOUT_ENABLED') && FLIZPAY_EXPRESS_CHECKOUT_ENABLED === false) {
-            return false;
-        }
-
-        // Otherwise, use the admin setting
-        return $this->settings['flizpay_enable_express_checkout'] === "yes" &&
-            $this->settings['flizpay_webhook_alive'] === 'yes';
-    }
-
-    /**
      * Register the JavaScript for the public-facing side of the site.
      * Only registers it on the checkout page
      *
@@ -137,28 +119,10 @@ class Flizpay_Public
             $this->version,
             false
         );
-        wp_enqueue_script(
-            $this->plugin_name . '-express',
-            plugin_dir_url(__FILE__) . 'js/flizpay-express-checkout.js',
-            array('jquery', 'wp-element', 'wp-data'),
-            $this->version,
-            false
-        );
         $variables = array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'public_dir_path' => plugin_dir_url(__FILE__),
             'order_finish_nonce' => wp_create_nonce('order_finish_nonce'),
-            'express_checkout_nonce' => wp_create_nonce('express_checkout_nonce'),
-            'enable_express_checkout' => $this->is_express_checkout_enabled(),
-            'express_checkout_pages' => $this->settings['flizpay_express_checkout_pages'],
-            'express_checkout_theme' => $this->settings['flizpay_express_checkout_theme'],
-            'express_checkout_title' => $this->settings['flizpay_express_checkout_title'],
-            'product_page_index' => 'product',
-            'cart_page_index' => 'cart',
-            'is_cart' => is_cart() ?? null,
-            'is_product' => is_product() ?? null,
-            'light_icon' => $this->assets_url . '/fliz-express-checkout-logo-light.svg',
-            'dark_icon' => $this->assets_url . '/fliz-express-checkout-logo-dark.svg',
             'fliz_logo' => $this->assets_url . '/fliz-logo.svg',
             'fliz_loading_wheel' => $this->assets_url . '/fliz-loading-wheel.svg',
             'cashback' => get_transient('flizpay_cashback_transient'),
