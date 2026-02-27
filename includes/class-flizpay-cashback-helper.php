@@ -19,22 +19,18 @@ class Flizpay_Cashback_Helper
       $shop_name = get_bloginfo('name');
       $title = sprintf(__('cashback-title', 'flizpay-for-woocommerce'), $display_value);
       $description = $this->get_cashback_description($shop_name);
-      $express_checkout_title = sprintf(__('cashback-express-title', 'flizpay-for-woocommerce'), $display_value);
     } else {
       $title = __('title', 'flizpay-for-woocommerce');
       $description = __('description', 'flizpay-for-woocommerce');
-      $express_checkout_title = __('express-title', 'flizpay-for-woocommerce');
     }
 
     // Use commas for german
     if ($this->is_cashback_available() && $this->is_german) {
       $title = str_replace('.', ',', $title);
-      $express_checkout_title = str_replace('.', ',', $express_checkout_title);
     }
 
     $this->gateway->title = $this->gateway->flizpay_display_headline === 'yes' ? $title : 'FLIZpay';
     $this->gateway->description = $this->gateway->flizpay_display_description === 'yes' ? $description : null;
-    $this->gateway->flizpay_express_checkout_title = $express_checkout_title;
   }
 
   public function set_title()
@@ -50,12 +46,8 @@ class Flizpay_Cashback_Helper
       } else {
         $this->gateway->title = 'FLIZpay';
       }
-      $this->gateway->flizpay_express_checkout_title = !is_null($this->gateway->cashback)
-        ? "Bis zu $cashback_value% Rabatt"
-        : 'Die Zahlungsrevolution';
     }
     $this->gateway->update_option('title', $this->gateway->title);
-    $this->gateway->update_option('flizpay_express_checkout_title', $this->gateway->flizpay_express_checkout_title);
   }
 
   public function set_description()

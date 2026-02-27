@@ -30,15 +30,9 @@
     const failedConnectionText = flizpayParams.wp_locale.includes("en")
       ? `An error occurred while testing the connection. Please Try Again. <br />`
       : `Beim Testen der Verbindung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut. <br />`;
-    const flexibleShippingDisclaimer = flizpayParams.wp_locale.includes("en")
-      ? `Are you using the plugin <a href="https://wordpress.org/plugins/flexible-shipping/">"Flexible Shipping"</a>? 
-Then make sure you set the shipping calculation on the Package and not on the Cart. For express checkout the cart is not required and when Flexible Shipping is not configured for Package calculation it won't be presented as a shipping option in FLIZ app.`
-      : `Verwenden Sie das Plugin <a href="https://wordpress.org/plugins/flexible-shipping/">„Flexible Shipping“</a>?
-Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und nicht auf dem Warenkorb festlegen. Für den Express-Checkout ist der Warenkorb nicht erforderlich. Wenn „Flexible Shipping“ nicht für die Paketberechnung konfiguriert ist, wird er in der FLIZ-App nicht als Versandoption angezeigt.`;
     const adminOptionTitle = flizpayParams.wp_locale.includes("en")
       ? "Admin Display Options"
       : "Anzeigeoptionen für Admins";
-    const flexibleShippingParagraph = document.createElement("p");
     const testButton = document.createElement("div");
     const resultField = document.createElement("div");
     const apiKeyInput = document.querySelector(
@@ -62,39 +56,13 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
     const description = document.querySelector(
       "#connection-stablished-description"
     );
-    const orderStatus = document.querySelector(
-      "#woocommerce_flizpay_flizpay_order_status"
-    );
-    const expressCheckoutButtonTheme = document.querySelector(
-      "#woocommerce_flizpay_flizpay_express_checkout_theme"
-    );
-    const isExpressCheckoutEnabled = !!expressCheckoutButtonTheme;
     const divider = document.createElement("hr");
-    const divider2 = document.createElement("hr");
     const divider3 = document.createElement("hr");
     const dividerRow = document.createElement("tr");
-    const dividerRow2 = document.createElement("tr");
     const dividerRow3 = document.createElement("tr");
     const exampleImage = document.createElement("img");
     const checkoutSectionTitle = document.createElement("h2");
-    const expressCheckoutSectionTitle = document.createElement("h2");
     const orderStatusLabel = document.createElement("h2");
-    const expressCheckoutButtonLight = document.createElement("img");
-    const expressCheckoutButtonDark = document.createElement("img");
-    const buttonExampleLabel = document.createElement("p");
-
-    const expressCheckoutThemeRow = document.querySelector(
-      "#woocommerce_flizpay_flizpay_express_checkout_theme"
-    );
-    if (
-      expressCheckoutThemeRow &&
-      expressCheckoutThemeRow.parentNode &&
-      expressCheckoutThemeRow.parentNode.parentElement &&
-      expressCheckoutThemeRow.parentElement.parentElement
-    ) {
-      expressCheckoutThemeRow.parentNode.parentElement.parentElement.style.display =
-        "none";
-    }
 
     initCustomAttributesAndStyles();
 
@@ -175,30 +143,6 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
     }
 
     function initCustomAttributesAndStyles() {
-      if (
-        !jQuery("#woocommerce_flizpay_flizpay_enable_express_checkout").is(
-          ":checked"
-        )
-      ) {
-        flexibleShippingParagraph.innerHTML = flexibleShippingDisclaimer;
-        if (expressCheckoutButtonTheme) {
-          expressCheckoutButtonTheme.setAttribute("disabled", true);
-        }
-        const expressCheckoutPages = document.querySelector(
-          "#woocommerce_flizpay_flizpay_express_checkout_pages"
-        );
-        if (expressCheckoutPages) {
-          expressCheckoutPages.setAttribute("disabled", true);
-        }
-      }
-      jQuery("#woocommerce_flizpay_flizpay_express_checkout_pages").select2({
-        placeholder: flizpayParams.wp_locale.includes("en")
-          ? "Select pages..."
-          : "Seiten auswählen",
-        allowClear: true,
-        width: "100%",
-        tags: true, // Allows dynamic adding and removal
-      });
       flizpayParams.wp_locale.includes("en")
         ? document
             .querySelector(".flizpay-german-banner")
@@ -208,27 +152,6 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
             .setAttribute("style", "display: none;");
       exampleImage.setAttribute("src", flizpayParams.example_image);
       exampleImage.setAttribute("width", "40%");
-
-      if (isExpressCheckoutEnabled) {
-        expressCheckoutButtonDark.setAttribute(
-          "src",
-          flizpayParams.express_checkout_button_dark
-        );
-        expressCheckoutButtonDark.setAttribute(
-          "width",
-          expressCheckoutButtonTheme.offsetWidth
-        );
-        expressCheckoutButtonDark.setAttribute("style", "margin-top: 10px;");
-        expressCheckoutButtonLight.setAttribute(
-          "src",
-          flizpayParams.express_checkout_button_light
-        );
-        expressCheckoutButtonLight.setAttribute(
-          "width",
-          expressCheckoutButtonTheme.offsetWidth
-        );
-        expressCheckoutButtonLight.setAttribute("style", "margin-top: 10px;");
-      }
 
       testButton.setAttribute("id", "woocommerce_flizpay_test_connection");
       resultField.setAttribute("id", "woocommerce_flizpay_connection_result");
@@ -251,7 +174,6 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
 
       // Add unique classes to our divider rows to make them easier to find/remove
       dividerRow.classList.add("flizpay-divider", "checkout-section");
-      dividerRow2.classList.add("flizpay-divider", "express-checkout-section");
       dividerRow3.classList.add("flizpay-divider", "admin-options-section");
 
       // Remove any existing dividers first to avoid duplicates
@@ -264,27 +186,19 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
 
       // Set styles for dividers and titles
       divider.setAttribute("style", "width: 100%");
-      divider2.setAttribute("style", "width: 100%");
       divider3.setAttribute("style", "width: 100%");
 
       const dividerStyle =
         "width: 80vw; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; padding: 10px; text-align: center;";
       dividerRow.setAttribute("style", dividerStyle);
-      dividerRow2.setAttribute("style", dividerStyle + " gap: 20px;");
       dividerRow3.setAttribute("style", dividerStyle + " gap: 20px;");
 
       checkoutSectionTitle.setAttribute("style", "width: 100%;");
-      expressCheckoutSectionTitle.setAttribute("style", "width: 100%;");
 
       // Set section titles
       checkoutSectionTitle.innerHTML = flizpayParams.wp_locale.includes("en")
         ? "Checkout Settings"
         : "Kasse Einstellung";
-      expressCheckoutSectionTitle.innerHTML = flizpayParams.wp_locale.includes(
-        "en"
-      )
-        ? "Express Checkout Settings"
-        : "Express-Checkout Einstellung";
       orderStatusLabel.innerHTML = adminOptionTitle;
 
       // Build checkout section divider
@@ -292,28 +206,9 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
       dividerRow.appendChild(checkoutSectionTitle);
       dividerRow.append(exampleImage);
 
-      // Build express checkout section divider
-      dividerRow2.append(divider2);
-      dividerRow2.appendChild(expressCheckoutSectionTitle);
-      dividerRow2.append(flexibleShippingParagraph);
-
       // Build admin options section divider
       dividerRow3.append(divider3);
       dividerRow3.append(orderStatusLabel);
-
-      // Set button example label
-      buttonExampleLabel.innerHTML = flizpayParams.wp_locale.includes("en")
-        ? "Example:"
-        : "Beispiel:";
-
-      // Only append elements if parent exists
-      if (expressCheckoutButtonTheme && expressCheckoutButtonTheme.parentNode) {
-        expressCheckoutButtonTheme.parentNode.append(buttonExampleLabel);
-        expressCheckoutButtonTheme.parentNode.append(expressCheckoutButtonDark);
-        expressCheckoutButtonTheme.parentNode.append(
-          expressCheckoutButtonLight
-        );
-      }
 
       // Find the main settings table
       const table = document.querySelector("table.form-table > tbody");
@@ -349,31 +244,6 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
         orderStatusRow.insertAdjacentElement("beforebegin", dividerRow3);
       }
 
-      // Check if express checkout settings are visible
-      const expressCheckoutRow = document.querySelector(
-        "#woocommerce_flizpay_flizpay_enable_express_checkout"
-      );
-
-      if (expressCheckoutRow && expressCheckoutRow.closest("tr")) {
-        const expressRow = expressCheckoutRow.closest("tr");
-        const isVisible =
-          window.getComputedStyle(expressRow).display !== "none";
-
-        // Only add express checkout section if it's visible
-        if (isVisible) {
-          // Find sentry row to insert before it
-          const sentryRow = table.querySelector(
-            "tr:has(#woocommerce_flizpay_flizpay_sentry_enabled)"
-          );
-          if (sentryRow) {
-            sentryRow.insertAdjacentElement("beforebegin", dividerRow2);
-          } else {
-            // Fallback: append to end of table
-            table.appendChild(dividerRow2);
-          }
-        }
-      }
-
       if (webhookAlive && webhookAlive.checked && description) {
         description.setAttribute(
           "style",
@@ -389,22 +259,6 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
         );
       }
 
-      if (expressCheckoutButtonTheme) {
-        expressCheckoutButtonTheme.value === "light"
-          ? (expressCheckoutButtonDark.style.display = "none")
-          : (expressCheckoutButtonLight.style.display = "none");
-
-        jQuery(expressCheckoutButtonTheme).on("change", function () {
-          if (this.value === "light") {
-            jQuery(expressCheckoutButtonDark).hide();
-            jQuery(expressCheckoutButtonLight).show();
-          } else {
-            jQuery(expressCheckoutButtonLight).hide();
-            jQuery(expressCheckoutButtonDark).show();
-          }
-        });
-      }
-
       if (displayHeadlineInput && displayHeadlineLabel) {
         jQuery(displayHeadlineInput).on("change", () => {
           if (!displayHeadlineInput.checked) {
@@ -414,33 +268,6 @@ Stellen Sie dann sicher, dass Sie die Versandkostenberechnung auf dem Paket und 
           }
         });
       }
-
-      jQuery("#woocommerce_flizpay_flizpay_enable_express_checkout").on(
-        "change",
-        function () {
-          if (!this.checked) {
-            if (expressCheckoutButtonTheme) {
-              expressCheckoutButtonTheme.setAttribute("disabled", true);
-            }
-            const expressCheckoutPages = document.querySelector(
-              "#woocommerce_flizpay_flizpay_express_checkout_pages"
-            );
-            if (expressCheckoutPages) {
-              expressCheckoutPages.setAttribute("disabled", true);
-            }
-          } else {
-            if (expressCheckoutButtonTheme) {
-              expressCheckoutButtonTheme.removeAttribute("disabled");
-            }
-            const expressCheckoutPages = document.querySelector(
-              "#woocommerce_flizpay_flizpay_express_checkout_pages"
-            );
-            if (expressCheckoutPages) {
-              expressCheckoutPages.removeAttribute("disabled");
-            }
-          }
-        }
-      );
     }
   });
 })(jQuery);
