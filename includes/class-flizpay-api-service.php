@@ -71,7 +71,7 @@ class Flizpay_API_Service
     $body = [
       'amount' => $order->get_total(),
       'currency' => $order->get_currency(),
-      'externalId' => $order->get_id(),
+      'externalId' => (string) $order->get_id(),
       'successUrl' => $order->get_checkout_order_received_url(),
       'failureUrl' => 'https://checkout.flizpay.de/failed',
       'customer' => $customer,

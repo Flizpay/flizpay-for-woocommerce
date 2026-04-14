@@ -38,7 +38,10 @@ const Flizpay_Gateway = {
   label: React.createElement(LabelElement, null),
   content: Object(window.wp.element.createElement)(Content, null),
   edit: Object(window.wp.element.createElement)(Content, null),
-  canMakePayment: () => true,
+  canMakePayment: ({ billingAddress }) => {
+    const country = billingAddress && billingAddress.country;
+    return !country || country === 'DE';
+  },
   ariaLabel: label,
   supports: {
     features: ["products"], //settings.supports,
