@@ -297,12 +297,49 @@ function flizpay_init_gateway_class()
         }
 
         /**
+         * Check whether the current customer's billing country is Germany.
+         * Returns true when the country is 'DE' or when it cannot be determined
+         * (empty/guest with no address yet), so new customers are not blocked
+         * before they have entered an address.
+         *
+         * @return bool
+         *
+         * @since 2.5.0
+         */
+        private function is_german_customer(): bool
+        {
+            // Check serialised classic-checkout AJAX payload first — it reflects what
+            // the customer just typed before WC()->customer is fully updated.
+            if (!empty($_POST['post_data']) && is_string($_POST['post_data'])) {
+                $post_data = array();
+                parse_str(wp_unslash($_POST['post_data']), $post_data);
+                $billing_country = sanitize_text_field($post_data['billing_country'] ?? '');
+                if (!empty($billing_country)) {
+                    return $billing_country === 'DE';
+                }
+            }
+
+            if (!function_exists('WC') || !WC()->customer instanceof \WC_Customer) {
+                return true; // Fail open in ambiguous contexts (REST, CLI, cron)
+            }
+
+            $billing_country = WC()->customer->get_billing_country();
+
+            if (empty($billing_country)) {
+                return true; // No address entered yet — don't hide FLIZpay prematurely
+            }
+
+            return $billing_country === 'DE';
+        }
+
+        /**
          * This plugin is only available outside of the admin order pay page.
          * It will also be marked as unavailable when the 2-way webhook connection was not established
          * and when the configuration haven't been completed at all.
-         * 
+         * FLIZpay is a German-market product and is only shown to customers with a German billing address.
+         *
          * @return bool
-         * 
+         *
          * @since 1.0.0
          */
         public function is_available()
@@ -314,7 +351,11 @@ function flizpay_init_gateway_class()
             $available = $this->get_option('flizpay_enabled') === 'yes' &&
                 $this->get_option('flizpay_webhook_alive') === 'yes';
 
-            return $available;
+            if (!$available) {
+                return false;
+            }
+
+            return $this->is_german_customer();
         }
 
         /**
@@ -379,6 +420,5 @@ function flizpay_init_gateway_class()
                 );
             }
         }
-
     }
 }
