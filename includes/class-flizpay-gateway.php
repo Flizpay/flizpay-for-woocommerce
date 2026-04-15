@@ -310,7 +310,7 @@ function flizpay_init_gateway_class()
         {
             // Check serialised classic-checkout AJAX payload first — it reflects what
             // the customer just typed before WC()->customer is fully updated.
-            if (!empty($_POST['post_data'])) {
+            if (!empty($_POST['post_data']) && is_string($_POST['post_data'])) {
                 $post_data = array();
                 parse_str(wp_unslash($_POST['post_data']), $post_data);
                 $billing_country = sanitize_text_field($post_data['billing_country'] ?? '');
