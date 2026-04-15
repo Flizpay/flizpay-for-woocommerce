@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.8
-Stable tag: 2.4.17
+Stable tag: 2.4.18
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -229,7 +229,19 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
 - v2.4.17
   - Hotfix - Restore missing WordPress.org plugin directory assets (icon, screenshots)
 
+- v2.4.18
+  - Added   - FLIZpay is now only shown to customers with a German billing address
+  - Removed - Remaining express checkout code and settings
+  - Fixed   - Payment creation failing due to order ID type mismatch with the API
+  - Fixed   - Added type guard before parsing classic checkout AJAX payload
+
 == Upgrade Notice ==
+
+= 2.4.18 =
+* Added   - FLIZpay is now only shown to customers with a German billing address
+* Removed - Remaining express checkout code and settings
+* Fixed   - Payment creation failing due to order ID type mismatch with the API
+* Fixed   - Added type guard before parsing classic checkout AJAX payload
 
 = 2.4.17 =
 * Hotfix - Restore missing WordPress.org plugin directory assets (icon, screenshots)
