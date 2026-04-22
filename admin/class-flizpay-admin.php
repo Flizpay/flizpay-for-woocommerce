@@ -217,6 +217,18 @@ class Flizpay_Admin
 				),
 				'desc_tip' => true,
 			),
+			'flizpay_restrict_to_germany' => array(
+				'title' => $this->is_english() ? 'Restrict to Germany' : 'Auf Deutschland beschränken',
+				'label' => $this->is_english()
+					? 'Only show FLIZpay for customers with a German billing address'
+					: 'FLIZpay nur für Kunden mit deutscher Rechnungsadresse anzeigen',
+				'type' => 'checkbox',
+				'description' => $this->is_english()
+					? 'Only show FLIZpay to customers with a German billing address. Leave disabled to offer FLIZpay worldwide.'
+					: 'FLIZpay nur Kunden mit deutscher Rechnungsadresse anzeigen. Deaktiviert lassen, um FLIZpay weltweit anzubieten.',
+				'default' => 'no',
+				'desc_tip' => true,
+			),
 			'flizpay_sentry_enabled' => array(
 				'title' => $this->is_english() ? 'Error Reporting' : 'Fehlerberichte',
 				'label' => $this->is_english() ? 'Enable error reporting to improve plugin stability' : 'Fehlerberichte aktivieren, um die Plugin-Stabilität zu verbessern',
