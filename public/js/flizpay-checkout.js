@@ -29,7 +29,7 @@ function LabelElement() {
         width: "68",
         height: "36",
         src: settings.icon,
-      })
+      }),
   );
 }
 
@@ -39,8 +39,12 @@ const Flizpay_Gateway = {
   content: Object(window.wp.element.createElement)(Content, null),
   edit: Object(window.wp.element.createElement)(Content, null),
   canMakePayment: ({ billingAddress }) => {
+    if (!settings.restrictToGermany) {
+      return true;
+    }
+
     const country = billingAddress && billingAddress.country;
-    return !country || country === 'DE';
+    return !country || country === "DE";
   },
   ariaLabel: label,
   supports: {

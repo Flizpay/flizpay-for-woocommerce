@@ -69,6 +69,7 @@ final class Flizpay_Gateway_Blocks extends AbstractPaymentMethodType
             'title' => $this->gateway->title,
             'description' => $this->gateway->description,
             'icon' => $this->gateway->icon,
+            'restrictToGermany' => $this->gateway->get_option('flizpay_restrict_to_germany') === 'yes',
         ];
     }
 }

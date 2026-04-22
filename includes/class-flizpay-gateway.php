@@ -28,6 +28,7 @@ function flizpay_init_gateway_class()
         public $flizpay_display_headline;
         public $flizpay_order_status;
         public $flizpay_sentry_enabled;
+        public $flizpay_restrict_to_germany;
         public $cashback_helper;
         public $webhook_helper;
         public $api_service;
@@ -70,6 +71,7 @@ function flizpay_init_gateway_class()
             $this->flizpay_display_headline = $this->get_option('flizpay_display_headline');
             $this->flizpay_order_status = $this->get_option('flizpay_order_status');
             $this->flizpay_sentry_enabled = $this->get_option('flizpay_sentry_enabled');
+            $this->flizpay_restrict_to_germany = $this->get_option('flizpay_restrict_to_germany');
             // Initialize helper classes
             $this->cashback_helper = new Flizpay_Cashback_Helper($this);
             $this->webhook_helper = new Flizpay_Webhook_Helper($this);
@@ -216,6 +218,13 @@ function flizpay_init_gateway_class()
                     $this->update_option('flizpay_order_status', 'wc-pending');
                 }
 
+                if (isset($_POST['woocommerce_flizpay_flizpay_restrict_to_germany'])) {
+                    $flizpay_restrict_to_germany = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_restrict_to_germany']));
+                    $this->update_option('flizpay_restrict_to_germany', $flizpay_restrict_to_germany === '1' ? 'yes' : 'no');
+                } else {
+                    $this->update_option('flizpay_restrict_to_germany', 'no');
+                }
+
                 if (isset($_POST['woocommerce_flizpay_flizpay_sentry_enabled'])) {
                     $flizpay_sentry_enabled = sanitize_text_field(wp_unslash($_POST['woocommerce_flizpay_flizpay_sentry_enabled']));
                     $this->update_option('flizpay_sentry_enabled', $flizpay_sentry_enabled === '1' ? 'yes' : 'no');
@@ -336,7 +345,9 @@ function flizpay_init_gateway_class()
          * This plugin is only available outside of the admin order pay page.
          * It will also be marked as unavailable when the 2-way webhook connection was not established
          * and when the configuration haven't been completed at all.
-         * FLIZpay is a German-market product and is only shown to customers with a German billing address.
+         * When the merchant opts in via the "Restrict to Germany" setting, FLIZpay is additionally
+         * hidden for customers whose billing country is not DE. By default the restriction is off,
+         * since customers abroad may still bank with FLIZpay-supported providers (e.g. N26, Revolut).
          *
          * @return bool
          *
@@ -355,7 +366,15 @@ function flizpay_init_gateway_class()
                 return false;
             }
 
-            return $this->is_german_customer();
+            // Country restriction is opt-in. Off by default so merchants can still
+            // reach customers abroad who bank with FLIZpay-supported providers
+            // (e.g. N26, Revolut). Shop owners who only serve Germany can enable
+            // the "Restrict to Germany" setting to hide FLIZpay for non-DE addresses.
+            if ($this->get_option('flizpay_restrict_to_germany') === 'yes') {
+                return $this->is_german_customer();
+            }
+
+            return true;
         }
 
         /**
