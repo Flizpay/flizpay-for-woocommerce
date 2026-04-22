@@ -1,5 +1,9 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2026-04-22 - version 2.4.19
+* Added   - Optional `Restrict to Germany` setting for FLIZpay checkout visibility
+* Fixed   - More reliable plugin upgrade handling during WordPress and bulk update flows
+
 2026-04-15 - version 2.4.18
 * Added   - FLIZpay is now only shown to customers with a German billing address
 * Removed - Remaining express checkout code and settings
