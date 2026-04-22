@@ -110,9 +110,13 @@ function flizpay_deactivate()
 
 function flizpay_upgrader($upgrader, $options = null)
 {
+	if (! is_array($options) || empty($options['plugins']) || ! is_array($options['plugins'])) {
+		return;
+	}
+
 	$plugin = plugin_basename(__FILE__);
 
-	if ($options['action'] == 'update' && $options['type'] == 'plugin' && $options['plugins'][0] == $plugin) {
+	if (($options['action'] ?? '') === 'update' && ($options['type'] ?? '') === 'plugin' && in_array($plugin, $options['plugins'], true)) {
 		require_once plugin_dir_path(__FILE__) . 'includes/class-flizpay-activator.php';
 		Flizpay_Activator::activate();
 	}
