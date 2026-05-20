@@ -101,6 +101,10 @@ class Flizpay_Webhook_Helper
 
     if ($status === 'completed') {
       $this->complete_order($order, $data);
+    } elseif ($status === 'failed') {
+      $this->fail_order($order, $data);
+    } elseif ($status === 'canceled') {
+      $this->cancel_order($order, $data);
     }
 
     $order->save();
@@ -135,6 +139,38 @@ class Flizpay_Webhook_Helper
     $this->gateway->cashback = $cashback;
     $this->gateway->update_option('flizpay_cashback', $cashback);
     $this->gateway->init_gateway_info();
+  }
+
+  private function fail_order(\WC_Order $order, $data)
+  {
+    $incoming_tx = isset($data['transactionId']) ? sanitize_text_field((string) $data['transactionId']) : '';
+
+    if ($incoming_tx !== '' && $order->get_meta('_flizpay_failed_tx') === $incoming_tx) {
+      return;
+    }
+
+    $order->update_status('failed', __('Payment failed via FLIZpay', 'flizpay-for-woocommerce'));
+
+    if ($incoming_tx !== '') {
+      $order->update_meta_data('_flizpay_failed_tx', $incoming_tx);
+      $order->add_order_note('FLIZ transaction ID: ' . $incoming_tx . ' — payment failed');
+    }
+  }
+
+  private function cancel_order(\WC_Order $order, $data)
+  {
+    $incoming_tx = isset($data['transactionId']) ? sanitize_text_field((string) $data['transactionId']) : '';
+
+    if ($incoming_tx !== '' && $order->get_meta('_flizpay_canceled_tx') === $incoming_tx) {
+      return;
+    }
+
+    $order->update_status('cancelled', __('Payment canceled via FLIZpay', 'flizpay-for-woocommerce'));
+
+    if ($incoming_tx !== '') {
+      $order->update_meta_data('_flizpay_canceled_tx', $incoming_tx);
+      $order->add_order_note('FLIZ transaction ID: ' . $incoming_tx . ' — payment canceled by user or bank');
+    }
   }
 
   private function complete_order($order, $data)
