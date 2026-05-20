@@ -175,11 +175,22 @@ class Flizpay_Webhook_Helper
 
   private function complete_order($order, $data)
   {
+    $incoming_tx = isset($data['transactionId']) ? sanitize_text_field((string) $data['transactionId']) : '';
+
+    if ($incoming_tx !== '' && $order->get_meta('_flizpay_completed_tx') === $incoming_tx) {
+      return;
+    }
+
     // Explicitly set the payment method before completing payment
     $order->set_payment_method('flizpay');
     $order->set_payment_method_title('FLIZpay');
 
-    $order->payment_complete($data['transactionId']);
+    $order->payment_complete($incoming_tx);
+
+    if ($incoming_tx !== '') {
+      $order->update_meta_data('_flizpay_completed_tx', $incoming_tx);
+    }
+
     $fliz_discount = (float) $data['originalAmount'] - (float) $data['amount'];
     $cashback_value = (float) ($fliz_discount * 100) / $data['originalAmount'];
 
@@ -187,8 +198,8 @@ class Flizpay_Webhook_Helper
       $this->apply_cashback_discount($data, $order, $cashback_value, $fliz_discount, $data['currency']);
     }
 
-    if (isset($data['transactionId'])) {
-      $order->add_order_note('FLIZ transaction ID: ' . sanitize_text_field($data['transactionId']));
+    if ($incoming_tx !== '') {
+      $order->add_order_note('FLIZ transaction ID: ' . $incoming_tx);
     }
 
     $this->send_order_emails($order->get_id());
