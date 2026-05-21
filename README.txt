@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.8
-Stable tag: 2.4.19
+Stable tag: 2.4.20
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -239,7 +239,15 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - Added   - Optional `Restrict to Germany` setting for FLIZpay checkout visibility
   - Fixed   - More reliable plugin upgrade handling during WordPress and bulk update flows
 
+- v2.4.20
+  - Added   - Support for failed and canceled payment webhooks
+  - Fixed   - Prevented duplicate cashback / notes / emails on retried webhook deliveries
+
 == Upgrade Notice ==
+
+= 2.4.20 =
+* Added   - Support for failed and canceled payment webhooks
+* Fixed   - Prevented duplicate cashback / notes / emails on retried webhook deliveries
 
 = 2.4.19 =
 * Added   - Optional `Restrict to Germany` setting for FLIZpay checkout visibility
