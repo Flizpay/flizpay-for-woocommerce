@@ -28,11 +28,6 @@ class Flizpay_Webhook_Helper
       return true;
     }
 
-    // Flush if webhook key is empty
-    if (empty($this->gateway->get_option('flizpay_webhook_key'))) {
-      return true;
-    }
-
     // Check if our rewrite rule exists in WordPress rewrite rules
     global $wp_rewrite;
     $current_rules = $wp_rewrite->wp_rewrite_rules();
@@ -87,16 +82,20 @@ class Flizpay_Webhook_Helper
 
     $order_id = intval($data['metadata']['orderId']);
     $status = sanitize_text_field($data['status']);
+    $incoming_tx = isset($data['transactionId']) ? sanitize_text_field((string) $data['transactionId']) : '';
     $order = wc_get_order($order_id);
 
     if (!$order) {
       wp_send_json_error('Order not found', 404);
     }
 
-    // Ensure payment method is set correctly regardless of status
-    if ($order->get_payment_method() !== 'flizpay') {
-      $order->set_payment_method('flizpay');
-      $order->set_payment_method_title('FLIZpay');
+    if (!$this->is_tx_authorized_for_order($order, $incoming_tx)) {
+      $order->add_order_note(sprintf(
+        'FLIZpay webhook rejected: transactionId %s is not in this order\'s issued list',
+        $incoming_tx !== '' ? $incoming_tx : '(missing)'
+      ));
+      wp_send_json_success(array('accepted' => false), 200);
+      return;
     }
 
     if ($status === 'completed') {
@@ -110,15 +109,37 @@ class Flizpay_Webhook_Helper
     $order->save();
   }
 
+  /**
+   * A webhook is authorized only when its transactionId is one the plugin
+   * recorded via process_payment for this specific order.
+   */
+  private function is_tx_authorized_for_order(\WC_Order $order, string $tx_id)
+  {
+    if (!is_string($tx_id) || $tx_id === '') {
+      return false;
+    }
+    $issued = $order->get_meta('_flizpay_issued_tx_ids');
+    if (!is_array($issued) || empty($issued)) {
+      return false;
+    }
+    return in_array($tx_id, $issued, true);
+  }
+
   public function webhook_authenticate($data)
   {
     $key = $this->gateway->get_option('flizpay_webhook_key');
 
-    if (isset($_SERVER['HTTP_X_FLIZ_SIGNATURE'])) {
-      $signature = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FLIZ_SIGNATURE']));
-      $signedData = hash_hmac('sha256', wp_json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $key);
-      return hash_equals($signature, $signedData);
+    if (!is_string($key) || strlen($key) < 32) {
+      return false;
     }
+
+    if (!isset($_SERVER['HTTP_X_FLIZ_SIGNATURE'])) {
+      return false;
+    }
+
+    $signature = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FLIZ_SIGNATURE']));
+    $signedData = hash_hmac('sha256', wp_json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $key);
+    return hash_equals($signature, $signedData);
   }
 
   private function update_webhook_status($status)
