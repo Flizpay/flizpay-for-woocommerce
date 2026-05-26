@@ -98,8 +98,26 @@ class Flizpay_Public
      */
     public function enqueue_scripts()
     {
+        if (!$this->is_checkout_flow_page()) {
+            return;
+        }
 
         $this->enqueue_checkout_scripts();
+    }
+
+    /**
+     * True only on pages where the customer has a known order context —
+     * the checkout page, the order-pay endpoint (paying for an existing order
+     * via a WC-verified key URL), or the order-received (thank-you) page.
+     */
+    private function is_checkout_flow_page()
+    {
+        if (!function_exists('is_checkout')) {
+            return false;
+        }
+        return is_checkout()
+            || (function_exists('is_wc_endpoint_url') && is_wc_endpoint_url('order-pay'))
+            || (function_exists('is_order_received_page') && is_order_received_page());
     }
 
     // Enqueues the public script for the checkout page
@@ -142,19 +160,49 @@ class Flizpay_Public
     public function flizpay_order_finish()
     {
         check_ajax_referer('order_finish_nonce', 'nonce');
-        if (isset($_POST['order_id'])) {
-            $order_id = sanitize_text_field(wp_unslash($_POST['order_id']));
-            $order = wc_get_order($order_id);
-            $status = $order ? $order->get_status() : 'pending';
 
-            echo wp_json_encode(
-                array(
-                    'status' => $status,
-                    'url' => $status === 'processing' ? $order->get_checkout_order_received_url() : 'https://checkout.flizpay.de/failed',
-                )
-            );
+        if (!isset($_POST['order_id'])) {
+            wp_send_json_error('Missing order_id', 400);
         }
+
+        $order_id = absint(wp_unslash($_POST['order_id']));
+        $order = $order_id ? wc_get_order($order_id) : null;
+
+        // Bind the lookup to the current customer: either a logged-in owner, or the
+        // current guest session's "order_awaiting_payment" set during process_payment.
+        if (!$order || !$this->customer_can_view_order($order)) {
+            wp_send_json_error('Forbidden', 403);
+        }
+
+        $status = $order->get_status();
+
+        echo wp_json_encode(
+            array(
+                'status' => $status,
+                'url' => $status === 'processing' ? $order->get_checkout_order_received_url() : 'https://checkout.flizpay.de/failed',
+            )
+        );
         die;
+    }
+
+    /**
+     * True only when the request can legitimately ask about this order.
+     * Logged-in users must own the order; guests must have the order set as
+     * "awaiting payment" in their WC session (this is set by WC during
+     * process_payment and by the order-pay endpoint after WC verifies the key).
+     */
+    private function customer_can_view_order(\WC_Order $order)
+    {
+        if (is_user_logged_in() && (int) $order->get_customer_id() === get_current_user_id()) {
+            return true;
+        }
+
+        if (!function_exists('WC') || !WC()->session) {
+            return false;
+        }
+
+        $awaiting = WC()->session->get('order_awaiting_payment');
+        return $awaiting && (int) $awaiting === (int) $order->get_id();
     }
 
     /**

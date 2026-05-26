@@ -407,10 +407,18 @@ function flizpay_init_gateway_class()
                 $order->update_status($this->flizpay_order_status, 'FLIZpay Checkout initiated. Waiting for payment - ' . $source);
                 $order->save();
 
-                $redirectUrl = $this->api_service->create_transaction($order, $source);
+                $transaction = $this->api_service->create_transaction($order, $source);
 
-                if ($redirectUrl) {
-                    return array('result' => 'success', 'redirect' => $redirectUrl, 'order_id' => $order_id);
+                if (is_array($transaction) && !empty($transaction['redirectUrl']) && !empty($transaction['transactionId'])) {
+                    $issued = $order->get_meta('_flizpay_issued_tx_ids');
+                    if (!is_array($issued)) {
+                        $issued = array();
+                    }
+                    $issued[] = $transaction['transactionId'];
+                    $order->update_meta_data('_flizpay_issued_tx_ids', $issued);
+                    $order->save();
+
+                    return array('result' => 'success', 'redirect' => $transaction['redirectUrl'], 'order_id' => $order_id);
                 } else {
                     wc_add_notice('Error creating FLIZpay transaction. Please try again later.');
                     return array(

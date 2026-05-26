@@ -80,6 +80,16 @@ class Flizpay_API_Service
     $client = WC_Flizpay_API::get_instance($this->api_key);
     $response = $client->dispatch('create_transaction', $body, false);
 
-    return $response['redirectUrl'] ?? null;
+    $redirect_url = $response['redirectUrl'] ?? null;
+    $transaction_id = isset($response['transactionId']) ? (string) $response['transactionId'] : '';
+
+    if (!$redirect_url || $transaction_id === '') {
+      return null;
+    }
+
+    return [
+      'redirectUrl' => $redirect_url,
+      'transactionId' => $transaction_id,
+    ];
   }
 }
