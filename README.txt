@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, cashback, no-fee
 Requires at least: 4.4
 Tested up to: 6.8
-Stable tag: 2.4.20
+Stable tag: 2.5.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -243,7 +243,19 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - Added   - Support for failed and canceled payment webhooks
   - Fixed   - Prevented duplicate cashback / notes / emails on retried webhook deliveries
 
+- v2.5.0
+  - Security - Webhook requests are rejected unless a valid signing key is configured
+  - Security - Payment completion webhooks are now matched against the transaction the plugin issued for the order
+  - Security - Order status polling now requires a matching customer session
+  - Fixed    - Avoid re-flushing WordPress rewrite rules on every request when the plugin is unconfigured
+
 == Upgrade Notice ==
+
+= v2.5.0 =
+* Security - Webhook requests are rejected unless a valid signing key is configured
+* Security - Payment completion webhooks are now matched against the transaction the plugin issued for the order
+* Security - Order status polling now requires a matching customer session
+* Fixed    - Avoid re-flushing WordPress rewrite rules on every request when the plugin is unconfigured
 
 = 2.4.20 =
 * Added   - Support for failed and canceled payment webhooks
