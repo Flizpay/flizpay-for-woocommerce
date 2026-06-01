@@ -60,6 +60,49 @@ class Flizpay_Cashback_Helper
     $this->gateway->update_option('description', $this->gateway->description);
   }
 
+  /**
+   * Build the data needed to render the interactive checkout preview on the
+   * admin settings page. This is a pure, read-only method: it never mutates the
+   * gateway (unlike set_title()/set_description()) and it always returns the
+   * "as-if-enabled" variants so the admin JS can toggle logo/title/description
+   * live, regardless of the currently saved display_* settings.
+   *
+   * @return array{titleFull:string,titlePlain:string,description:string,logoUrl:string,discountActive:bool,isGerman:bool}
+   *
+   * @since 2.5.0
+   */
+  public function get_checkout_preview_data()
+  {
+    $display_value = $this->get_display_value();
+    $discount_active = $this->is_cashback_available() && !is_null($display_value);
+
+    if ($discount_active) {
+      $title_full = sprintf(__('cashback-title', 'flizpay-for-woocommerce'), $display_value);
+      if ($this->is_german) {
+        $title_full = str_replace('.', ',', $title_full);
+      }
+      $description = $this->get_cashback_description(get_bloginfo('name'));
+    } else {
+      $title_full = __('title', 'flizpay-for-woocommerce');
+      if ($this->is_default_translation($title_full)) {
+        $title_full = 'FLIZpay - Die Zahlungsrevolution';
+      }
+      $description = __('description', 'flizpay-for-woocommerce');
+      if ($this->is_default_translation($description)) {
+        $description = '';
+      }
+    }
+
+    return array(
+      'titleFull'      => $title_full,
+      'titlePlain'     => 'FLIZpay',
+      'description'    => is_string($description) ? $description : '',
+      'logoUrl'        => plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images/fliz-checkout-logo.svg',
+      'discountActive' => $discount_active,
+      'isGerman'       => $this->is_german,
+    );
+  }
+
   private function get_display_value()
   {
     if (!$this->gateway->cashback)

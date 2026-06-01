@@ -99,10 +99,17 @@ class Flizpay_Admin
 
 		wp_enqueue_script('select2');
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-admin.js', array('jquery', 'select2'), $this->version, false);
+
+		$gateways = function_exists('WC') && WC()->payment_gateways() ? WC()->payment_gateways()->payment_gateways() : array();
+		$gateway = isset($gateways['flizpay']) ? $gateways['flizpay'] : null;
+		$checkout_preview = ($gateway && isset($gateway->cashback_helper))
+			? $gateway->cashback_helper->get_checkout_preview_data()
+			: null;
+
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
 			'nonce' => wp_create_nonce('test_connection_nonce'),
 			'loading_icon' => "$this->assets_url/loading.svg",
-			'example_image' => $this->is_english() ? "$this->assets_url/flizpay-checkout-example-en.png" : "$this->assets_url/flizpay-checkout-example-de.png",
+			'checkout_preview' => $checkout_preview,
 			'wp_locale' => get_user_locale() ?? get_locale(),
 		));
 	}
