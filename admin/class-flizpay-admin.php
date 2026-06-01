@@ -199,9 +199,9 @@ class Flizpay_Admin
 				'type' => 'checkbox',
 				'description' => $this->is_english()
 					? '<div id="displayHeadline"><p style="font-style: italic; color: red;">The option to hide the description in the title has been selected. When the discount is enabled, '
-					. 'the information about the discount, such as "FLIZpay – 5% Discount", is therefore missing"</p></div>'
+					. 'the information about the discount, such as "FLIZpay - Up to 5% Discount", is therefore missing"</p></div>'
 					: '<div id="displayHeadline"><p style="font-style: italic; color: red;">Es wurde ausgewählt, die Beschreibung im Titel nicht anzuzeigen. Wenn der Rabatt aktiviert ist, fehlt dadurch die Information zum Rabatt, '
-					. 'wie z.B. „FLIZpay – 5 % Rabatt“</p></div>',
+					. 'wie z.B. „FLIZpay - Bis zu 5 % Rabatt“</p></div>',
 				'default' => 'yes',
 			),
 			'flizpay_display_description' => array(
