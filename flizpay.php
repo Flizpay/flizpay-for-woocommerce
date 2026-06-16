@@ -159,7 +159,7 @@ function flizpay_sync_plugin_version_if_needed()
 register_activation_hook(__FILE__, 'flizpay_activate');
 register_deactivation_hook(__FILE__, 'flizpay_deactivate');
 add_action('upgrader_process_complete', 'flizpay_upgrader');
-add_action('admin_init', 'flizpay_sync_plugin_version_if_needed', 20);
+add_action('init', 'flizpay_sync_plugin_version_if_needed', 20);
 
 /**
  * The core plugin class that is used to define internationalization,
