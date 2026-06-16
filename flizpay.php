@@ -117,14 +117,49 @@ function flizpay_upgrader($upgrader, $options = null)
 	$plugin = plugin_basename(__FILE__);
 
 	if (($options['action'] ?? '') === 'update' && ($options['type'] ?? '') === 'plugin' && in_array($plugin, $options['plugins'], true)) {
-		require_once plugin_dir_path(__FILE__) . 'includes/class-flizpay-activator.php';
-		Flizpay_Activator::activate();
+		update_option('flizpay_plugin_version_sync_needed', true);
 	}
+}
+
+function flizpay_sync_plugin_version_if_needed()
+{
+	if (!get_option('flizpay_plugin_version_sync_needed')) {
+		return;
+	}
+
+	if (get_transient('flizpay_plugin_version_sync_failed')) {
+		return;
+	}
+
+	$flizpay_settings = get_option('woocommerce_flizpay_settings');
+
+	if (!is_array($flizpay_settings) || empty($flizpay_settings['flizpay_api_key'])) {
+		return;
+	}
+
+	require_once plugin_dir_path(__FILE__) . 'includes/class-flizpay-api.php';
+
+	try {
+		$api_client = WC_Flizpay_API::get_instance($flizpay_settings['flizpay_api_key']);
+		$response = $api_client->dispatch('edit_business', array('pluginVersion' => FLIZPAY_VERSION), false);
+
+		if (is_array($response) && ($response['pluginVersion'] ?? null) === FLIZPAY_VERSION) {
+			update_option('flizpay_reported_plugin_version', FLIZPAY_VERSION);
+			delete_option('flizpay_plugin_version_sync_needed');
+			delete_transient('flizpay_plugin_version_sync_failed');
+			return;
+		}
+	} catch (Throwable $e) {
+		// Retry later without blocking the admin request.
+	}
+
+	set_transient('flizpay_plugin_version_sync_failed', true, 3600);
 }
 
 register_activation_hook(__FILE__, 'flizpay_activate');
 register_deactivation_hook(__FILE__, 'flizpay_deactivate');
 add_action('upgrader_process_complete', 'flizpay_upgrader');
+add_action('admin_init', 'flizpay_sync_plugin_version_if_needed', 20);
 
 /**
  * The core plugin class that is used to define internationalization,

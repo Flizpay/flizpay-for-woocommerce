@@ -23,6 +23,8 @@ $options = array(
 	'flizpay_webhook_url',
 	'flizpay_enabled',
 	'flizpay_webhook_alive',
+	'flizpay_plugin_version_sync_needed',
+	'flizpay_reported_plugin_version',
 	'woocommerce_flizpay_settings',
 );
 
@@ -58,3 +60,4 @@ foreach ($custom_post_types as $post_type) {
 
 // Clean up transients
 delete_transient('flizpay_transient');
+delete_transient('flizpay_plugin_version_sync_failed');
