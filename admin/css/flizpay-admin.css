@@ -4,89 +4,168 @@
  */
 
 #test_connection_button {
-    background-color: #001F3F;
-    border: none;
-    color: white;
-    padding: 14px 28px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 5px;
+  background-color: #001f3f;
+  border: none;
+  color: white;
+  padding: 14px 28px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
 #test_connection_button .hidden {
-    display: none;
+  display: none;
 }
 
 #test_connection_button:hover {
-    padding: 13px 27px;
-    border: 1px solid #80ED99;
+  padding: 13px 27px;
+  border: 1px solid #80ed99;
 }
 
 #test_connection_button:active {
-    background-color: #80ED99;
-    color:  #001F3F;
-    padding: 12px 26px;
-    border: 2px solid #001F3F;
+  background-color: #80ed99;
+  color: #001f3f;
+  padding: 12px 26px;
+  border: 2px solid #001f3f;
 }
 #woocommerce_flizpay_connection_result {
-    text-align: center;
-    padding: 14px 28px;
-    border-radius: 5px;
-    font-size: 12px;
-    display: inline-block;
-    margin-left: 4px;
+  text-align: center;
+  padding: 14px 28px;
+  border-radius: 5px;
+  font-size: 12px;
+  display: inline-block;
+  margin-left: 4px;
 }
 
 .connection-success {
-    background-color: #80ED99;
-    color: #001F3F;
+  background-color: #80ed99;
+  color: #001f3f;
 }
 
 .connection-failed {
-    color: aliceblue;
-    background-color: rgb(210, 63, 30, .7);
+  color: aliceblue;
+  background-color: rgb(210, 63, 30, 0.7);
 }
 
 .flizpay-description-banner {
-    display: flex!important;
-    width: 100%; 
-    flex-wrap: wrap; 
-    padding: 0;
-    justify-content: space-between;
+  display: flex !important;
+  width: 100%;
+  flex-wrap: wrap;
+  padding: 0;
+  justify-content: space-between;
 }
 
 .flizpay-german-banner {
-    background-color: #f7f7f7;
-    margin-bottom: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    border-left: 4px solid #007cba;
-    width: 100%;
+  background-color: #f7f7f7;
+  margin-bottom: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-left: 4px solid #007cba;
+  width: 100%;
 }
 
 .flizpay-english-banner {
-    background-color: #f7f7f7;
-    margin-bottom: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    border-left: 4px solid #007cba;
-    width: 100%;
+  background-color: #f7f7f7;
+  margin-bottom: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-left: 4px solid #007cba;
+  width: 100%;
 }
 
 .flizpay-banner-header {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  text-align: center;
 }
 
 .flizpay-header-text {
-    font-weight: bold;
-    font-size: large;
-    width: 100%;
-    text-align: center;
+  font-weight: bold;
+  font-size: large;
+  width: 100%;
+  text-align: center;
+}
+
+.flizpay-checkout-preview {
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1.5px rgb(17, 17, 17);
+  background-color: #fff;
+}
+
+.flizpay-checkout-preview .flizpay-checkout-preview__option {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0;
+  padding-bottom: 1em;
+  padding-top: 1em;
+  padding-left: 3.5em;
+  padding-right: 0.75em;
+}
+
+.flizpay-checkout-preview .flizpay-checkout-preview__input-wrapper {
+  position: absolute;
+  left: 16px;
+}
+
+.flizpay-checkout-preview .flizpay-checkout-preview__input {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid hsla(0, 0%, 7%, 0.8);
+  position: relative;
+}
+
+.flizpay-checkout-preview .flizpay-checkout-preview__input::before {
+  position: absolute;
+  content: "";
+  top: 0;
+  left: 0;
+  transform: translate(50%, 50%);
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background-color: #001f3f;
+}
+
+.flizpay-checkout-preview .flizpay-checkout-preview__label-group {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.flizpay-checkout-preview .flizpay-checkout-preview__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.flizpay-checkout-preview .flizpay-preview-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.flizpay-checkout-preview .flizpay-preview-logo {
+  width: 68px;
+  height: 24px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.flizpay-checkout-preview .flizpay-preview-description {
+  padding: 0 1em 1em;
+  text-align: left;
 }

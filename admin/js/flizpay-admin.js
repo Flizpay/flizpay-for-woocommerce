@@ -14,7 +14,7 @@
 
     const connectionAttempts =
       Number.parseInt(
-        localStorage.getItem("flizpay_admin_connection_attempts")
+        localStorage.getItem("flizpay_admin_connection_attempts"),
       ) || 0;
     const descriptionText = flizpayParams.wp_locale.includes("en")
       ? "Our servers have successfully communicated with your site. You're now ready to accept fee-free payments!"
@@ -36,33 +36,43 @@
     const testButton = document.createElement("div");
     const resultField = document.createElement("div");
     const apiKeyInput = document.querySelector(
-      "#woocommerce_flizpay_flizpay_api_key"
+      "#woocommerce_flizpay_flizpay_api_key",
     );
     // Safely access the value or default to empty string if element doesn't exist
     const initialApiKeyValue = apiKeyInput ? apiKeyInput.value : "";
     const displayHeadlineInput = document.querySelector(
-      "#woocommerce_flizpay_flizpay_display_headline"
+      "#woocommerce_flizpay_flizpay_display_headline",
     );
     const displayHeadlineLabel = document.querySelector("#displayHeadline");
+    const displayLogoInput = document.querySelector(
+      "#woocommerce_flizpay_flizpay_display_logo",
+    );
+    const displayDescriptionInput = document.querySelector(
+      "#woocommerce_flizpay_flizpay_display_description",
+    );
     const webhookURLInput = document.querySelector(
-      "#woocommerce_flizpay_flizpay_webhook_url"
+      "#woocommerce_flizpay_flizpay_webhook_url",
     );
     const enabledCheckbox = document.querySelector(
-      "#woocommerce_flizpay_flizpay_enabled"
+      "#woocommerce_flizpay_flizpay_enabled",
     );
     const webhookAlive = document.querySelector(
-      "#woocommerce_flizpay_flizpay_webhook_alive"
+      "#woocommerce_flizpay_flizpay_webhook_alive",
     );
     const description = document.querySelector(
-      "#connection-stablished-description"
+      "#connection-stablished-description",
     );
     const divider = document.createElement("hr");
     const divider3 = document.createElement("hr");
     const dividerRow = document.createElement("tr");
     const dividerRow3 = document.createElement("tr");
-    const exampleImage = document.createElement("img");
     const checkoutSectionTitle = document.createElement("h2");
     const orderStatusLabel = document.createElement("h2");
+
+    // Live checkout-preview sub-elements (assigned in buildCheckoutPreview).
+    let previewTitleEl = null;
+    let previewLogoEl = null;
+    let previewDescriptionEl = null;
 
     initCustomAttributesAndStyles();
 
@@ -89,7 +99,7 @@
 
     function hasChangedApiKey() {
       const currentApiKey = document.querySelector(
-        "#woocommerce_flizpay_flizpay_api_key"
+        "#woocommerce_flizpay_flizpay_api_key",
       );
       return (
         webhookAlive &&
@@ -119,7 +129,7 @@
     function scheduleReloadAndIncreaseCounter() {
       localStorage.setItem(
         "flizpay_admin_connection_attempts",
-        connectionAttempts + 1
+        connectionAttempts + 1,
       );
       setTimeout(() => {
         window.location.reload();
@@ -150,8 +160,6 @@
         : document
             .querySelector(".flizpay-english-banner")
             .setAttribute("style", "display: none;");
-      exampleImage.setAttribute("src", flizpayParams.example_image);
-      exampleImage.setAttribute("width", "40%");
 
       testButton.setAttribute("id", "woocommerce_flizpay_test_connection");
       resultField.setAttribute("id", "woocommerce_flizpay_connection_result");
@@ -204,7 +212,10 @@
       // Build checkout section divider
       dividerRow.append(divider);
       dividerRow.appendChild(checkoutSectionTitle);
-      dividerRow.append(exampleImage);
+      const checkoutPreview = buildCheckoutPreview();
+      if (checkoutPreview) {
+        dividerRow.append(checkoutPreview);
+      }
 
       // Build admin options section divider
       dividerRow3.append(divider3);
@@ -216,7 +227,7 @@
 
       // Add checkout section after Connection Established section
       const connectionEstablishedRow = table.querySelector(
-        "tr:has(#woocommerce_flizpay_flizpay_webhook_alive)"
+        "tr:has(#woocommerce_flizpay_flizpay_webhook_alive)",
       );
 
       // Try finding the row with the connection description
@@ -238,7 +249,7 @@
 
       // Add admin options section before order status
       const orderStatusRow = table.querySelector(
-        "tr:has(#woocommerce_flizpay_flizpay_order_status)"
+        "tr:has(#woocommerce_flizpay_flizpay_order_status)",
       );
       if (orderStatusRow) {
         orderStatusRow.insertAdjacentElement("beforebegin", dividerRow3);
@@ -247,7 +258,7 @@
       if (webhookAlive && webhookAlive.checked && description) {
         description.setAttribute(
           "style",
-          "color: #001F3F; background-color: #80ED99; padding: 10px; font-weight: bold; margin-top: 30px;"
+          "color: #001F3F; background-color: #80ED99; padding: 10px; font-weight: bold; margin-top: 30px;",
         );
         description.innerHTML = descriptionText;
       }
@@ -255,19 +266,134 @@
       if (displayHeadlineLabel && displayHeadlineInput) {
         displayHeadlineLabel.setAttribute(
           "style",
-          displayHeadlineInput.checked ? "display: none;" : "display: block;"
+          displayHeadlineInput.checked ? "display: none;" : "display: block;",
         );
       }
 
-      if (displayHeadlineInput && displayHeadlineLabel) {
+      if (displayHeadlineInput) {
         jQuery(displayHeadlineInput).on("change", () => {
-          if (!displayHeadlineInput.checked) {
-            displayHeadlineLabel.setAttribute("style", "display: block;");
-          } else {
-            displayHeadlineLabel.setAttribute("style", "display: none;");
+          if (displayHeadlineLabel) {
+            displayHeadlineLabel.setAttribute(
+              "style",
+              displayHeadlineInput.checked
+                ? "display: none;"
+                : "display: block;",
+            );
           }
+          updatePreviewTitle();
         });
       }
+
+      if (displayLogoInput) {
+        jQuery(displayLogoInput).on("change", updatePreviewLogo);
+      }
+
+      if (displayDescriptionInput) {
+        jQuery(displayDescriptionInput).on("change", updatePreviewDescription);
+      }
+    }
+
+    /**
+     * Decode HTML entities (e.g. &ndash;) coming from server-side, localized
+     * strings without relying on window.wp.htmlEntities (not loaded in admin).
+     * The decoded value is always assigned to the DOM via textContent by the
+     * callers, so this never introduces an innerHTML/XSS surface.
+     */
+    function decodeEntities(str) {
+      if (!str) return "";
+      const textarea = document.createElement("textarea");
+      textarea.innerHTML = str;
+      return textarea.value;
+    }
+
+    /**
+     * Build the interactive checkout preview that mirrors the FLIZpay block
+     * checkout label (see public/js/flizpay-checkout.js LabelElement). Returns
+     * null when no preview data was localized (e.g. gateway unavailable), so
+     * the rest of the settings page is left intact.
+     */
+    function buildCheckoutPreview() {
+      const data = flizpayParams.checkout_preview;
+      if (!data) return null;
+
+      const container = document.createElement("div");
+      container.classList.add("flizpay-checkout-preview");
+
+      const option = document.createElement("label");
+      option.classList.add("flizpay-checkout-preview__option");
+
+      const inputWrapper = document.createElement("div");
+      inputWrapper.classList.add("flizpay-checkout-preview__input-wrapper");
+
+      const input = document.createElement("div");
+      input.classList.add("flizpay-checkout-preview__input");
+
+      const labelGroup = document.createElement("div");
+      labelGroup.classList.add("flizpay-checkout-preview__label-group");
+
+      const label = document.createElement("div");
+      label.classList.add("flizpay-checkout-preview__label");
+
+      previewTitleEl = document.createElement("span");
+      previewTitleEl.classList.add("flizpay-preview-title");
+
+      previewLogoEl = document.createElement("img");
+      previewLogoEl.classList.add("flizpay-preview-logo");
+      previewLogoEl.setAttribute("width", "68");
+      previewLogoEl.setAttribute("height", "24");
+      previewLogoEl.setAttribute("src", data.logoUrl);
+      previewLogoEl.setAttribute("alt", "FLIZpay");
+
+      label.append(previewTitleEl);
+      label.append(previewLogoEl);
+      labelGroup.append(label);
+
+      previewDescriptionEl = document.createElement("div");
+      previewDescriptionEl.classList.add(
+        "flizpay-checkout-preview__description",
+        "flizpay-preview-description",
+      );
+      previewDescriptionEl.textContent = decodeEntities(data.description);
+
+      inputWrapper.append(input);
+      option.append(inputWrapper);
+      option.append(labelGroup);
+      container.append(option);
+      container.append(previewDescriptionEl);
+
+      // Initialize from the currently saved checkbox states so the preview
+      // opens matching what is saved, then live-updates on change.
+      updatePreviewTitle();
+      updatePreviewLogo();
+      updatePreviewDescription();
+
+      return container;
+    }
+
+    function updatePreviewTitle() {
+      if (!previewTitleEl || !flizpayParams.checkout_preview) return;
+      const showHeadline = displayHeadlineInput
+        ? displayHeadlineInput.checked
+        : true;
+      previewTitleEl.textContent = decodeEntities(
+        showHeadline
+          ? flizpayParams.checkout_preview.titleFull
+          : flizpayParams.checkout_preview.titlePlain,
+      );
+    }
+
+    function updatePreviewLogo() {
+      if (!previewLogoEl) return;
+      const showLogo = displayLogoInput ? displayLogoInput.checked : true;
+      previewLogoEl.style.display = showLogo ? "" : "none";
+    }
+
+    function updatePreviewDescription() {
+      if (!previewDescriptionEl) return;
+      const showDescription = displayDescriptionInput
+        ? displayDescriptionInput.checked
+        : true;
+      previewDescriptionEl.style.display = showDescription ? "" : "none";
     }
   });
 })(jQuery);
