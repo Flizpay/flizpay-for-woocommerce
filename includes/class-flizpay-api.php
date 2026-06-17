@@ -132,6 +132,10 @@ class WC_Flizpay_API
 
     $route_data = $handler($request_body);
 
+    if (defined('FLIZPAY_VERSION')) {
+      $route_data['options']['headers']['X-FLIZpay-Plugin-Version'] = FLIZPAY_VERSION;
+    }
+
     if ($route_data['method'] === 'post') {
       $response = wp_remote_post($route_data['path'], $route_data['options']);
     } else {
