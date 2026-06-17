@@ -23,6 +23,9 @@
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       flizpay-for-woocommerce
  * Domain Path:       /languages
+ * Requires at least: 4.4
+ * Tested up to:      7.0
+ * Requires PHP:      7.0
  * Requires Plugins: 	woocommerce
  */
 
