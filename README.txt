@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, discount, no-fee
 Requires at least: 4.4
 Tested up to: 7.0
-Stable tag: 2.5.0
+Stable tag: 2.5.1
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -249,7 +249,19 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - Security - Order status polling now requires a matching customer session
   - Fixed    - Avoid re-flushing WordPress rewrite rules on every request when the plugin is unconfigured
 
+- v2.5.1
+  - Added         - Interactive checkout preview on the FLIZpay settings page
+  - Added         - Plugin version reporting to FLIZpay API after plugin updates
+  - Changed       - Renamed customer-facing “cashback” wording to “discount” across settings, checkout texts, order notes, README, and translations
+  - Compatibility - Tested up to WordPress 7.0
+
 == Upgrade Notice ==
+
+= v2.5.1 =
+* Added         - Interactive checkout preview on the FLIZpay settings page
+* Added         - Plugin version reporting to FLIZpay API after plugin updates
+* Changed       - Renamed customer-facing “cashback” wording to “discount” across settings, checkout texts, order notes, README, and translations
+* Compatibility - Tested up to WordPress 7.0
 
 = v2.5.0 =
 * Security - Webhook requests are rejected unless a valid signing key is configured
