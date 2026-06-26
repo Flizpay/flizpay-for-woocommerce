@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, discount, no-fee
 Requires at least: 4.4
 Tested up to: 7.0
-Stable tag: 2.5.1
+Stable tag: 2.5.2
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -255,7 +255,19 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - Changed       - Renamed customer-facing “cashback” wording to “discount” across settings, checkout texts, order notes, README, and translations
   - Compatibility - Tested up to WordPress 7.0
 
+- v2.5.2
+  - Fixed   - Decouple FLIZpay enablement from webhook connection status.
+  - Fixed   - Use WooCommerce’s standard gateway `enabled` setting.
+  - Fixed   - Prevent webhook confirmation from overriding merchant enable/disable preference.
+  - Changed - Enable FLIZpay by default for first-time setup while keeping checkout hidden until connection is established.
+
 == Upgrade Notice ==
+
+= v2.5.2 =
+* Fixed   - Decouple FLIZpay enablement from webhook connection status.
+* Fixed   - Use WooCommerce’s standard gateway `enabled` setting.
+* Fixed   - Prevent webhook confirmation from overriding merchant enable/disable preference.
+* Changed - Enable FLIZpay by default for first-time setup while keeping checkout hidden until connection is established.
 
 = v2.5.1 =
 * Added         - Interactive checkout preview on the FLIZpay settings page

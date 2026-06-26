@@ -1,5 +1,11 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2026-06-26 - version 2.5.2
+* Fixed   - Decouple FLIZpay enablement from webhook connection status.
+* Fixed   - Use WooCommerce’s standard gateway `enabled` setting.
+* Fixed   - Prevent webhook confirmation from overriding merchant enable/disable preference.
+* Changed - Enable FLIZpay by default for first-time setup while keeping checkout hidden until connection is established.
+
 2026-06-17 - version 2.5.1
 * Added    - Interactive checkout preview on the FLIZpay settings page
 * Added    - Plugin version reporting to FLIZpay API after plugin updates
