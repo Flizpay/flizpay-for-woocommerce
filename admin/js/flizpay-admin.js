@@ -53,9 +53,6 @@
     const webhookURLInput = document.querySelector(
       "#woocommerce_flizpay_flizpay_webhook_url",
     );
-    const enabledCheckbox = document.querySelector(
-      "#woocommerce_flizpay_flizpay_enabled",
-    );
     const webhookAlive = document.querySelector(
       "#woocommerce_flizpay_flizpay_webhook_alive",
     );
@@ -172,9 +169,6 @@
       if (webhookURLInput) {
         webhookURLInput.setAttribute("disabled", true);
         webhookURLInput.setAttribute("type", "hidden");
-      }
-      if (enabledCheckbox) {
-        enabledCheckbox.setAttribute("disabled", true);
       }
       if (webhookAlive) {
         webhookAlive.setAttribute("disabled", true);

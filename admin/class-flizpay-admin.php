@@ -152,12 +152,12 @@ class Flizpay_Admin
 				'type' => 'title', // Using 'title' as a workaround to insert HTML
 				'description' => $this->flizpay_description_banner(), // Including HTML content via a method
 			),
-			'flizpay_enabled' => array(
+			'enabled' => array(
 				'title' => $this->is_english() ? 'Enabled' : 'Aktiviert',
 				'label' => $this->is_english() ? 'FLIZpay enabled' : 'FLIZpay aktiviert',
 				'type' => 'checkbox',
 				'description' => '',
-				'default' => 'no',
+				'default' => 'yes',
 			),
 			'flizpay_api_key' => array(
 				'title' => 'API KEY',
@@ -175,6 +175,7 @@ class Flizpay_Admin
 					? '<div id="connection-stablished-description">Note for staging environments that are not public or under strict password protection: You need to either make them public and remove the password protection or allow the domain flizpay.de to bypass these settings. We need to communicate directly with your website.</div>'
 					: '<div id="connection-stablished-description">Hinweis für Staging-Umgebungen, die nicht öffentlich sind oder unter strengem Passwortschutz stehen: Du musst entweder die Umgebung öffentlich machen und den Passwortschutz entfernen oder der Domain flizpay.de erlauben, diese Einstellungen zu umgehen. Wir müssen direkt mit deiner Website kommunizieren.</div>',
 				'default' => 'no',
+				'disabled' => true,
 				'desc_tip' => false,
 			),
 			'flizpay_webhook_url' => array(
@@ -182,6 +183,7 @@ class Flizpay_Admin
 				'type' => 'text',
 				'description' => '',
 				'default' => '',
+				'disabled' => true,
 				'desc_tip' => false,
 			),
 			'flizpay_display_logo' => array(

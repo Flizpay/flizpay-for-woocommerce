@@ -145,8 +145,6 @@ class Flizpay_Webhook_Helper
   private function update_webhook_status($status)
   {
     $this->gateway->update_option('flizpay_webhook_alive', $status ? 'yes' : 'no');
-    $this->gateway->update_option('flizpay_enabled', $status ? 'yes' : 'no');
-    $this->gateway->update_option('enabled', $status ? 'yes' : 'no');
   }
 
   private function update_cashback_info($data)
