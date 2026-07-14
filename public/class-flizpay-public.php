@@ -213,7 +213,7 @@ class Flizpay_Public
         // Check if the required class exists
         if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
             // Declare compatibility for 'cart_checkout_blocks'
-            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', dirname(__DIR__) . '/flizpay.php', true);
         }
     }
 
