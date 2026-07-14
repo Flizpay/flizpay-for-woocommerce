@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2026-07-14 - version 2.5.3
+* Fixed - Corrected the WooCommerce Cart and Checkout Blocks compatibility declaration to reference the main plugin file.
+
 2026-06-26 - version 2.5.2
 * Fixed   - Decouple FLIZpay enablement from webhook connection status.
 * Fixed   - Use WooCommerce’s standard gateway `enabled` setting.
