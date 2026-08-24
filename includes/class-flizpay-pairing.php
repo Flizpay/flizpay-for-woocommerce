@@ -23,25 +23,54 @@ class Flizpay_Pairing
         ));
     }
 
-    public function maybe_pair_from_admin_link()
+    public function render_admin_pairing_form()
     {
         if (!is_admin() || !current_user_can('manage_woocommerce')) {
             return;
         }
+        ?>
+        <form id="flizpay-admin-pairing" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" hidden>
+            <input type="hidden" name="action" value="flizpay_pair">
+            <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('flizpay_pair')); ?>">
+            <input type="hidden" name="flizpay_pairing" value="">
+            <input type="hidden" name="flizpay_pairing_token" value="">
+            <input type="hidden" name="flizpay_api_url" value="">
+        </form>
+        <script>
+            (() => {
+                const pairing = new URLSearchParams(window.location.hash.slice(1));
+                const pairingId = pairing.get('flizpay_pairing');
+                const pairingToken = pairing.get('flizpay_pairing_token');
+                const apiBaseUrl = pairing.get('flizpay_api_url');
+                if (!pairingId || !pairingToken || !apiBaseUrl) return;
 
-        $pairing_token = isset($_GET['flizpay_pairing_token'])
-            ? sanitize_text_field(wp_unslash($_GET['flizpay_pairing_token']))
-            : '';
-        $pairing_id = isset($_GET['flizpay_pairing'])
-            ? sanitize_text_field(wp_unslash($_GET['flizpay_pairing']))
-            : '';
-        $api_base_url = isset($_GET['flizpay_api_url'])
-            ? esc_url_raw(wp_unslash($_GET['flizpay_api_url']))
-            : '';
-        if ($pairing_id === '' || $pairing_token === '' || $api_base_url === '') {
-            return;
+                window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+                const form = document.getElementById('flizpay-admin-pairing');
+                form.elements.flizpay_pairing.value = pairingId;
+                form.elements.flizpay_pairing_token.value = pairingToken;
+                form.elements.flizpay_api_url.value = apiBaseUrl;
+                form.submit();
+            })();
+        </script>
+        <?php
+    }
+
+    public function handle_admin_pairing()
+    {
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(esc_html__('You are not allowed to connect FLIZpay.', 'flizpay-for-woocommerce'), 403);
         }
+        check_admin_referer('flizpay_pair');
 
+        $pairing_id = isset($_POST['flizpay_pairing'])
+            ? sanitize_text_field(wp_unslash($_POST['flizpay_pairing']))
+            : '';
+        $pairing_token = isset($_POST['flizpay_pairing_token'])
+            ? sanitize_text_field(wp_unslash($_POST['flizpay_pairing_token']))
+            : '';
+        $api_base_url = isset($_POST['flizpay_api_url'])
+            ? esc_url_raw(wp_unslash($_POST['flizpay_api_url']))
+            : '';
         $result = $this->pair($pairing_id, $pairing_token, $api_base_url);
         set_transient(
             'flizpay_pairing_notice_' . get_current_user_id(),
@@ -49,11 +78,7 @@ class Flizpay_Pairing
             60
         );
 
-        wp_safe_redirect(remove_query_arg(array(
-            'flizpay_pairing',
-            'flizpay_pairing_token',
-            'flizpay_api_url',
-        )));
+        wp_safe_redirect(admin_url('admin.php?page=wc-settings&tab=checkout&section=flizpay'));
         exit;
     }
 
