@@ -22,10 +22,11 @@ class WC_Flizpay_API
    * 
    * @since 1.0.0
    */
-  public static function get_instance($api_key)
+  public static function get_instance($api_key, $base_url = null)
   {
-    if (!isset(self::$instance) || self::$instance->api_key !== $api_key) {
-      self::$instance = new WC_Flizpay_API($api_key);
+    $resolved_base_url = $base_url ?: self::get_configured_base_url();
+    if (!isset(self::$instance) || self::$instance->api_key !== $api_key || self::$instance->base_url !== $resolved_base_url) {
+      self::$instance = new WC_Flizpay_API($api_key, $resolved_base_url);
     }
     return self::$instance;
   }
@@ -38,10 +39,19 @@ class WC_Flizpay_API
    * 
    * @since 1.0.0
    */
-  private function __construct($api_key)
+  private function __construct($api_key, $base_url)
   {
     $this->api_key = $api_key;
+    $this->base_url = untrailingslashit($base_url);
     $this->init();
+  }
+
+  private static function get_configured_base_url()
+  {
+    $settings = get_option('woocommerce_flizpay_settings', array());
+    return is_array($settings) && !empty($settings['flizpay_api_base_url'])
+      ? $settings['flizpay_api_base_url']
+      : 'https://api.flizpay.de';
   }
 
   /**
@@ -53,7 +63,6 @@ class WC_Flizpay_API
    */
   private function init()
   {
-    $this->base_url = 'https://api.flizpay.de';
     $this->routes = array(
       'generate_webhook_key' => function ($body) {
         return array(

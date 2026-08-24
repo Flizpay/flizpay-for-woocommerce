@@ -5,15 +5,20 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 }
 
 require_once('includes/class-flizpay-api.php');
+require_once('includes/class-flizpay-pairing.php');
 
 $flizpay_settings = get_option('woocommerce_flizpay_settings');
-$api_key = $flizpay_settings['flizpay_api_key'];
+$api_key = is_array($flizpay_settings) ? ($flizpay_settings['flizpay_api_key'] ?? '') : '';
 
 if ($api_key) {
-	$api_client = WC_Flizpay_API::get_instance($api_key);
+	if (!empty($flizpay_settings['flizpay_connection_id'])) {
+		Flizpay_Pairing::disconnect_managed_connection($flizpay_settings);
+	} else {
+		$api_client = WC_Flizpay_API::get_instance($api_key);
 
-	$api_client->dispatch('edit_business', array("isActive" => false), false);
-	$api_client->dispatch('edit_business', array("webhookUrl" => ''), false);
+		$api_client->dispatch('edit_business', array("isActive" => false), false);
+		$api_client->dispatch('edit_business', array("webhookUrl" => ''), false);
+	}
 }
 
 // Clean up options

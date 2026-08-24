@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, discount, no-fee
 Requires at least: 4.4
 Tested up to: 7.0
-Stable tag: 2.5.3
+Stable tag: 2.6.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -73,6 +73,12 @@ Weitere Informationen findest du in unserer [Datenschutzerklärung](https://fliz
 Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstellung eines Kontos bei uns. [Gehe auf unsere Website](https://app.flizpay.de), erstelle ein Konto und folge den Anweisungen im Menüpunkt "Installation".
 
 == Changelog ==
+
+= v2.6.0 =
+
+* Add secure one-click pairing from the FLIZpay merchant dashboard.
+* Support connection-scoped credentials for secure pairing.
+* Revoke temporary WordPress Application Passwords after installation.
 
 - 1.0.0
   - ADDED: Plugin Settings, Cashback info on Checkout Order management for cashback

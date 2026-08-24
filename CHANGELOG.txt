@@ -186,3 +186,6 @@
 * Added - Implemented basic payment gateway integration
 * Added - Implemented Cashback info on Checkout
 * Added - Implemented Order management for cashback
+2026-08-05 - version 2.6.0
+- Added signed one-click pairing and connection-scoped credential support.
+- Added temporary WordPress Application Password installation flow.

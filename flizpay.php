@@ -16,7 +16,7 @@
  * Plugin Name:       FLIZpay Gateway für WooCommerce
  * Plugin URI:        https://www.flizpay.de/companies
  * Description:       FLIZpay: 100% free!
- * Version:           2.5.3
+ * Version:           2.6.0
  * Author:            FLIZpay
  * Author URI:        https://www.flizpay.de/companies
  * License:           GPL-2.0+
@@ -38,7 +38,7 @@ if (!defined('WPINC')) {
  * Currently plugin version.
  * Start at version 1.0.0 and use SemVer - https://semver.org
  */
-define('FLIZPAY_VERSION', '2.5.3');
+define('FLIZPAY_VERSION', '2.6.0');
 
 /**
  * Load Composer autoloader only if PHP version meets requirements
@@ -137,6 +137,12 @@ function flizpay_sync_plugin_version_if_needed()
 	$flizpay_settings = get_option('woocommerce_flizpay_settings');
 
 	if (!is_array($flizpay_settings) || empty($flizpay_settings['flizpay_api_key'])) {
+		return;
+	}
+
+	if (!empty($flizpay_settings['flizpay_connection_id'])) {
+		update_option('flizpay_reported_plugin_version', FLIZPAY_VERSION);
+		delete_option('flizpay_plugin_version_sync_needed');
 		return;
 	}
 

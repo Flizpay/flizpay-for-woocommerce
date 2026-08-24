@@ -146,6 +146,7 @@ class Flizpay
 		 * The class responsible for defining all api calls to flizpay
 		 */
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-api.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-pairing.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
@@ -159,6 +160,11 @@ class Flizpay
 		require_once plugin_dir_path(dirname(__FILE__)) . 'public/class-flizpay-public.php';
 
 		$this->loader = new Flizpay_Loader();
+
+		$pairing = new Flizpay_Pairing();
+		$this->loader->add_action('rest_api_init', $pairing, 'register_rest_routes');
+		$this->loader->add_action('admin_init', $pairing, 'maybe_pair_from_admin_link');
+		$this->loader->add_action('admin_notices', $pairing, 'render_admin_notice');
 
 		/**
 		 * The class responsible for defining all actions that occur in payment plugin execution

@@ -1,6 +1,6 @@
 <?php
 if (!defined('FLIZPAY_VERSION')) {
-    define('FLIZPAY_VERSION', '2.5.3');
+    define('FLIZPAY_VERSION', '2.6.0');
 }
 
 /**
