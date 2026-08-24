@@ -5,7 +5,7 @@
  */
 class Flizpay_Pairing
 {
-    private const REST_NAMESPACE = 'flizpay/v1';
+    private const REST_NAMESPACE = 'flizpay';
     private const CHALLENGE_TRANSIENT_PREFIX = 'flizpay_pairing_challenge_';
     private const SETTINGS_OPTION = 'woocommerce_flizpay_settings';
 
