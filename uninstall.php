@@ -11,7 +11,7 @@ $flizpay_settings = get_option('woocommerce_flizpay_settings');
 $api_key = is_array($flizpay_settings) ? ($flizpay_settings['flizpay_api_key'] ?? '') : '';
 
 if ($api_key) {
-	if (!empty($flizpay_settings['flizpay_connection_id'])) {
+	if (!empty($flizpay_settings['flizpay_managed_connection'])) {
 		Flizpay_Pairing::disconnect_managed_connection($flizpay_settings);
 	} else {
 		$api_client = WC_Flizpay_API::get_instance($api_key);
@@ -24,6 +24,7 @@ if ($api_key) {
 // Clean up options
 $options = array(
 	'flizpay_api_key',
+	'flizpay_managed_connection',
 	'flizpay_webhook_key',
 	'flizpay_webhook_url',
 	'flizpay_enabled',

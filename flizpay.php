@@ -140,7 +140,7 @@ function flizpay_sync_plugin_version_if_needed()
 		return;
 	}
 
-	if (!empty($flizpay_settings['flizpay_connection_id'])) {
+	if (!empty($flizpay_settings['flizpay_managed_connection'])) {
 		update_option('flizpay_reported_plugin_version', FLIZPAY_VERSION);
 		delete_option('flizpay_plugin_version_sync_needed');
 		return;

@@ -43,7 +43,7 @@ class Flizpay_Deactivator
 		if (!$api_key)
 			return;
 
-		if (!empty($flizpay_settings['flizpay_connection_id'])) {
+		if (!empty($flizpay_settings['flizpay_managed_connection'])) {
 			Flizpay_Pairing::disconnect_managed_connection($flizpay_settings);
 			return;
 		}

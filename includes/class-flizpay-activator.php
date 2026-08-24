@@ -45,7 +45,7 @@ class Flizpay_Activator
         if (!$api_key)
             return;
 
-        if (!empty($flizpay_settings['flizpay_connection_id']))
+        if (!empty($flizpay_settings['flizpay_managed_connection']))
             return;
 
         $api_client = WC_Flizpay_API::get_instance($api_key);

@@ -129,7 +129,7 @@ class Flizpay_Pairing
 
     public static function disconnect_managed_connection($settings)
     {
-        if (!is_array($settings) || empty($settings['flizpay_connection_id']) || empty($settings['flizpay_api_key'])) {
+        if (!is_array($settings) || empty($settings['flizpay_managed_connection']) || empty($settings['flizpay_api_key'])) {
             return false;
         }
         $api_base_url = self::get_saved_api_base_url($settings);
@@ -183,8 +183,7 @@ class Flizpay_Pairing
         $settings['flizpay_webhook_url'] = home_url('/flizpay-webhook/');
         $settings['flizpay_webhook_alive'] = 'no';
         $settings['flizpay_api_base_url'] = $api_base_url;
-        $settings['flizpay_connection_id'] = sanitize_text_field((string) $credentials['connectionId']);
-        $settings['flizpay_credential_revision'] = absint($credentials['credentialRevision']);
+        $settings['flizpay_managed_connection'] = 'yes';
         update_option(self::SETTINGS_OPTION, $settings, false);
         delete_option('flizpay_rewrite_rules_flushed');
         flush_rewrite_rules(false);
@@ -207,8 +206,6 @@ class Flizpay_Pairing
         update_option(self::SETTINGS_OPTION, $settings, false);
         return array(
             'connected' => true,
-            'connectionId' => $settings['flizpay_connection_id'],
-            'credentialRevision' => $settings['flizpay_credential_revision'],
         );
     }
 
