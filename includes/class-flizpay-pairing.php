@@ -133,7 +133,7 @@ class Flizpay_Pairing
             return false;
         }
         $api_base_url = self::get_saved_api_base_url($settings);
-        $response = wp_remote_request($api_base_url . '/business/woocommerce/connections/current', array(
+        $response = wp_remote_request($api_base_url . '/business/woocommerce/plugin-connection', array(
             'method' => 'DELETE',
             'timeout' => 10,
             'redirection' => 0,
