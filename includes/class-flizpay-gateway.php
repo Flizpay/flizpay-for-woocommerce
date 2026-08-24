@@ -1,4 +1,8 @@
 <?php
+
+declare(strict_types=1);
+
+
 if (!defined('FLIZPAY_VERSION')) {
     define('FLIZPAY_VERSION', '2.6.0');
 }
@@ -12,34 +16,31 @@ function flizpay_init_gateway_class()
 
     class WC_Flizpay_Gateway extends WC_Payment_Gateway
     {
-        public static $VERSION = FLIZPAY_VERSION;
+        public static string $VERSION = FLIZPAY_VERSION;
 
-        public $icon;
-        public $title;
-        public $description;
-        public $cashback;
-        public $i18n;
-        public $api_key;
-        public $webhook_key;
-        public $webhook_url;
-        public $flizpay_webhook_alive;
-        public $flizpay_display_logo;
-        public $flizpay_display_description;
-        public $flizpay_display_headline;
-        public $flizpay_order_status;
-        public $flizpay_sentry_enabled;
-        public $flizpay_restrict_to_germany;
-        public $cashback_helper;
-        public $webhook_helper;
-        public $api_service;
+        public array|null $cashback;
+        public Flizpay_i18n $i18n;
+        public string $api_key;
+        public string $webhook_key;
+        public string $webhook_url;
+        public string $flizpay_webhook_alive;
+        public string $flizpay_display_logo;
+        public string $flizpay_display_description;
+        public string $flizpay_display_headline;
+        public string $flizpay_order_status;
+        public string $flizpay_sentry_enabled;
+        public string $flizpay_restrict_to_germany;
+        public Flizpay_Cashback_Helper $cashback_helper;
+        public Flizpay_Webhook_Helper $webhook_helper;
+        public Flizpay_API_Service $api_service;
 
         /**
-         * The class constructor will set FLIZ id, load translations, description, icon and etc. 
+         * The class constructor will set FLIZ id, load translations, description, icon and etc.
          * It's also responsible for instantiating all FLIZ variables like API KEY and WEBHOOK KEY
          * Additionally it will obtain the Cashback information of the merchant from the transients
          * or from the API and also apply the translations.
          * The constructor will also register the template redirects for webhooks .
-         * 
+         *
          * @since 1.0.0
          */
         public function __construct()
@@ -103,7 +104,7 @@ function flizpay_init_gateway_class()
          *
          * @return void
          */
-        private function maybe_migrate_legacy_enabled_setting()
+        private function maybe_migrate_legacy_enabled_setting(): void
         {
             if (!is_array($this->settings) || array_key_exists('enabled', $this->settings)) {
                 return;
@@ -120,9 +121,9 @@ function flizpay_init_gateway_class()
          * Disable sending notifications to the admin when an order is placed with FLIZ
          * Since the order wasn't yet paid on this moment, we don't notify
          * All e-mails for order paid and so on shall be sent normally
-         * 
+         *
          * @return mixed | bool
-         * 
+         *
          * @since 1.4.3
          */
         public function disable_new_order_email_for_flizpay($enabled, $order)
@@ -141,12 +142,12 @@ function flizpay_init_gateway_class()
         /**
          * Apply translations to FLIZ gateway title and description
          * The title and description will vary depending on whether the cashback is active or not.
-         * 
+         *
          * @return void
-         * 
+         *
          * @since 1.2.0
          */
-        public function init_gateway_info()
+        public function init_gateway_info(): void
         {
             $this->cashback_helper->set_cashback_info();
             $this->cashback_helper->set_title();
@@ -154,18 +155,18 @@ function flizpay_init_gateway_class()
         }
 
         /**
-         * Function called after the admin settings are saved. 
+         * Function called after the admin settings are saved.
          * It's responsible for testing and assuring the 2-way connection
          * between the merchant's site and FLIZpay servers
-         * 
+         *
          * It's also responsible for defining the merchant webhook URL and
          * obtaining the webhook secret
-         * 
-         * @return void
-         * 
+         *
+         * @return bool
+         *
          * @since 1.0.0
          */
-        public function process_admin_options()
+        public function process_admin_options(): bool
         {
             if (!isset($_REQUEST['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'woocommerce-settings')) {
                 wp_die('Security check failed');
@@ -223,85 +224,79 @@ function flizpay_init_gateway_class()
         }
 
         /**
-         * Preserve read-only connection status when standard option processing
-         * runs. Disabled fields are not posted by browsers.
-         */
-        public function validate_flizpay_webhook_alive_field($key, $value)
-        {
-            return $this->get_option($key);
-        }
-
-        /**
-         * Preserve read-only webhook URL when standard option processing runs.
-         */
-        public function validate_flizpay_webhook_url_field($key, $value)
-        {
-            return $this->get_option($key);
-        }
-
-        /**
          * Obtain the current cashback value of the merchant from the transient
          *
-         * @return array | null
+         * @return array{
+         *     first_purchase_amount: float,
+         *     standard_amount: float
+         * }|null
          *
          * @since 1.0.0
          */
-        public function get_cashback_data()
+        public function get_cashback_data(): ?array
         {
             $cashback_data = $this->get_option('flizpay_cashback');
 
-            if (gettype($cashback_data) === "string")
-                return null;
-
-            if (empty($cashback_data))
-                return null;
-
             if (
-                floatval($cashback_data['first_purchase_amount']) > 0 ||
-                floatval($cashback_data['standard_amount']) > 0
-            )
-                return $cashback_data;
+                !is_array($cashback_data) ||
+                !isset(
+                    $cashback_data['first_purchase_amount'],
+                    $cashback_data['standard_amount']
+                )
+            ) {
+                return null;
+            }
 
-            return null;
+            $first_purchase_amount = (float) $cashback_data['first_purchase_amount'];
+            $standard_amount = (float) $cashback_data['standard_amount'];
+
+            if ($first_purchase_amount <= 0 && $standard_amount <= 0) {
+                return null;
+            }
+
+            return [
+                'first_purchase_amount' => $first_purchase_amount,
+                'standard_amount' => $standard_amount,
+            ];
         }
 
         /**
          * Register the webhook endpoint with the merchant's wordpress site
-         * When the webhook key is not set, this class will also perform a flush in 
+         * When the webhook key is not set, this class will also perform a flush in
          * the current rewrite rules to make sure that the webhook url is properly registered.
-         * 
+         *
          * @return void
-         * 
+         *
          * @since 1.0.0
          */
-        public function register_webhook_endpoint()
+        public function register_webhook_endpoint(): void
         {
             $this->webhook_helper->register_webhook_endpoint();
         }
 
         /**
-         * Entrypoint for all incoming webhook requests. 
+         * Entrypoint for all incoming webhook requests.
          * This method will attempt to authenticate the payload and update the order
-         * accordingly, given the status informed in the payload. 
+         * accordingly, given the status informed in the payload.
          * It's also handling the 2-way test connection of the integration.
-         * 
+         *
          * @return void
-         * 
+         *
          * @since 1.0.0
          */
-        public function handle_webhook_request()
+        public function handle_webhook_request(): void
         {
             $this->webhook_helper->handle_webhook_request();
         }
 
         /**
          * Check if we are on the order-pay (Customer Payment Page) page.
-         * 
+         *
          * @return bool
-         * 
+         *
          * @since 1.0.0
          */
-        private function is_order_pay_page()
+        private function is_order_pay_page(): bool
         {
             global $wp;
 
@@ -356,7 +351,7 @@ function flizpay_init_gateway_class()
          *
          * @since 1.0.0
          */
-        public function is_available()
+        public function is_available(): bool
         {
             if ($this->is_order_pay_page()) {
                 return false; // Do not display in admin order management
@@ -379,12 +374,12 @@ function flizpay_init_gateway_class()
 
         /**
          * Plugin options, load the current settings
-         * 
+         *
          * @return void
-         * 
+         *
          * @since 1.0.0
          */
-        public function init_form_fields()
+        public function init_form_fields(): void
         {
             $this->form_fields = apply_filters('flizpay_load_settings', true);
         }
@@ -392,11 +387,11 @@ function flizpay_init_gateway_class()
         /**
          * Function called in the moment of checkout when choosing to pay with FLIZ
          * It's responsible for creating the transaction using the FLIZ API Class
-         * 
+         *
          * @param string $order_id
          * @param string $source
          * @return array
-         * 
+         *
          * @since 1.0.0
          */
         public function process_payment($order_id, $source = 'plugin'): array
@@ -407,7 +402,10 @@ function flizpay_init_gateway_class()
                 $order->update_status($this->flizpay_order_status, 'FLIZpay Checkout initiated. Waiting for payment - ' . $source);
                 $order->save();
 
-                $transaction = $this->api_service->create_transaction($order, $source);
+                $attempt = (int) $order->get_meta('_flizpay_transaction_attempt');
+                $idempotency_key = 'woocommerce-' . hash('sha256', $order->get_id() . ':' . $attempt);
+
+                $transaction = $this->api_service->create_transaction($order, $source, $idempotency_key);
 
                 if (is_array($transaction) && !empty($transaction['redirectUrl']) && !empty($transaction['transactionId'])) {
                     $issued = $order->get_meta('_flizpay_issued_tx_ids');
