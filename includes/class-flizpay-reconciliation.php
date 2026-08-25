@@ -90,7 +90,7 @@ class Flizpay_Reconciliation
      *
      * @param \WC_Order $order Order selected by the scanner or manual admin action.
      * @param string $context Invocation source used in logs: scheduled or manual.
-     * @return array{success: bool, result: string, message: string}
+     * @return array{success: bool, result: string, message: string, provider_status?: string}
      */
     public function reconcile_order(\WC_Order $order, string $context = 'scheduled'): array
     {
@@ -125,6 +125,7 @@ class Flizpay_Reconciliation
         ));
 
         $settlement = $this->settlement->settle($response['data'], 'reconciliation', $current['reference']);
+        $settlement['provider_status'] = $provider_status;
 
         return $this->record($context, $order, $settlement);
     }
@@ -133,11 +134,11 @@ class Flizpay_Reconciliation
      * Check FLIZpay before WooCommerce cancels an unpaid pending order.
      *
      * Orders with a current FLIZpay transaction are reconciled first. WooCommerce
-     * cancellation is blocked for provider statuses pending, processing, completed,
-     * canceled, and failed because reconciliation already preserves or applies the
-     * correct order state. Cancellation is also blocked when the provider response
-     * cannot be fetched or validated. Orders without a current reference retain
-     * normal WooCommerce cancellation behavior.
+     * cancellation proceeds for pending, failed, and canceled transactions so stock
+     * is not held after the merchant's configured timeout. Processing transactions
+     * and uncertain API or validation results block cancellation. Completed
+     * transactions are settled as paid before WooCommerce can cancel them. Orders
+     * without a current reference retain normal WooCommerce cancellation behavior.
      *
      * @param bool $should_cancel Whether WooCommerce currently permits cancellation.
      * @param \WC_Order $order Pending order selected by WooCommerce cleanup.
@@ -163,13 +164,21 @@ class Flizpay_Reconciliation
         }
 
         $result = $this->reconcile_order($order, 'unpaid-cancellation');
-        $this->log('info', 'WooCommerce unpaid-order cancellation blocked after FLIZpay status check.', array(
+        $fresh_order = wc_get_order($order->get_id());
+        $allow_cancellation = $result['success']
+            && in_array($result['provider_status'] ?? '', array('pending', 'failed', 'canceled'), true)
+            && $fresh_order instanceof \WC_Order
+            && !$fresh_order->is_paid();
+
+        $this->log('info', 'WooCommerce unpaid-order cancellation decision made after FLIZpay status check.', array(
             'order_id' => $order->get_id(),
             'context' => 'unpaid-cancellation',
             'result' => $result['result'],
+            'provider_status' => $result['provider_status'] ?? '',
+            'decision' => $allow_cancellation ? 'allowed' : 'blocked',
         ));
 
-        return false;
+        return $allow_cancellation;
     }
 
     /**
@@ -298,8 +307,8 @@ class Flizpay_Reconciliation
      *
      * @param string $context Invocation source used in logs.
      * @param \WC_Order $order Reconciled order.
-     * @param array{success: bool, result: string, message: string} $result Outcome to record.
-     * @return array{success: bool, result: string, message: string} The original outcome.
+     * @param array{success: bool, result: string, message: string, provider_status?: string} $result Outcome to record.
+     * @return array{success: bool, result: string, message: string, provider_status?: string} The original outcome.
      */
     private function record(string $context, \WC_Order $order, array $result): array
     {
