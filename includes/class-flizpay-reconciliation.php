@@ -130,6 +130,73 @@ class Flizpay_Reconciliation
     }
 
     /**
+     * Check FLIZpay before WooCommerce cancels an unpaid pending order.
+     *
+     * Orders with a current FLIZpay transaction are reconciled first. WooCommerce
+     * cancellation is blocked for provider statuses pending, processing, completed,
+     * canceled, and failed because reconciliation already preserves or applies the
+     * correct order state. Cancellation is also blocked when the provider response
+     * cannot be fetched or validated. Orders without a current reference retain
+     * normal WooCommerce cancellation behavior.
+     *
+     * @param bool $should_cancel Whether WooCommerce currently permits cancellation.
+     * @param \WC_Order $order Pending order selected by WooCommerce cleanup.
+     * @return bool True only when normal WooCommerce cancellation should continue.
+     */
+    public function should_cancel_unpaid_order(bool $should_cancel, \WC_Order $order): bool
+    {
+        if (
+            !$should_cancel
+            || $order->get_payment_method() !== 'flizpay'
+            || !$order->has_status('pending')
+            || $order->is_paid()
+        ) {
+            return $should_cancel;
+        }
+
+        if ($this->get_current_reference($order) === null) {
+            $this->log('info', 'WooCommerce unpaid-order cancellation allowed: no current FLIZpay reference.', array(
+                'order_id' => $order->get_id(),
+                'context' => 'unpaid-cancellation',
+            ));
+            return true;
+        }
+
+        $result = $this->reconcile_order($order, 'unpaid-cancellation');
+        $this->log('info', 'WooCommerce unpaid-order cancellation blocked after FLIZpay status check.', array(
+            'order_id' => $order->get_id(),
+            'context' => 'unpaid-cancellation',
+            'result' => $result['result'],
+        ));
+
+        return false;
+    }
+
+    /**
+     * Reconcile an unpaid FLIZpay order when the customer reaches the thank-you page.
+     *
+     * This provides immediate recovery when the payment-complete webhook was blocked
+     * or delayed. Paid, terminal, non-FLIZpay, and legacy orders without a stored
+     * current reference are ignored. Settlement remains idempotent when a webhook
+     * reaches the store concurrently.
+     *
+     * @param int $order_id WooCommerce order displayed on the thank-you page.
+     */
+    public function reconcile_on_thankyou($order_id): void
+    {
+        $order = wc_get_order((int) $order_id);
+        if (
+            !$order instanceof \WC_Order
+            || !$this->is_eligible($order)
+            || $this->get_current_reference($order) === null
+        ) {
+            return;
+        }
+
+        $this->reconcile_order($order, 'thankyou');
+    }
+
+    /**
      * Add the manual status-check action to an eligible order's action menu.
      *
      * Some WooCommerce screens pass the order as the second filter argument while
@@ -169,7 +236,10 @@ class Flizpay_Reconciliation
     {
         $result = $this->reconcile_order($order, 'manual');
         $prefix = $result['success'] ? 'FLIZpay status check: ' : 'FLIZpay status check failed: ';
-        $order->add_order_note($prefix . $result['message']);
+        $fresh_order = wc_get_order($order->get_id());
+        if ($fresh_order instanceof \WC_Order) {
+            $fresh_order->add_order_note($prefix . $result['message']);
+        }
     }
 
     /**

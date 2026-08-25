@@ -245,6 +245,8 @@ class Flizpay
 
 		$this->loader->add_action('action_scheduler_init', $reconciliation, 'schedule');
 		$this->loader->add_action(Flizpay_Reconciliation::HOOK, $reconciliation, 'scan');
+		$this->loader->add_action('woocommerce_thankyou', $reconciliation, 'reconcile_on_thankyou');
+		$this->loader->add_filter('woocommerce_cancel_unpaid_order', $reconciliation, 'should_cancel_unpaid_order', 5, 2);
 		$this->loader->add_filter('woocommerce_order_actions', $reconciliation, 'add_order_action', 10, 2);
 		$this->loader->add_action('woocommerce_order_action_flizpay_check_status', $reconciliation, 'handle_order_action');
 	}
