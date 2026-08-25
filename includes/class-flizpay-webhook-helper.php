@@ -6,10 +6,12 @@ declare(strict_types=1);
 class Flizpay_Webhook_Helper
 {
     private WC_Flizpay_Gateway $gateway;
+    private Flizpay_Settlement $settlement;
 
-    public function __construct(WC_Flizpay_Gateway $gateway)
+    public function __construct(WC_Flizpay_Gateway $gateway, Flizpay_Settlement $settlement)
     {
         $this->gateway = $gateway;
+        $this->settlement = $settlement;
     }
 
     public function register_webhook_endpoint(): void
@@ -87,63 +89,11 @@ class Flizpay_Webhook_Helper
      */
     public function finish_order(array $data): void
     {
-        if (
-            !isset($data['metadata']) ||
-            !is_array($data['metadata']) ||
-            !isset($data['metadata']['orderId'], $data['status']) ||
-            !is_numeric($data['metadata']['orderId']) ||
-            !is_scalar($data['status'])
-        ) {
-            wp_send_json_error('Missing order_id or status', 400);
+        $result = $this->settlement->settle($data, 'webhook');
+        if (!$result['success']) {
+            wp_send_json_success(array('accepted' => false, 'reason' => $result['result']), 200);
             return;
         }
-
-        $order_id = (int) $data['metadata']['orderId'];
-        $status = sanitize_text_field((string) $data['status']);
-        $incoming_tx = isset($data['transactionId']) && is_scalar($data['transactionId'])
-            ? sanitize_text_field((string) $data['transactionId'])
-            : '';
-        $order = wc_get_order($order_id);
-
-        if (!$order) {
-            wp_send_json_error('Order not found', 404);
-            return;
-        }
-
-        if (!$this->is_tx_authorized_for_order($order, $incoming_tx)) {
-            $order->add_order_note(sprintf(
-                'FLIZpay webhook rejected: transactionId %s is not in this order\'s issued list',
-                $incoming_tx !== '' ? $incoming_tx : '(missing)'
-            ));
-            wp_send_json_success(array('accepted' => false), 200);
-            return;
-        }
-
-        if ($status === 'completed') {
-            $this->complete_order($order, $data);
-        } elseif ($status === 'failed') {
-            $this->fail_order($order, $data);
-        } elseif ($status === 'canceled') {
-            $this->cancel_order($order, $data);
-        }
-
-        $order->save();
-    }
-
-    /**
-     * A webhook is authorized only when its transactionId is one the plugin
-     * recorded via process_payment for this specific order.
-     */
-    private function is_tx_authorized_for_order(\WC_Order $order, string $tx_id): bool
-    {
-        if ($tx_id === '') {
-            return false;
-        }
-        $issued = $order->get_meta('_flizpay_issued_tx_ids');
-        if (!is_array($issued) || empty($issued)) {
-            return false;
-        }
-        return in_array($tx_id, $issued, true);
     }
 
     /**
@@ -189,163 +139,6 @@ class Flizpay_Webhook_Helper
         $this->gateway->cashback = $cashback;
         $this->gateway->update_option('flizpay_cashback', $cashback);
         $this->gateway->init_gateway_info();
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    private function fail_order(\WC_Order $order, array $data): void
-    {
-        $incoming_tx = isset($data['transactionId']) && is_scalar($data['transactionId'])
-            ? sanitize_text_field((string) $data['transactionId'])
-            : '';
-
-        if ($incoming_tx !== '' && $order->get_meta('_flizpay_failed_tx') === $incoming_tx) {
-            return;
-        }
-
-        $order->update_status('failed', __('Payment failed via FLIZpay', 'flizpay-for-woocommerce'));
-
-        if ($incoming_tx !== '') {
-            $order->update_meta_data('_flizpay_failed_tx', $incoming_tx);
-            $this->advance_transaction_attempt($order);
-            $order->add_order_note('FLIZ transaction ID: ' . $incoming_tx . ' — payment failed');
-        }
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    private function cancel_order(\WC_Order $order, array $data): void
-    {
-        $incoming_tx = isset($data['transactionId']) && is_scalar($data['transactionId'])
-            ? sanitize_text_field((string) $data['transactionId'])
-            : '';
-
-        if ($incoming_tx !== '' && $order->get_meta('_flizpay_canceled_tx') === $incoming_tx) {
-            return;
-        }
-
-        $order->update_status('cancelled', __('Payment canceled via FLIZpay', 'flizpay-for-woocommerce'));
-
-        if ($incoming_tx !== '') {
-            $order->update_meta_data('_flizpay_canceled_tx', $incoming_tx);
-            $this->advance_transaction_attempt($order);
-            $order->add_order_note('FLIZ transaction ID: ' . $incoming_tx . ' — payment canceled by user or bank');
-        }
-    }
-
-    private function advance_transaction_attempt(\WC_Order $order): void
-    {
-        $attempt = (int) $order->get_meta('_flizpay_transaction_attempt');
-        $order->update_meta_data('_flizpay_transaction_attempt', $attempt + 1);
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    private function complete_order(\WC_Order $order, array $data): void
-    {
-        $incoming_tx = isset($data['transactionId']) && is_scalar($data['transactionId'])
-            ? sanitize_text_field((string) $data['transactionId'])
-            : '';
-
-        if ($incoming_tx !== '' && $order->get_meta('_flizpay_completed_tx') === $incoming_tx) {
-            return;
-        }
-
-        // Explicitly set the payment method before completing payment
-        $order->set_payment_method('flizpay');
-        $order->set_payment_method_title('FLIZpay');
-
-        $order->payment_complete($incoming_tx);
-
-        if ($incoming_tx !== '') {
-            $order->update_meta_data('_flizpay_completed_tx', $incoming_tx);
-        }
-
-        $original_amount = isset($data['originalAmount']) && is_numeric($data['originalAmount'])
-            ? (float) $data['originalAmount']
-            : 0.0;
-        $amount = isset($data['amount']) && is_numeric($data['amount']) ? (float) $data['amount'] : 0.0;
-        $currency = isset($data['currency']) && is_scalar($data['currency'])
-            ? sanitize_text_field((string) $data['currency'])
-            : '';
-        $fliz_discount = $original_amount - $amount;
-        $cashback_value = $original_amount > 0 ? ($fliz_discount * 100) / $original_amount : 0.0;
-
-        if ($fliz_discount > 0) {
-            $this->apply_cashback_discount($order, $cashback_value, $fliz_discount, $amount, $currency);
-        }
-
-        if ($incoming_tx !== '') {
-            $order->add_order_note('FLIZ transaction ID: ' . $incoming_tx);
-        }
-
-        $this->send_order_emails($order->get_id());
-    }
-
-    private function apply_cashback_discount(
-        \WC_Order $order,
-        float $cashback_value,
-        float $fliz_discount,
-        float $amount,
-        string $currency
-    ): void
-    {
-        $line_items = $order->get_items('line_item');
-        $shipping_items = $order->get_items('shipping');
-
-        foreach ($line_items as $item) {
-            if (!$item instanceof \WC_Order_Item_Product) {
-                continue;
-            }
-
-            $item_subtotal = (float) $item->get_total();
-            $discount_amount_fliz = ($item_subtotal * $cashback_value) / 100;
-            $new_total = round($item_subtotal - $discount_amount_fliz, 2, PHP_ROUND_HALF_DOWN);
-            $item->set_total($new_total);
-            $item->save();
-        }
-
-        foreach ($shipping_items as $shipping) {
-            if (!$shipping instanceof \WC_Order_Item_Shipping) {
-                continue;
-            }
-
-            $shipping_total = (float) $shipping->get_total();
-            $discount_amount_fliz = ($shipping_total * $cashback_value) / 100;
-            $new_shipping_total = round($shipping_total - $discount_amount_fliz, 2, PHP_ROUND_HALF_DOWN);
-            $shipping->set_total($new_shipping_total);
-            $shipping->save();
-        }
-
-        $order->calculate_taxes();
-        $order->calculate_totals(true);
-        $order->set_total($amount);
-        $order->add_order_note('FLIZ Discount Applied: ' . $currency . sanitize_text_field($fliz_discount));
-        WC()->cart->empty_cart();
-    }
-
-    private function send_order_emails(int $order_id): void
-    {
-        $mailer = WC()->mailer();
-        $emails = $mailer->get_emails();
-
-        $completed_order = $emails['WC_Email_Customer_Completed_Order'] ?? null;
-        if ($completed_order instanceof WC_Email_Customer_Completed_Order) {
-            $completed_order->trigger($order_id);
-        }
-
-        $invoice = $emails['WC_Email_Customer_Invoice'] ?? null;
-        if ($invoice instanceof WC_Email_Customer_Invoice) {
-            $invoice->trigger($order_id);
-        }
-
-        $new_order = $emails['WC_Email_New_Order'] ?? null;
-        if ($new_order instanceof \WC_Email_New_Order) {
-            $new_order->trigger($order_id);
-        }
     }
 
     /**
