@@ -147,6 +147,7 @@ class Flizpay
 		 */
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-api.php';
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-pairing.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-settlement.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.

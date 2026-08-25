@@ -9,10 +9,11 @@ require_once('includes/class-flizpay-pairing.php');
 
 $flizpay_settings = get_option('woocommerce_flizpay_settings');
 $api_key = is_array($flizpay_settings) ? ($flizpay_settings['flizpay_api_key'] ?? '') : '';
+$managed_disconnect_failed = false;
 
 if ($api_key) {
 	if (!empty($flizpay_settings['flizpay_managed_connection'])) {
-		Flizpay_Pairing::disconnect_managed_connection($flizpay_settings);
+		$managed_disconnect_failed = !Flizpay_Pairing::disconnect_managed_connection($flizpay_settings);
 	} else {
 		$api_client = WC_Flizpay_API::get_instance($api_key);
 
@@ -33,8 +34,18 @@ $options = array(
 	'flizpay_reported_plugin_version',
 	'woocommerce_flizpay_settings',
 );
+$managed_connection_credential_options = array(
+	'flizpay_api_key',
+	'flizpay_managed_connection',
+	'flizpay_webhook_key',
+	'flizpay_webhook_url',
+	'woocommerce_flizpay_settings',
+);
 
 foreach ($options as $option) {
+	if ($managed_disconnect_failed && in_array($option, $managed_connection_credential_options, true)) {
+		continue;
+	}
 	delete_option($option);
 }
 
@@ -44,6 +55,9 @@ if (is_multisite()) {
 	foreach ($blog_ids as $blog_id) {
 		switch_to_blog($blog_id);
 		foreach ($options as $option) {
+			if ($managed_disconnect_failed && in_array($option, $managed_connection_credential_options, true)) {
+				continue;
+			}
 			delete_option($option);
 		}
 		restore_current_blog();

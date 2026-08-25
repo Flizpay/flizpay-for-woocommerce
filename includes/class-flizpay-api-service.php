@@ -110,7 +110,7 @@ class Flizpay_API_Service
      * @param Order $order
      * @param string $source
      * @param string $idempotency_key
-     * @return array{transactionId: string, redirectUrl: string}|null
+     * @return array{reference: string, transactionId: string, redirectUrl: string}|null
      */
     public function create_transaction(Order $order, string $source, string $idempotency_key): ?array
     {
@@ -143,12 +143,16 @@ class Flizpay_API_Service
         $transaction_id = isset($response["transactionId"])
             ? (string) $response["transactionId"]
             : "";
+        $reference = isset($response["reference"])
+            ? (string) $response["reference"]
+            : "";
 
-        if (!$redirect_url || $transaction_id === "") {
+        if (!$redirect_url || $transaction_id === "" || $reference === "") {
             return null;
         }
 
         return [
+            "reference" => $reference,
             "redirectUrl" => $redirect_url,
             "transactionId" => $transaction_id,
         ];

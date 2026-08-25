@@ -33,6 +33,7 @@ function flizpay_init_gateway_class()
         public Flizpay_Cashback_Helper $cashback_helper;
         public Flizpay_Webhook_Helper $webhook_helper;
         public Flizpay_API_Service $api_service;
+        public Flizpay_Settlement $settlement;
 
         /**
          * The class constructor will set FLIZ id, load translations, description, icon and etc.
@@ -48,6 +49,7 @@ function flizpay_init_gateway_class()
             require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-cashback-helper.php';
             require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-webhook-helper.php';
             require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-api-service.php';
+            require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-settlement.php';
 
             $this->i18n = new Flizpay_i18n();
             $this->id = 'flizpay';
@@ -76,7 +78,8 @@ function flizpay_init_gateway_class()
             $this->flizpay_restrict_to_germany = $this->get_option('flizpay_restrict_to_germany');
             // Initialize helper classes
             $this->cashback_helper = new Flizpay_Cashback_Helper($this);
-            $this->webhook_helper = new Flizpay_Webhook_Helper($this);
+            $this->settlement = new Flizpay_Settlement();
+            $this->webhook_helper = new Flizpay_Webhook_Helper($this, $this->settlement);
             $this->api_service = new Flizpay_API_Service($this->api_key);
 
             if ($this->flizpay_display_logo === 'yes') {
@@ -407,13 +410,36 @@ function flizpay_init_gateway_class()
 
                 $transaction = $this->api_service->create_transaction($order, $source, $idempotency_key);
 
-                if (is_array($transaction) && !empty($transaction['redirectUrl']) && !empty($transaction['transactionId'])) {
+                if (
+                    is_array($transaction) &&
+                    !empty($transaction['reference']) &&
+                    !empty($transaction['redirectUrl']) &&
+                    !empty($transaction['transactionId'])
+                ) {
+                    $transaction_id = (string) $transaction['transactionId'];
                     $issued = $order->get_meta('_flizpay_issued_tx_ids');
                     if (!is_array($issued)) {
                         $issued = array();
                     }
-                    $issued[] = $transaction['transactionId'];
+
+                    if (!in_array($transaction_id, $issued, true)) {
+                        $issued[] = $transaction_id;
+                    }
+
+                    $references = $order->get_meta('_flizpay_transaction_references');
+                    if (!is_array($references)) {
+                        $references = array();
+                    }
+
+                    $references[$transaction_id] = array(
+                        'reference' => (string) $transaction['reference'],
+                        'original_amount' => wc_format_decimal($order->get_total()),
+                        'currency' => strtoupper((string) $order->get_currency()),
+                        'attempt' => $attempt,
+                    );
+
                     $order->update_meta_data('_flizpay_issued_tx_ids', $issued);
+                    $order->update_meta_data('_flizpay_transaction_references', $references);
                     $order->save();
 
                     return array('result' => 'success', 'redirect' => $transaction['redirectUrl'], 'order_id' => $order_id);
