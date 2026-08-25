@@ -12,8 +12,8 @@ $api_key = $flizpay_settings['flizpay_api_key'];
 if ($api_key) {
 	$api_client = WC_Flizpay_API::get_instance($api_key);
 
-	$api_client->dispatch('edit_business', array("isActive" => false), false);
-	$api_client->dispatch('edit_business', array("webhookUrl" => ''), false);
+	$api_client->dispatch('edit_business', array("isActive" => false));
+	$api_client->dispatch('edit_business', array("webhookUrl" => ''));
 }
 
 // Clean up options
