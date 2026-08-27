@@ -55,7 +55,7 @@ class WC_Flizpay_API
      */
     private function init(): void
     {
-        $this->base_url = 'https://olegs-macbook-pro-1.tail9450f2.ts.net:4440';
+        $this->base_url = 'https://api.flizpay.de';
         $this->routes = array(
             'generate_webhook_key' => function ($body) {
                 return array(
@@ -97,6 +97,18 @@ class WC_Flizpay_API
                     )
                 );
             },
+            'get_transaction_status' => function ($body) {
+                return array(
+                    'path' => $this->base_url . '/transactions/' . rawurlencode((string) ($body['reference'] ?? '')) . '/status',
+                    'method' => 'get',
+                    'options' => array(
+                        'headers' => array(
+                            'Content-type' => 'application/json',
+                            'x-api-key' => $this->api_key
+                        )
+                    )
+                );
+            },
             'fetch_cashback_data' => function ($body) {
                 return array(
                     'path' => $this->base_url . '/business/cashback',
@@ -113,26 +125,30 @@ class WC_Flizpay_API
     }
 
     /**
-     * Performs an API call to the specified route, with the given body.
-     * When $api_mode is set false, this function will not immediately return success or error
-     * with wp_send_json_error or wp_send_json_success, instead it will return all responses to the caller.
+     * Perform a configured FLIZpay request and decode its JSON response.
      *
-     * @param string $route
-     * @param array $request_body
-     * @param bool $api_mode
-     * @param array $request_headers
-     * @return array<string, mixed>|null
+     * Successful payloads are unwrapped from their optional data envelope. Returned
+     * arrays include the internal `_http_status` field so services can classify HTTP
+     * failures. Invalid JSON is represented by `_json_error`; transport and unknown
+     * route failures are returned as WP_Error instances.
+     *
+     * @param string $route Name of a route registered in init().
+     * @param array<string, mixed>|null $request_body Values consumed by the route and request body.
+     * @param array<string, string> $request_headers Additional headers merged over route defaults.
+     * @return array<string, mixed>|\WP_Error|null Decoded data with transport metadata, an error, or null.
      *
      * @since 1.0.0
      */
-    public function dispatch(string $route, ?array $request_body = null, bool $api_mode = true, array $request_headers = array()): ?array
-    {
-        $handler = $this->routes[$route];
-
-        if (empty($handler) && $api_mode) {
-            wp_send_json_error('API Error: No Handler', 400);
+    public function dispatch(
+        string $route,
+        ?array $request_body = null,
+        array $request_headers = array()
+    ) {
+        if (!isset($this->routes[$route])) {
+            return new \WP_Error('flizpay_api_no_handler', 'API Error: No Handler');
         }
 
+        $handler = $this->routes[$route];
         $route_data = $handler($request_body);
 
         $route_data['options']['headers'] = array_merge(
@@ -150,9 +166,10 @@ class WC_Flizpay_API
             $response = wp_remote_get($route_data['path'], $route_data['options']);
         }
 
-        if ($response && is_wp_error($response) && $api_mode) {
-            wp_send_json_error('API Error: ' . $response->get_error_message(), $response->get_error_code());
+        if (is_wp_error($response)) {
+            return $response;
         }
+
         try {
             if (is_array($response)) {
                 $body = json_decode($response['body'], true);
@@ -163,19 +180,18 @@ class WC_Flizpay_API
             $body = json_decode((string) $response, true);
         }
 
-        if (!json_last_error() === JSON_ERROR_NONE && $api_mode) {
-            return wp_send_json_error('API JSON ERROR: ' . json_last_error(), 400);
-        }
-
-        if (empty($body) && $api_mode) {
-            return wp_send_json_error('API Error: Empty ' . $body, 400);
-        }
-
-        if (empty($body['data']) && $api_mode) {
-            return wp_send_json_error('API Error: ' . $body['message'], 400);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return array(
+                '_http_status' => wp_remote_retrieve_response_code($response),
+                '_json_error' => true,
+            );
         }
 
         $data = $body['data'] ?? $body;
+
+        if (is_array($data)) {
+            $data['_http_status'] = wp_remote_retrieve_response_code($response);
+        }
 
         return is_array($data) ? $data : null;
     }

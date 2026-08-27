@@ -66,6 +66,7 @@ class Flizpay
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
+		$this->define_reconciliation_hooks();
 
 		$this->update_old_payment_failed_page();
 	}
@@ -146,7 +147,9 @@ class Flizpay
 		 * The class responsible for defining all api calls to flizpay
 		 */
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-api.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-api-service.php';
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-settlement.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-reconciliation.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
@@ -225,6 +228,27 @@ class Flizpay
 		$this->loader->add_action("wp_ajax_flizpay_order_finish", $plugin_public, "flizpay_order_finish");
 		$this->loader->add_action("wp_ajax_nopriv_flizpay_order_finish", $plugin_public, "flizpay_order_finish");
 
+	}
+
+	/**
+	 * Register scheduled and manual FLIZpay reconciliation hooks.
+	 */
+	private function define_reconciliation_hooks()
+	{
+		$settings = get_option('woocommerce_flizpay_settings');
+		$api_key = is_array($settings) ? (string) ($settings['flizpay_api_key'] ?? '') : '';
+		$reconciliation = new Flizpay_Reconciliation(
+			$api_key,
+			new Flizpay_API_Service($api_key),
+			new Flizpay_Settlement()
+		);
+
+		$this->loader->add_action('action_scheduler_init', $reconciliation, 'schedule');
+		$this->loader->add_action(Flizpay_Reconciliation::HOOK, $reconciliation, 'scan');
+		$this->loader->add_action('woocommerce_thankyou', $reconciliation, 'reconcile_on_thankyou');
+		$this->loader->add_filter('woocommerce_cancel_unpaid_order', $reconciliation, 'should_cancel_unpaid_order', 5, 2);
+		$this->loader->add_filter('woocommerce_order_actions', $reconciliation, 'add_order_action', 10, 2);
+		$this->loader->add_action('woocommerce_order_action_flizpay_check_status', $reconciliation, 'handle_order_action');
 	}
 
 	/**

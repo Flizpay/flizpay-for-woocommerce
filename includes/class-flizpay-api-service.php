@@ -25,7 +25,7 @@ class Flizpay_API_Service
     {
         $client = WC_Flizpay_API::get_instance($this->api_key);
 
-        $response = $client->dispatch("generate_webhook_key", null, false);
+        $response = $client->dispatch("generate_webhook_key");
 
         return is_array($response) && isset($response["webhookKey"])
             ? (string) $response["webhookKey"]
@@ -52,8 +52,7 @@ class Flizpay_API_Service
 
         $response = $client->dispatch(
             "edit_business",
-            ["webhookUrl" => $webhookUrl],
-            false,
+            ["webhookUrl" => $webhookUrl]
         );
 
         $webhookUrlResponse = is_array($response) && isset($response["webhookUrl"])
@@ -75,7 +74,7 @@ class Flizpay_API_Service
     public function fetch_cashback_data(): ?array
     {
         $client = WC_Flizpay_API::get_instance($this->api_key);
-        $response = $client->dispatch("fetch_cashback_data", null, false);
+        $response = $client->dispatch("fetch_cashback_data");
 
         if (
             is_array($response) &&
@@ -129,7 +128,7 @@ class Flizpay_API_Service
             "source" => $source,
         ];
         $client = WC_Flizpay_API::get_instance($this->api_key);
-        $response = $client->dispatch("create_transaction", $body, false, [
+        $response = $client->dispatch("create_transaction", $body, [
             "Idempotency-Key" => $idempotency_key,
         ]);
 
@@ -156,5 +155,77 @@ class Flizpay_API_Service
             "redirectUrl" => $redirect_url,
             "transactionId" => $transaction_id,
         ];
+    }
+
+    /**
+     * Retrieve and validate the merchant-facing transaction status response.
+     *
+     * Transport failures, authentication failures, missing transactions, server
+     * failures, invalid JSON, and incomplete public responses are returned as
+     * distinct result codes. This method never changes a WooCommerce order.
+     *
+     * @param string $reference Provider reference stored when the transaction was created.
+     * @return array{success: bool, result: string, message: string, data?: array<string, mixed>}
+     */
+    public function get_transaction_status(string $reference): array
+    {
+        if ($reference === '') {
+            return $this->status_error('missing_reference', 'Transaction reference is unavailable.');
+        }
+
+        $response = WC_Flizpay_API::get_instance($this->api_key)->dispatch(
+            'get_transaction_status',
+            array('reference' => $reference)
+        );
+
+        if (is_wp_error($response)) {
+            return $this->status_error('network_error', 'Could not reach the FLIZpay status API.');
+        }
+
+        $status_code = is_array($response) ? (int) ($response['_http_status'] ?? 0) : 0;
+        if ($status_code === 401) {
+            return $this->status_error('unauthorized', 'FLIZpay rejected the merchant API key.');
+        }
+        if ($status_code === 404) {
+            return $this->status_error('not_found', 'FLIZpay transaction was not found.');
+        }
+        if ($status_code >= 500) {
+            return $this->status_error('server_error', 'FLIZpay status API is unavailable.');
+        }
+        if ($status_code < 200 || $status_code >= 300) {
+            return $this->status_error('api_error', 'FLIZpay status API returned an unexpected response.');
+        }
+
+        if (!is_array($response) || !empty($response['_json_error'])) {
+            return $this->status_error('invalid_json', 'FLIZpay status response was not valid JSON.');
+        }
+
+        $data = $response;
+        unset($data['_http_status']);
+        $required = array('transactionId', 'status', 'amount', 'originalAmount', 'currency', 'orderId');
+        foreach ($required as $field) {
+            if (!array_key_exists($field, $data) || $data[$field] === '' || $data[$field] === null) {
+                return $this->status_error('invalid_response', 'FLIZpay status response is missing merchant transaction fields.');
+            }
+        }
+
+        return array(
+            'success' => true,
+            'result' => 'success',
+            'message' => 'Transaction status retrieved.',
+            'data' => $data,
+        );
+    }
+
+    /**
+     * Build a non-mutating transaction status error result.
+     *
+     * @param string $result Stable machine-readable error code.
+     * @param string $message Safe human-readable error description.
+     * @return array{success: false, result: string, message: string}
+     */
+    private function status_error(string $result, string $message): array
+    {
+        return array('success' => false, 'result' => $result, 'message' => $message);
     }
 }
