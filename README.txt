@@ -1,67 +1,126 @@
 === FLIZpay Gateway für WooCommerce ===
 Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, discount, no-fee
-Requires at least: 4.4
+Requires at least: 6.4
 Tested up to: 7.0
 Stable tag: 2.5.3
-Requires PHP: 7.0
+Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
 
-Mit dem FLIZpay-Plugin kannst du die Zahlungsmethode FLIZ in deinen Checkout integrieren. FLIZ ist für Shops und Zahlende gebührenfrei.
+Senke deine Zahlungskosten. Belohne deine Kunden. Behalte mehr von jedem Verkauf.
 
 == Description ==
-## Was macht das FLIZpay Plugin?
+FLIZpay ist eine Zahlungsmethode aus Deutschland, mit der Unternehmen ihre Zahlungskosten deutlich senken und diese Ersparnis in Wachstum verwandeln können. Mit dem FLIZpay-Plugin fügst du FLIZpay schnell und ohne technisches Vorwissen zu deinem WooCommerce-Checkout hinzu.
 
-FLIZ ist die erste kostenlose Zahlungsmethode in Deutschland. Deine Kunden zahlen mit der FLIZpay App, und du erhältst diese Zahlungen ohne Gebühren mit dem FLIZpay Plugin. Du kannst FLIZ ohne technisches Wissen in weniger als 30 Minuten installieren und sofort Zahlungen annehmen.
+Im aktuellen Preismodell zahlen 90% der Unternehmen keine Transaktionsgebühren. Größere Händler können ihre Gebühren im Vergleich zu anderen Zahlungsmethoden um mindestens 50% senken. Du kannst die Ersparnis behalten oder einen Teil davon für Cashback und Rabatte einsetzen, um Conversion und Kundenbindung zu stärken.
 
-### Verbessere deine Conversion und Kundenbindung mit Rabatten
+Das WooCommerce-Plugin selbst ist kostenlos. Für die Nutzung benötigst du ein separates FLIZ-Business-Konto; für den FLIZpay-Service gelten die Konditionen deines FLIZpay-Vertrags.
 
-Ändere das Zahlungsverhalten deiner Kunden, damit sie FLIZ nutzen. Denn FLIZ ist gebührenfrei. Um dies zu erreichen, kannst du einen prozentualen Rabatt festlegen, der von jedem Einkauf abgezogen wird, den deine Kunden mit FLIZ tätigen. So unterstützen deine Kunden dein Geschäftsergebnis und optimieren gleichzeitig ihre eigenen Finanzen.
+= Was macht das FLIZpay-Plugin? =
 
-### Sichere Zahlungen
+Deine Kunden wählen FLIZpay während des Checkouts als Zahlungsmethode aus. Anschließend schließen sie die Zahlung über FLIZpay ab und geben sie sicher über ihre Banking-App frei. Signierte Webhooks aktualisieren den Zahlungs- und Bestellstatus in WooCommerce.
 
-FLIZ sichert deine Transaktionen mit einer vollständigen Ende-zu-Ende-Verschlüsselung und gewährleistet maximale Sicherheit. Indem Zahlungen über das SEPA-Netzwerk abgewickelt werden, unterliegt jede Zahlung denselben strengen Sicherheitsprüfungen wie alle Überweisungen innerhalb der EU.
+Du kannst in den Plugin-Einstellungen einen prozentualen Rabatt konfigurieren. Der Rabatt wird deinen Kunden im Checkout angezeigt und bei berechtigten FLIZpay-Einkäufen berücksichtigt. So kannst du einen Teil deiner eingesparten Zahlungskosten direkt an deine Kunden weitergeben.
 
-Mit FLIZ können Kunden mit deutschem Bankkonto zahlen & Unternehmen Zahlungen auf allen EU-Konten empfangen.
+Die Einrichtung ist in wenigen Schritten möglich und erfordert keine Programmierkenntnisse.
 
-## Dienste eines Drittanbieters
+= Funktionen =
 
-Dieses Plugin nutzt den FLIZpay-API-Service zur Abwicklung von Zahlungen. Bei der Verwendung dieses Plugins werden bestimmte Daten an die Server von FLIZpay gesendet.
-Wenn ein Nutzer eine Zahlung über das Plugin abschließt, werden folgende Daten zur Verarbeitung an FLIZpay übermittelt:
+* FLIZpay als Zahlungsmethode in WooCommerce anbieten
+* Bankkontobasierte Zahlungen über den FLIZpay-Zahlungsfluss akzeptieren
+* Einen prozentualen Rabatt für FLIZpay-Zahlungen konfigurieren
+* Den aktuellen Rabatt im Checkout anzeigen
+* Zahlungsstatus über signierte Webhooks aktualisieren
+* Erfolgreiche, fehlgeschlagene und abgebrochene Zahlungen verarbeiten
+* Doppelte Rabatte, Bestellnotizen und E-Mails bei erneut zugestellten Webhooks verhindern
+* Eine Vorschau der kundenseitigen Zahlungsmethode in den Plugin-Einstellungen anzeigen
+* Einen individuellen Bestellstatus verwenden
+* Virtuelle und andere nicht versandpflichtige Produkte unterstützen
+* Die Sichtbarkeit von FLIZpay optional auf Kunden in Deutschland beschränken
+* WooCommerce Cart und Checkout Blocks unterstützen
 
-- Transaktionsdetails (Betrag, Währung, usw.)
-- Name des Händlers und, falls festgelegt, der Rabatt-Wert.
+= Zahlungskosten senken und Kundenbindung stärken =
 
-### Service Informationen:
-- **Service**: [FLIZpay API](https://api.flizpay.de)
-- **Datenschutzerklärung**: [FLIZpay Privacy Policy](https://flizpay.de/privacy-policy)
-- **Allgemeine Geschäftsbedingungen**: [FLIZpay Terms and Conditions](https://www.flizpay.de/business-terms-and-conditions)
+Klassische Zahlungsmethoden verursachen für Händler häufig hohe Kosten. FLIZpay hilft Unternehmen dabei, diese Zahlungskosten zu reduzieren. Einen Teil der Ersparnis kannst du als Rabatt an deine Kunden weitergeben und sie damit motivieren, FLIZpay im Checkout auszuwählen.
 
-Durch die Nutzung dieses Plugins stimmst du den AGBs und der Datenschutzerklärung von FLIZpay zu.
+Rabatte können die Attraktivität von FLIZpay im Checkout erhöhen und Conversion und Kundenbindung unterstützen. Eine konkrete Umsatz- oder Conversion-Steigerung wird nicht garantiert.
 
-Für weitere Informationen zur FLIZpay-API und wie deine Daten verarbeitet werden, siehe bitte unsere [Dokumentation für Entwickler](https://www.docs.flizpay.de/docs/category/woocommerce).
+= Sicherheit =
 
-## Erfordert
-Dieses Plugin erfordert Folgendes:
-- WooCommerce (Version 9.0.0 oder höher): [https://wordpress.org/plugins/woocommerce/](https://wordpress.org/plugins/woocommerce/)
+FLIZpay ermöglicht bankkontobasierte Zahlungen über einen SEPA-basierten Zahlungsfluss. Deine Kunden geben ihre Zahlung über ihre Banking-App frei. Dabei werden keine Kartendaten benötigt. Die Online-Banking-Passwörter deiner Kunden sind weder für FLIZpay noch für deinen Shop zugänglich.
 
-## Telemetrie & anonyme Fehlerberichte (Opt-out)
-Um die Stabilität und Sicherheit des FLIZpay-Plugins weiter zu verbessern, kannst du freiwillig **anonyme Nutzungs- und Fehlerdaten** an unseren Sentry-Server übermitteln lassen.
-- **Welche Daten werden erfasst?**
-  – zufällige, nicht zurückverfolgbare Instanz-ID
-  – WordPress-, WooCommerce-, PHP- und Plugin-Version
-  – aktive Theme-/Plugin-Liste (nur Slugs, keine Lizenz- oder Zugangsdaten)
-  – Zeitstempel, Fehlermeldung, Stack-Trace
-- **Was *nicht* übertragen wird?**
-  Keine personenbezogenen Daten (PII), keine Bestelldetails, keine IP-Adresse (wird gehasht), kein Kunden-Name, keine E-Mail.
-- **Wann wird gesendet?**
-  **Nur nach ausdrücklicher Zustimmung** (Opt-in). Du kannst die Zustimmung jederzeit unter
-  „WooCommerce → Einstellungen → Zahlungen → FLIZpay → Fehlerberichte.
-- **Drittanbieter-Service**
-  – **Service:** Sentry Error Monitoring (sentry.io)
-  – **Datenschutzerklärung:** <https://sentry.io/privacy/>
-Weitere Informationen findest du in unserer [Datenschutzerklärung](https://flizpay.de/privacy-policy).
+Arbeite mit einem deutschen Zahlungspartner, der auf europäischen Standards aufbaut – und mach dich unabhängiger von dominanten internationalen Zahlungsnetzwerken.
+
+Der Bestellstatus wird erst aktualisiert, nachdem das Plugin eine gültige, signierte Zahlungsbenachrichtigung erhalten und der zugehörigen Bestellung zugeordnet hat.
+
+= Verfügbarkeit =
+
+Die Verfügbarkeit von FLIZpay kann von Land, Bank, Rechnungsadresse und den Einstellungen des Händlers abhängen. Das Plugin bietet eine optionale Einstellung, mit der du die Zahlungsmethode auf Kunden in Deutschland beschränken kannst. Grundsätzlich können Zahlungen auf allen EU-Konten getätigt werden.
+
+= FLIZ-Business-Konto und Einrichtung =
+
+Für die Nutzung des Plugins benötigst du ein separates FLIZ-Business-Konto und einen API-Schlüssel. Das Business-Konto wird bei der Plugin-Installation nicht automatisch erstellt.
+
+1. Installiere und aktiviere das FLIZpay-Plugin in WordPress.
+2. Erstelle unter [app.flizpay.de](https://app.flizpay.de/) ein FLIZ-Business-Konto oder melde dich mit deinem bestehenden Konto an.
+3. Öffne im FLIZpay-Business-Bereich den Menüpunkt FLIZ einrichten > Plugins > WooCommerce und generiere deinen API-Schlüssel.
+4. Öffne in WordPress WooCommerce > Einstellungen > Zahlungen > FLIZpay.
+5. Hinterlege deinen API-Schlüssel und stelle die Verbindung her.
+6. Konfiguriere die Zahlungsmethode, den optionalen Rabatt und die gewünschte Sichtbarkeit im Checkout.
+
+= Dienste von Drittanbietern: FLIZpay API =
+
+Dieses Plugin benötigt den externen FLIZpay-API-Service, um Zahlungen zu erstellen und ihren Status zu verarbeiten. Wenn ein Kunde FLIZpay auswählt und eine Transaktion erstellt wird, sendet das Plugin dafür erforderliche Daten an FLIZpay.
+
+Nach der aktuellen Beschreibung gehören dazu:
+
+* Transaktionsdaten wie Betrag, Währung und Bestellreferenz
+* E-Mail des Käufers
+* Name des Käufers
+* Name des Händlers
+* Konfigurierter Rabattwert
+
+Weitere Informationen:
+
+* FLIZpay-Business-Konto: [https://app.flizpay.de/](https://app.flizpay.de/)
+* WooCommerce-Dokumentation: [https://www.docs.flizpay.de/docs/category/woocommerce/](https://www.docs.flizpay.de/docs/category/woocommerce/)
+* FLIZpay-Datenschutzerklärung: [https://flizpay.de/privacy-policy](https://flizpay.de/privacy-policy)
+* FLIZpay-Geschäftsbedingungen: [https://flizpay.de/business-terms-and-conditions](https://flizpay.de/business-terms-and-conditions)
+
+Für die Nutzung des FLIZpay-Services gelten die Bedingungen deines FLIZpay-Business-Kontos und die dazugehörigen Datenschutzinformationen.
+
+= Telemetrie und Fehlerberichte – freiwilliges Opt-in =
+
+Um Stabilität und Sicherheit des Plugins zu verbessern, werden ab Version 2.5.3 die Übermittlung von Nutzungs- und Fehlerdaten an Sentry übermittelt.
+
+Die IP-Adresse wird vom Plugin weder erfasst noch gehasht und nicht als Bestandteil des Fehlerberichts an Sentry übermittelt. Beim technischen Empfang der Anfrage kann Sentry die Verbindungs-IP verarbeiten.
+
+Sentry ist ein externer Dienst:
+
+* Service: [https://sentry.io/](https://sentry.io/)
+* Datenschutzerklärung: [https://sentry.io/privacy/](https://sentry.io/privacy/)
+* Nutzungsbedingungen: [https://sentry.io/terms/](https://sentry.io/terms/)
+
+= Anforderungen =
+
+Das Plugin erfordert:
+
+* WordPress 6.4 oder höher
+* WooCommerce 9.0 oder höher
+* PHP 8.2 oder höher
+* Einen Shop mit HTTPS
+* Ein FLIZ-Business-Konto und einen API-Schlüssel
+
+= Dokumentation und Support =
+
+Eine Anleitung zur Installation und Einrichtung findest du in der [FLIZpay-Dokumentation für WooCommerce](https://www.docs.flizpay.de/docs/category/woocommerce/).
+
+Wenn du Unterstützung benötigst oder Feedback hast, wende dich unter [info@flizpay.de](mailto:info@flizpay.de) an FLIZpay.
+
+= Hinweis zu Rabatten und Verfügbarkeit =
+
+Rabatte, unterstützte Banken und die Verfügbarkeit von FLIZpay können variieren. Angebote gelten nur für berechtigte Einkäufe bei teilnehmenden Partnern.
 
 == Screenshots ==
 
