@@ -136,6 +136,8 @@ class Flizpay_API_Service
             return null;
         }
 
+        $this->handle_revoked_managed_connection((int) ($response['_http_status'] ?? 0));
+
         $redirect_url = isset($response["redirectUrl"])
             ? (string) $response["redirectUrl"]
             : null;
@@ -155,6 +157,33 @@ class Flizpay_API_Service
             "redirectUrl" => $redirect_url,
             "transactionId" => $transaction_id,
         ];
+    }
+
+    /**
+     * Hide FLIZpay from checkout once FLIZpay stops accepting this shop's credentials.
+     *
+     * A managed connection can be released from the FLIZpay dashboard, which leaves the
+     * shop holding a key the API no longer knows. Marking the connection dead means
+     * is_available() drops FLIZpay from the next request instead of letting more
+     * customers pick a payment method that can only fail.
+     */
+    private function handle_revoked_managed_connection(int $status_code): void
+    {
+        if ($status_code !== 401 && $status_code !== 403) {
+            return;
+        }
+
+        $settings = get_option('woocommerce_flizpay_settings', array());
+        if (!is_array($settings) || empty($settings['flizpay_managed_connection'])) {
+            return;
+        }
+
+        if (($settings['flizpay_webhook_alive'] ?? '') === 'no') {
+            return;
+        }
+
+        $settings['flizpay_webhook_alive'] = 'no';
+        update_option('woocommerce_flizpay_settings', $settings, false);
     }
 
     /**

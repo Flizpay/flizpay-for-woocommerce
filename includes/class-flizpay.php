@@ -167,7 +167,7 @@ class Flizpay
 
 		$pairing = new Flizpay_Pairing();
 		$this->loader->add_action('rest_api_init', $pairing, 'register_rest_routes');
-		$this->loader->add_action('admin_footer', $pairing, 'render_admin_pairing_form');
+		$this->loader->add_action('admin_notices', $pairing, 'render_admin_pairing_form');
 		$this->loader->add_action('admin_post_flizpay_pair', $pairing, 'handle_admin_pairing');
 		$this->loader->add_action('admin_notices', $pairing, 'render_admin_notice');
 

@@ -8,14 +8,24 @@ class Flizpay_Pairing
     private const REST_NAMESPACE = 'flizpay';
     private const CHALLENGE_TRANSIENT_PREFIX = 'flizpay_pairing_challenge_';
     private const SETTINGS_OPTION = 'woocommerce_flizpay_settings';
+    private const REQUEST_TIMEOUT = 30;
+    private const FINALIZE_TIMEOUT = 45;
 
     public function register_rest_routes()
     {
+        // Pairing writes the shop's payment credentials, so it requires a WooCommerce
+        // manager. FLIZpay calls this route with the temporary Application Password the
+        // merchant just approved, which WordPress resolves to that administrator.
         register_rest_route(self::REST_NAMESPACE, '/pair', array(
             'methods' => 'POST',
             'callback' => array($this, 'handle_pair_request'),
-            'permission_callback' => '__return_true',
+            'permission_callback' => static function () {
+                return current_user_can('manage_woocommerce');
+            },
         ));
+        // The challenge route is deliberately open: FLIZpay calls it unauthenticated to
+        // prove it is talking to the shop that started the pairing. It only signs a
+        // caller-supplied nonce with a secret this site generated moments earlier.
         register_rest_route(self::REST_NAMESPACE, '/challenge', array(
             'methods' => 'POST',
             'callback' => array($this, 'handle_challenge_request'),
@@ -25,17 +35,28 @@ class Flizpay_Pairing
 
     public function render_admin_pairing_form()
     {
-        if (!is_admin() || !current_user_can('manage_woocommerce')) {
+        if (!$this->is_flizpay_settings_screen() || !current_user_can('manage_woocommerce')) {
             return;
         }
         ?>
-        <form id="flizpay-admin-pairing" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" hidden>
-            <input type="hidden" name="action" value="flizpay_pair">
-            <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('flizpay_pair')); ?>">
-            <input type="hidden" name="flizpay_pairing" value="">
-            <input type="hidden" name="flizpay_pairing_token" value="">
-            <input type="hidden" name="flizpay_api_url" value="">
-        </form>
+        <div id="flizpay-admin-pairing" class="notice notice-info" style="display: none;">
+            <p>
+                <?php echo esc_html__('FLIZpay would like to connect this shop:', 'flizpay-for-woocommerce'); ?>
+                <strong><?php echo esc_html($this->get_shop_origin()); ?></strong>
+            </p>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action" value="flizpay_pair">
+                <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('flizpay_pair')); ?>">
+                <input type="hidden" name="flizpay_pairing" value="">
+                <input type="hidden" name="flizpay_pairing_token" value="">
+                <input type="hidden" name="flizpay_api_url" value="">
+                <p>
+                    <button type="submit" class="button button-primary">
+                        <?php echo esc_html__('Connect this shop to FLIZpay', 'flizpay-for-woocommerce'); ?>
+                    </button>
+                </p>
+            </form>
+        </div>
         <script>
             (() => {
                 const pairing = new URLSearchParams(window.location.hash.slice(1));
@@ -45,14 +66,38 @@ class Flizpay_Pairing
                 if (!pairingId || !pairingToken || !apiBaseUrl) return;
 
                 window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
-                const form = document.getElementById('flizpay-admin-pairing');
+                const panel = document.getElementById('flizpay-admin-pairing');
+                const form = panel.querySelector('form');
                 form.elements.flizpay_pairing.value = pairingId;
                 form.elements.flizpay_pairing_token.value = pairingToken;
                 form.elements.flizpay_api_url.value = apiBaseUrl;
-                form.submit();
+                // Submitting is left to the administrator on purpose. Auto-submitting would
+                // let any link that carries a pairing fragment connect the shop to someone
+                // else's FLIZpay account on a single click.
+                panel.style.display = '';
             })();
         </script>
         <?php
+    }
+
+    /**
+     * True on the FLIZpay payment gateway settings screen, which is where the merchant
+     * dashboard sends the merchant back to after approving the connection.
+     */
+    private function is_flizpay_settings_screen()
+    {
+        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+        if (!$screen || $screen->id !== 'woocommerce_page_wc-settings') {
+            return false;
+        }
+
+        // URL: admin.php?page=wc-settings&tab=checkout&section=flizpay
+        // Screen detection only; the pairing itself is nonce- and capability-checked in
+        // handle_admin_pairing().
+        $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
+        $section = isset($_GET['section']) ? sanitize_text_field($_GET['section']) : '';
+
+        return $tab === 'checkout' && $section === 'flizpay';
     }
 
     public function handle_admin_pairing()
@@ -188,20 +233,33 @@ class Flizpay_Pairing
         delete_option('flizpay_rewrite_rules_flushed');
         flush_rewrite_rules(false);
 
+        // Finalize waits on FLIZpay's webhook health check, which calls back into this
+        // site. Allow more time here than the backend gives that check, so the backend
+        // always gives up first and we never time out on a connection it completed.
         $finalize = $this->request_json(
             $api_base_url . '/business/woocommerce/pairings/' . rawurlencode($credentials['pairingId']) . '/finalize',
             array('pairingToken' => $pairing_token),
-            array('x-api-key' => $credentials['apiKey'])
+            array('x-api-key' => $credentials['apiKey']),
+            self::FINALIZE_TIMEOUT
         );
         delete_transient($challenge_transient_key);
         if (is_wp_error($finalize)) {
-            update_option(self::SETTINGS_OPTION, $previous_settings, false);
+            // Only roll back when FLIZpay explicitly rejected the request. A transport
+            // failure may still have completed the connection server-side, and throwing
+            // the credentials away would leave the shop unable to re-pair.
+            if ($finalize->get_error_code() === 'flizpay_pairing_failed') {
+                update_option(self::SETTINGS_OPTION, $previous_settings, false);
+            }
             return $finalize;
         }
 
         $settings['flizpay_webhook_alive'] = 'yes';
         if ($enable_gateway) {
             $settings['enabled'] = 'yes';
+        } elseif (!isset($settings['enabled'])) {
+            // WooCommerce defaults the field to 'yes', so leaving the key absent would
+            // switch the gateway on. Manual pairing waits for the merchant to enable it.
+            $settings['enabled'] = 'no';
         }
         update_option(self::SETTINGS_OPTION, $settings, false);
         return array(
@@ -214,10 +272,10 @@ class Flizpay_Pairing
         return self::CHALLENGE_TRANSIENT_PREFIX . sanitize_key($pairing_id);
     }
 
-    private function request_json($url, $body, $headers = array())
+    private function request_json($url, $body, $headers = array(), $timeout = self::REQUEST_TIMEOUT)
     {
         $response = wp_remote_post($url, array(
-            'timeout' => 30,
+            'timeout' => $timeout,
             'redirection' => 0,
             'headers' => array_merge(array('Content-Type' => 'application/json'), $headers),
             'body' => wp_json_encode($body),

@@ -176,12 +176,35 @@ function flizpay_init_gateway_class()
             }
 
             $previous_api_key = $this->get_option('flizpay_api_key');
+            $previous_webhook_alive = $this->get_option('flizpay_webhook_alive');
+            $previous_webhook_url = $this->get_option('flizpay_webhook_url');
+            $was_managed_connection = $this->get_option('flizpay_managed_connection') === 'yes';
             $saved = parent::process_admin_options();
             $this->init_settings();
 
             $api_key = trim((string) $this->get_option('flizpay_api_key'));
             $this->api_key = $api_key;
             $this->api_service = new Flizpay_API_Service($api_key);
+
+            if ($was_managed_connection && $api_key === $previous_api_key) {
+                // The connection status and webhook URL fields are rendered disabled, so the
+                // browser submits nothing for them and WooCommerce saves their empty defaults.
+                // A managed connection is established by pairing, not by the legacy handshake
+                // below, so put those values back and leave the connection alone.
+                $this->update_option('flizpay_webhook_alive', $previous_webhook_alive);
+                $this->update_option('flizpay_webhook_url', $previous_webhook_url);
+                $this->init_gateway_info();
+                return $saved;
+            }
+
+            if ($was_managed_connection) {
+                // The merchant replaced the connection-scoped key with a legacy account key.
+                // Clear the managed markers, otherwise deactivation and uninstall would try to
+                // release a connection this key does not own and keep the credentials forever.
+                $this->update_option('flizpay_managed_connection', '');
+                $this->update_option('flizpay_api_base_url', '');
+                $this->update_option('flizpay_webhook_key', '');
+            }
 
             if ($api_key === '') {
                 $this->update_option('flizpay_webhook_alive', 'no');

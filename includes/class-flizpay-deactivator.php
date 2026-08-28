@@ -48,7 +48,20 @@ class Flizpay_Deactivator
 			return;
 
 		if (!empty($flizpay_settings['flizpay_managed_connection'])) {
-			Flizpay_Pairing::disconnect_managed_connection($flizpay_settings);
+			// Keep the credentials when FLIZpay could not be reached, so a later uninstall
+			// can still release the connection. Once it is released they are dead weight:
+			// leaving them behind makes a reactivated plugin look connected while every
+			// checkout fails against a key the backend has deleted.
+			if (Flizpay_Pairing::disconnect_managed_connection($flizpay_settings)) {
+				unset(
+					$flizpay_settings['flizpay_api_key'],
+					$flizpay_settings['flizpay_webhook_key'],
+					$flizpay_settings['flizpay_managed_connection'],
+					$flizpay_settings['flizpay_api_base_url']
+				);
+				$flizpay_settings['flizpay_webhook_alive'] = 'no';
+				update_option('woocommerce_flizpay_settings', $flizpay_settings, false);
+			}
 			return;
 		}
 
