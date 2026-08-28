@@ -50,6 +50,6 @@ class Flizpay_Activator
 
         $api_client = WC_Flizpay_API::get_instance($api_key);
 
-        $api_client->dispatch('edit_business', array("isActive" => true, "pluginVersion" => FLIZPAY_VERSION), false);
+        $api_client->dispatch('edit_business', array("isActive" => true, "pluginVersion" => FLIZPAY_VERSION));
     }
 }

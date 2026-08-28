@@ -30,6 +30,10 @@ class Flizpay_Deactivator
 	 */
 	public static function deactivate()
 	{
+		if (function_exists('as_unschedule_all_actions')) {
+			as_unschedule_all_actions('flizpay_reconciliation_scan', array(), 'flizpay');
+		}
+
 		require_once('class-flizpay-api.php');
 		require_once('class-flizpay-pairing.php');
 
@@ -50,7 +54,7 @@ class Flizpay_Deactivator
 
 		$api_client = WC_Flizpay_API::get_instance($api_key);
 
-		$api_client->dispatch('edit_business', array("isActive" => false), false);
+		$api_client->dispatch('edit_business', array("isActive" => false));
 	}
 
 }

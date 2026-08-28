@@ -23,9 +23,10 @@
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       flizpay-for-woocommerce
  * Domain Path:       /languages
- * Requires at least: 4.4
+ * Requires at least: 6.4
  * Tested up to:      7.0
- * Requires PHP:      7.0
+ * Requires PHP:      8.2
+ * WC requires at least: 9.0
  * Requires Plugins: 	woocommerce
  */
 
@@ -150,7 +151,7 @@ function flizpay_sync_plugin_version_if_needed()
 
 	try {
 		$api_client = WC_Flizpay_API::get_instance($flizpay_settings['flizpay_api_key']);
-		$response = $api_client->dispatch('edit_business', array('pluginVersion' => FLIZPAY_VERSION), false);
+		$response = $api_client->dispatch('edit_business', array('pluginVersion' => FLIZPAY_VERSION));
 
 		if (is_array($response) && ($response['pluginVersion'] ?? null) === FLIZPAY_VERSION) {
 			update_option('flizpay_reported_plugin_version', FLIZPAY_VERSION);

@@ -1,5 +1,15 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2026-08-28 - version 2.6.0
+* Added   - Secure one-click pairing from the FLIZpay merchant dashboard.
+* Added   - Connection-scoped credentials, so a paired shop never holds a full account API key.
+* Added   - Temporary WordPress Application Passwords are revoked once installation finishes.
+* Changed - Pairing requires a WooCommerce manager to confirm the connection in wp-admin.
+* Changed - Saving the gateway settings no longer runs the legacy handshake on a managed connection.
+* Changed - Deactivating the plugin clears managed credentials once the backend confirms the disconnect.
+* Note    - Pairing calls back into this site while the request is open. On hosts limited to a
+            single PHP worker, raise the worker count before pairing or the request will time out.
+
 2026-07-14 - version 2.5.3
 * Fixed - Corrected the WooCommerce Cart and Checkout Blocks compatibility declaration to reference the main plugin file.
 
@@ -186,6 +196,3 @@
 * Added - Implemented basic payment gateway integration
 * Added - Implemented Cashback info on Checkout
 * Added - Implemented Order management for cashback
-2026-08-05 - version 2.6.0
-- Added signed one-click pairing and connection-scoped credential support.
-- Added temporary WordPress Application Password installation flow.
