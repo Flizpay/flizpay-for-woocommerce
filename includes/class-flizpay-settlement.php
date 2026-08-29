@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * @phpstan-type SettlementData array{
  *     order_id: int,
- *     transaction_id: string,
+ *     reference: string,
  *     status: string,
  *     amount: string,
  *     original_amount: string,
@@ -18,8 +18,7 @@ declare(strict_types=1);
  *     result: string,
  *     message: string
  * }
- * @phpstan-type ReferenceData array{
- *     reference: string,
+ * @phpstan-type TransactionSnapshot array{
  *     original_amount: string,
  *     currency: string,
  *     attempt: int
@@ -102,7 +101,7 @@ class Flizpay_Settlement
     private function normalize(array $data): ?array
     {
         $order_id = $data['orderId'] ?? $data['metadata']['orderId'] ?? null;
-        $transaction_id = $data['transactionId'] ?? null;
+        $reference = $data['reference'] ?? null;
         $status = $data['status'] ?? null;
         $amount = $data['amount'] ?? null;
         $original_amount = $data['originalAmount'] ?? null;
@@ -110,7 +109,7 @@ class Flizpay_Settlement
 
         if (
             !is_numeric($order_id) ||
-            !is_scalar($transaction_id) ||
+            !is_scalar($reference) ||
             !is_scalar($status) ||
             !is_numeric($amount) ||
             !is_numeric($original_amount) ||
@@ -121,7 +120,7 @@ class Flizpay_Settlement
 
         $normalized = array(
             'order_id' => (int) $order_id,
-            'transaction_id' => sanitize_text_field((string) $transaction_id),
+            'reference' => sanitize_text_field((string) $reference),
             'status' => strtolower(sanitize_text_field((string) $status)),
             'amount' => wc_format_decimal($amount),
             'original_amount' => wc_format_decimal($original_amount),
@@ -130,7 +129,7 @@ class Flizpay_Settlement
 
         if (
             $normalized['order_id'] <= 0 ||
-            $normalized['transaction_id'] === '' ||
+            $normalized['reference'] === '' ||
             $normalized['currency'] === '' ||
             $normalized['amount'] === '' ||
             $normalized['original_amount'] === ''
@@ -144,8 +143,8 @@ class Flizpay_Settlement
     /**
      * Validate normalized provider data against the order and transaction snapshot.
      *
-     * Legacy webhook transactions without a snapshot use the order's current amount
-     * and currency. Reconciliation always requires a matching stored reference.
+     * Authorization is membership of the reference in `_flizpay_transactions`.
+     * Reconciliation additionally requires a matching requested reference.
      *
      * @param SettlementData $data
      * @param string $source Settlement source: webhook or reconciliation.
@@ -162,8 +161,8 @@ class Flizpay_Settlement
             return $this->reject('order_mismatch', 'Provider order ID does not match.', $data);
         }
 
-        $issued = $order->get_meta('_flizpay_issued_tx_ids');
-        if (!is_array($issued) || !in_array($data['transaction_id'], $issued, true)) {
+        $snapshot = $this->get_snapshot($order, $data['reference']);
+        if ($snapshot === null) {
             return $this->reject('transaction_mismatch', 'Transaction is not authorized for this order.', $data);
         }
 
@@ -171,19 +170,18 @@ class Flizpay_Settlement
             return $this->reject('unknown_status', 'Provider status is not recognized.', $data);
         }
 
-        $reference_data = $this->get_reference_data($order, $data['transaction_id']);
         if ($source === 'reconciliation') {
-            if ($reference_data === null || $requested_reference === null || $requested_reference === '') {
+            if ($requested_reference === null || $requested_reference === '') {
                 return $this->reject('missing_reference', 'Transaction reference is unavailable.', $data);
             }
 
-            if (!hash_equals($reference_data['reference'], $requested_reference)) {
+            if (!hash_equals($requested_reference, $data['reference'])) {
                 return $this->reject('reference_mismatch', 'Transaction reference does not match.', $data);
             }
         }
 
-        $expected_amount = $reference_data['original_amount'] ?? wc_format_decimal($order->get_total());
-        $expected_currency = $reference_data['currency'] ?? strtoupper((string) $order->get_currency());
+        $expected_amount = $snapshot['original_amount'];
+        $expected_currency = $snapshot['currency'];
         $precision = wc_get_price_decimals();
 
         if (wc_format_decimal($data['original_amount'], $precision) !== wc_format_decimal($expected_amount, $precision)) {
@@ -204,31 +202,31 @@ class Flizpay_Settlement
     }
 
     /**
-     * Read the transaction-time reference, amount, currency, and attempt snapshot.
+     * Read the transaction-time amount, currency, and attempt snapshot for a reference.
      *
-     * @return ReferenceData|null Stored reference data, or null for legacy transactions.
+     * @return TransactionSnapshot|null Stored snapshot, or null for unknown references.
      */
-    private function get_reference_data(\WC_Order $order, string $transaction_id): ?array
+    private function get_snapshot(\WC_Order $order, string $reference): ?array
     {
-        $references = $order->get_meta('_flizpay_transaction_references');
-        if (!is_array($references) || !isset($references[$transaction_id]) || !is_array($references[$transaction_id])) {
+        if ($reference === '') {
             return null;
         }
 
-        $reference = $references[$transaction_id];
-        if (!isset($reference['reference']) || !is_scalar($reference['reference'])) {
+        $transactions = $order->get_meta('_flizpay_transactions');
+        if (!is_array($transactions) || !isset($transactions[$reference]) || !is_array($transactions[$reference])) {
             return null;
         }
+
+        $snapshot = $transactions[$reference];
 
         return array(
-            'reference' => sanitize_text_field((string) $reference['reference']),
-            'original_amount' => isset($reference['original_amount']) && is_numeric($reference['original_amount'])
-                ? wc_format_decimal($reference['original_amount'])
+            'original_amount' => isset($snapshot['original_amount']) && is_numeric($snapshot['original_amount'])
+                ? wc_format_decimal($snapshot['original_amount'])
                 : wc_format_decimal($order->get_total()),
-            'currency' => isset($reference['currency']) && is_scalar($reference['currency'])
-                ? strtoupper(sanitize_text_field((string) $reference['currency']))
+            'currency' => isset($snapshot['currency']) && is_scalar($snapshot['currency'])
+                ? strtoupper(sanitize_text_field((string) $snapshot['currency']))
                 : strtoupper((string) $order->get_currency()),
-            'attempt' => isset($reference['attempt']) ? (int) $reference['attempt'] : 0,
+            'attempt' => isset($snapshot['attempt']) ? (int) $snapshot['attempt'] : 0,
         );
     }
 
@@ -241,12 +239,11 @@ class Flizpay_Settlement
     private function check_state(\WC_Order $order, array $data): ?array
     {
         $terminal_keys = array(
-            'completed' => '_flizpay_completed_tx',
-            'failed' => '_flizpay_failed_tx',
-            'canceled' => '_flizpay_canceled_tx',
+            'completed' => '_flizpay_completed_reference',
+            'failed' => '_flizpay_failed_reference',
+            'canceled' => '_flizpay_canceled_reference',
         );
-        $terminal_key = $terminal_keys[$data['status']];
-        if ($order->get_meta($terminal_key) === $data['transaction_id']) {
+        if ($order->get_meta($terminal_keys[$data['status']]) === $data['reference']) {
             return $this->noop('duplicate', 'Transaction was already processed.', $data);
         }
 
@@ -262,8 +259,8 @@ class Flizpay_Settlement
             return $this->noop('already_paid', 'Paid orders cannot be failed or cancelled.', $data);
         }
 
-        $reference_data = $this->get_reference_data($order, $data['transaction_id']);
-        if ($reference_data !== null && $reference_data['attempt'] < (int) $order->get_meta('_flizpay_transaction_attempt')) {
+        $snapshot = $this->get_snapshot($order, $data['reference']);
+        if ($snapshot !== null && $snapshot['attempt'] < (int) $order->get_meta('_flizpay_transaction_attempt')) {
             return $this->noop('older_attempt', 'Older attempts cannot terminalize this order.', $data);
         }
 
@@ -288,10 +285,10 @@ class Flizpay_Settlement
 
         $order->set_payment_method('flizpay');
         $order->set_payment_method_title('FLIZpay');
-        $order->update_meta_data('_flizpay_completed_tx', $data['transaction_id']);
+        $order->update_meta_data('_flizpay_completed_reference', $data['reference']);
         $order->save();
-        $order->payment_complete($data['transaction_id']);
-        $order->add_order_note('FLIZ transaction ID: ' . $data['transaction_id']);
+        $order->payment_complete($data['reference']);
+        $order->add_order_note('FLIZ reference: ' . $data['reference']);
         $order->save();
         $this->send_order_emails($order->get_id());
 
@@ -306,11 +303,11 @@ class Flizpay_Settlement
      */
     private function fail_order(\WC_Order $order, array $data): array
     {
-        $order->update_meta_data('_flizpay_failed_tx', $data['transaction_id']);
+        $order->update_meta_data('_flizpay_failed_reference', $data['reference']);
         $this->advance_transaction_attempt($order);
         $order->save();
         $order->update_status('failed', __('Payment failed via FLIZpay', 'flizpay-for-woocommerce'));
-        $order->add_order_note('FLIZ transaction ID: ' . $data['transaction_id'] . ' - payment failed');
+        $order->add_order_note('FLIZ reference: ' . $data['reference'] . ' - payment failed');
         $order->save();
 
         return $this->applied('failed', 'Order payment failed.', $data);
@@ -324,11 +321,11 @@ class Flizpay_Settlement
      */
     private function cancel_order(\WC_Order $order, array $data): array
     {
-        $order->update_meta_data('_flizpay_canceled_tx', $data['transaction_id']);
+        $order->update_meta_data('_flizpay_canceled_reference', $data['reference']);
         $this->advance_transaction_attempt($order);
         $order->save();
         $order->update_status('cancelled', __('Payment canceled via FLIZpay', 'flizpay-for-woocommerce'));
-        $order->add_order_note('FLIZ transaction ID: ' . $data['transaction_id'] . ' - payment canceled by user or bank');
+        $order->add_order_note('FLIZ reference: ' . $data['reference'] . ' - payment canceled by user or bank');
         $order->save();
 
         return $this->applied('canceled', 'Order payment cancelled.', $data);
@@ -471,7 +468,7 @@ class Flizpay_Settlement
         wc_get_logger()->log($level, $message, array(
             'source' => 'flizpay-reconciliation',
             'order_id' => $data['order_id'] ?? null,
-            'transaction_id' => $data['transaction_id'] ?? null,
+            'reference' => $data['reference'] ?? null,
             'provider_status' => $data['status'] ?? null,
             'result' => $result,
         ));

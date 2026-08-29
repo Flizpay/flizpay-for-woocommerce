@@ -413,33 +413,25 @@ function flizpay_init_gateway_class()
                 if (
                     is_array($transaction) &&
                     !empty($transaction['reference']) &&
-                    !empty($transaction['redirectUrl']) &&
-                    !empty($transaction['transactionId'])
+                    !empty($transaction['redirectUrl'])
                 ) {
-                    $transaction_id = (string) $transaction['transactionId'];
-                    $issued = $order->get_meta('_flizpay_issued_tx_ids');
-                    if (!is_array($issued)) {
-                        $issued = array();
+                    // Membership in this reference-keyed map authorizes later
+                    // webhook and reconciliation settlements for the order.
+                    // Idempotent creation replays return the same reference,
+                    // so keyed writes naturally deduplicate.
+                    $reference = (string) $transaction['reference'];
+                    $transactions = $order->get_meta('_flizpay_transactions');
+                    if (!is_array($transactions)) {
+                        $transactions = array();
                     }
 
-                    if (!in_array($transaction_id, $issued, true)) {
-                        $issued[] = $transaction_id;
-                    }
-
-                    $references = $order->get_meta('_flizpay_transaction_references');
-                    if (!is_array($references)) {
-                        $references = array();
-                    }
-
-                    $references[$transaction_id] = array(
-                        'reference' => (string) $transaction['reference'],
+                    $transactions[$reference] = array(
                         'original_amount' => wc_format_decimal($order->get_total()),
                         'currency' => strtoupper((string) $order->get_currency()),
                         'attempt' => $attempt,
                     );
 
-                    $order->update_meta_data('_flizpay_issued_tx_ids', $issued);
-                    $order->update_meta_data('_flizpay_transaction_references', $references);
+                    $order->update_meta_data('_flizpay_transactions', $transactions);
                     $order->save();
 
                     return array('result' => 'success', 'redirect' => $transaction['redirectUrl'], 'order_id' => $order_id);
