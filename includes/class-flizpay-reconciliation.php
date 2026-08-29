@@ -65,9 +65,7 @@ class Flizpay_Reconciliation
             'order' => 'ASC',
             'status' => array('pending', 'checkout-draft'),
             'payment_method' => 'flizpay',
-            'date_created' => gmdate('Y-m-d H:i:s', time() - (10 * DAY_IN_SECONDS))
-                . '...'
-                . gmdate('Y-m-d H:i:s', time() - (30 * MINUTE_IN_SECONDS)),
+            'date_created' => (time() - (10 * DAY_IN_SECONDS)) . '...' . (time() - (30 * MINUTE_IN_SECONDS)),
             'return' => 'objects',
         ));
 
