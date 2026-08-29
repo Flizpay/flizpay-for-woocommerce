@@ -7,6 +7,7 @@ declare(strict_types=1);
  *
  * @phpstan-type SettlementData array{
  *     order_id: int,
+ *     reference: string,
  *     transaction_id: string,
  *     status: string,
  *     amount: string,
@@ -18,8 +19,7 @@ declare(strict_types=1);
  *     result: string,
  *     message: string
  * }
- * @phpstan-type ReferenceData array{
- *     reference: string,
+ * @phpstan-type TransactionSnapshot array{
  *     original_amount: string,
  *     currency: string,
  *     attempt: int
@@ -96,13 +96,18 @@ class Flizpay_Settlement
     /**
      * Validate and normalize webhook or reconciliation provider fields.
      *
+     * `reference` identifies the transaction. A payload carrying only the
+     * deprecated `transactionId` remains valid so webhooks can still settle
+     * legacy orders placed on plugin <= 2.5.3; at least one identifier is
+     * required.
+     *
      * @param array<string, mixed> $data
      * @return SettlementData|null Normalized data, or null for an invalid payload.
      */
     private function normalize(array $data): ?array
     {
         $order_id = $data['orderId'] ?? $data['metadata']['orderId'] ?? null;
-        $transaction_id = $data['transactionId'] ?? null;
+        $reference = $data['reference'] ?? null;
         $status = $data['status'] ?? null;
         $amount = $data['amount'] ?? null;
         $original_amount = $data['originalAmount'] ?? null;
@@ -110,7 +115,6 @@ class Flizpay_Settlement
 
         if (
             !is_numeric($order_id) ||
-            !is_scalar($transaction_id) ||
             !is_scalar($status) ||
             !is_numeric($amount) ||
             !is_numeric($original_amount) ||
@@ -121,7 +125,9 @@ class Flizpay_Settlement
 
         $normalized = array(
             'order_id' => (int) $order_id,
-            'transaction_id' => sanitize_text_field((string) $transaction_id),
+            'reference' => is_scalar($reference) ? sanitize_text_field((string) $reference) : '',
+            // Legacy (<= 2.5.3): webhooks for legacy orders may carry only a transactionId.
+            'transaction_id' => $this->legacy_transaction_id($data),
             'status' => strtolower(sanitize_text_field((string) $status)),
             'amount' => wc_format_decimal($amount),
             'original_amount' => wc_format_decimal($original_amount),
@@ -130,7 +136,8 @@ class Flizpay_Settlement
 
         if (
             $normalized['order_id'] <= 0 ||
-            $normalized['transaction_id'] === '' ||
+            // Legacy (<= 2.5.3): becomes `$normalized['reference'] === ''` after removal.
+            ($normalized['reference'] === '' && $normalized['transaction_id'] === '') ||
             $normalized['currency'] === '' ||
             $normalized['amount'] === '' ||
             $normalized['original_amount'] === ''
@@ -144,8 +151,11 @@ class Flizpay_Settlement
     /**
      * Validate normalized provider data against the order and transaction snapshot.
      *
-     * Legacy webhook transactions without a snapshot use the order's current amount
-     * and currency. Reconciliation always requires a matching stored reference.
+     * Authorization is membership of the reference in `_flizpay_transactions`.
+     * Webhooks for legacy orders (plugin <= 2.5.3) are authorized through the
+     * `_flizpay_issued_tx_ids` allowlist instead and validate against the
+     * order's current amount and currency. Reconciliation always requires a
+     * stored snapshot and a matching requested reference.
      *
      * @param SettlementData $data
      * @param string $source Settlement source: webhook or reconciliation.
@@ -162,8 +172,9 @@ class Flizpay_Settlement
             return $this->reject('order_mismatch', 'Provider order ID does not match.', $data);
         }
 
-        $issued = $order->get_meta('_flizpay_issued_tx_ids');
-        if (!is_array($issued) || !in_array($data['transaction_id'], $issued, true)) {
+        $snapshot = $this->get_snapshot($order, $data['reference']);
+        // Legacy (<= 2.5.3): becomes `$snapshot === null` after removal.
+        if ($snapshot === null && !$this->legacy_is_authorized($order, $data, $source)) {
             return $this->reject('transaction_mismatch', 'Transaction is not authorized for this order.', $data);
         }
 
@@ -171,19 +182,20 @@ class Flizpay_Settlement
             return $this->reject('unknown_status', 'Provider status is not recognized.', $data);
         }
 
-        $reference_data = $this->get_reference_data($order, $data['transaction_id']);
         if ($source === 'reconciliation') {
-            if ($reference_data === null || $requested_reference === null || $requested_reference === '') {
+            if ($snapshot === null || $requested_reference === null || $requested_reference === '') {
                 return $this->reject('missing_reference', 'Transaction reference is unavailable.', $data);
             }
 
-            if (!hash_equals($reference_data['reference'], $requested_reference)) {
+            if (!hash_equals($requested_reference, $data['reference'])) {
                 return $this->reject('reference_mismatch', 'Transaction reference does not match.', $data);
             }
         }
 
-        $expected_amount = $reference_data['original_amount'] ?? wc_format_decimal($order->get_total());
-        $expected_currency = $reference_data['currency'] ?? strtoupper((string) $order->get_currency());
+        // Legacy (<= 2.5.3): legacy orders have no snapshot; validate against the
+        // order itself. Drop the `??` fallbacks after removal.
+        $expected_amount = $snapshot['original_amount'] ?? wc_format_decimal($order->get_total());
+        $expected_currency = $snapshot['currency'] ?? strtoupper((string) $order->get_currency());
         $precision = wc_get_price_decimals();
 
         if (wc_format_decimal($data['original_amount'], $precision) !== wc_format_decimal($expected_amount, $precision)) {
@@ -204,31 +216,31 @@ class Flizpay_Settlement
     }
 
     /**
-     * Read the transaction-time reference, amount, currency, and attempt snapshot.
+     * Read the transaction-time amount, currency, and attempt snapshot for a reference.
      *
-     * @return ReferenceData|null Stored reference data, or null for legacy transactions.
+     * @return TransactionSnapshot|null Stored snapshot, or null for unknown references.
      */
-    private function get_reference_data(\WC_Order $order, string $transaction_id): ?array
+    private function get_snapshot(\WC_Order $order, string $reference): ?array
     {
-        $references = $order->get_meta('_flizpay_transaction_references');
-        if (!is_array($references) || !isset($references[$transaction_id]) || !is_array($references[$transaction_id])) {
+        if ($reference === '') {
             return null;
         }
 
-        $reference = $references[$transaction_id];
-        if (!isset($reference['reference']) || !is_scalar($reference['reference'])) {
+        $transactions = $order->get_meta('_flizpay_transactions');
+        if (!is_array($transactions) || !isset($transactions[$reference]) || !is_array($transactions[$reference])) {
             return null;
         }
+
+        $snapshot = $transactions[$reference];
 
         return array(
-            'reference' => sanitize_text_field((string) $reference['reference']),
-            'original_amount' => isset($reference['original_amount']) && is_numeric($reference['original_amount'])
-                ? wc_format_decimal($reference['original_amount'])
+            'original_amount' => isset($snapshot['original_amount']) && is_numeric($snapshot['original_amount'])
+                ? wc_format_decimal($snapshot['original_amount'])
                 : wc_format_decimal($order->get_total()),
-            'currency' => isset($reference['currency']) && is_scalar($reference['currency'])
-                ? strtoupper(sanitize_text_field((string) $reference['currency']))
+            'currency' => isset($snapshot['currency']) && is_scalar($snapshot['currency'])
+                ? strtoupper(sanitize_text_field((string) $snapshot['currency']))
                 : strtoupper((string) $order->get_currency()),
-            'attempt' => isset($reference['attempt']) ? (int) $reference['attempt'] : 0,
+            'attempt' => isset($snapshot['attempt']) ? (int) $snapshot['attempt'] : 0,
         );
     }
 
@@ -241,12 +253,18 @@ class Flizpay_Settlement
     private function check_state(\WC_Order $order, array $data): ?array
     {
         $terminal_keys = array(
-            'completed' => '_flizpay_completed_tx',
-            'failed' => '_flizpay_failed_tx',
-            'canceled' => '_flizpay_canceled_tx',
+            'completed' => '_flizpay_completed_reference',
+            'failed' => '_flizpay_failed_reference',
+            'canceled' => '_flizpay_canceled_reference',
         );
-        $terminal_key = $terminal_keys[$data['status']];
-        if ($order->get_meta($terminal_key) === $data['transaction_id']) {
+        // Legacy (<= 2.5.3): the reference guard exists because legacy payloads
+        // may have an empty reference, which would match an unset marker.
+        if ($data['reference'] !== '' && $order->get_meta($terminal_keys[$data['status']]) === $data['reference']) {
+            return $this->noop('duplicate', 'Transaction was already processed.', $data);
+        }
+
+        // Legacy (<= 2.5.3): markers written by the old plugin hold transactionIds.
+        if ($this->legacy_is_duplicate($order, $data)) {
             return $this->noop('duplicate', 'Transaction was already processed.', $data);
         }
 
@@ -262,8 +280,8 @@ class Flizpay_Settlement
             return $this->noop('already_paid', 'Paid orders cannot be failed or cancelled.', $data);
         }
 
-        $reference_data = $this->get_reference_data($order, $data['transaction_id']);
-        if ($reference_data !== null && $reference_data['attempt'] < (int) $order->get_meta('_flizpay_transaction_attempt')) {
+        $snapshot = $this->get_snapshot($order, $data['reference']);
+        if ($snapshot !== null && $snapshot['attempt'] < (int) $order->get_meta('_flizpay_transaction_attempt')) {
             return $this->noop('older_attempt', 'Older attempts cannot terminalize this order.', $data);
         }
 
@@ -288,10 +306,10 @@ class Flizpay_Settlement
 
         $order->set_payment_method('flizpay');
         $order->set_payment_method_title('FLIZpay');
-        $order->update_meta_data('_flizpay_completed_tx', $data['transaction_id']);
+        $this->mark_terminal($order, 'completed', $data);
         $order->save();
-        $order->payment_complete($data['transaction_id']);
-        $order->add_order_note('FLIZ transaction ID: ' . $data['transaction_id']);
+        $order->payment_complete($this->identifier($data));
+        $order->add_order_note('FLIZ reference: ' . $this->identifier($data));
         $order->save();
         $this->send_order_emails($order->get_id());
 
@@ -306,11 +324,11 @@ class Flizpay_Settlement
      */
     private function fail_order(\WC_Order $order, array $data): array
     {
-        $order->update_meta_data('_flizpay_failed_tx', $data['transaction_id']);
+        $this->mark_terminal($order, 'failed', $data);
         $this->advance_transaction_attempt($order);
         $order->save();
         $order->update_status('failed', __('Payment failed via FLIZpay', 'flizpay-for-woocommerce'));
-        $order->add_order_note('FLIZ transaction ID: ' . $data['transaction_id'] . ' - payment failed');
+        $order->add_order_note('FLIZ reference: ' . $this->identifier($data) . ' - payment failed');
         $order->save();
 
         return $this->applied('failed', 'Order payment failed.', $data);
@@ -324,14 +342,41 @@ class Flizpay_Settlement
      */
     private function cancel_order(\WC_Order $order, array $data): array
     {
-        $order->update_meta_data('_flizpay_canceled_tx', $data['transaction_id']);
+        $this->mark_terminal($order, 'canceled', $data);
         $this->advance_transaction_attempt($order);
         $order->save();
         $order->update_status('cancelled', __('Payment canceled via FLIZpay', 'flizpay-for-woocommerce'));
-        $order->add_order_note('FLIZ transaction ID: ' . $data['transaction_id'] . ' - payment canceled by user or bank');
+        $order->add_order_note('FLIZ reference: ' . $this->identifier($data) . ' - payment canceled by user or bank');
         $order->save();
 
         return $this->applied('canceled', 'Order payment cancelled.', $data);
+    }
+
+    /**
+     * Record the identifier that terminalized the order for duplicate detection.
+     *
+     * @param SettlementData $data
+     */
+    private function mark_terminal(\WC_Order $order, string $status, array $data): void
+    {
+        // Legacy (<= 2.5.3): webhooks without a reference use the legacy marker.
+        if ($data['reference'] === '') {
+            $this->legacy_mark_terminal($order, $status, $data);
+            return;
+        }
+
+        $order->update_meta_data('_flizpay_' . $status . '_reference', $data['reference']);
+    }
+
+    /**
+     * Identifier used for payment_complete() and order notes.
+     *
+     * @param SettlementData $data
+     */
+    private function identifier(array $data): string
+    {
+        // Legacy (<= 2.5.3): becomes plain `$data['reference']` after removal.
+        return $data['reference'] !== '' ? $data['reference'] : $data['transaction_id'];
     }
 
     /**
@@ -471,9 +516,84 @@ class Flizpay_Settlement
         wc_get_logger()->log($level, $message, array(
             'source' => 'flizpay-reconciliation',
             'order_id' => $data['order_id'] ?? null,
+            'reference' => $data['reference'] ?? null,
+            // Legacy (<= 2.5.3): only set for legacy webhooks.
             'transaction_id' => $data['transaction_id'] ?? null,
             'provider_status' => $data['status'] ?? null,
             'result' => $result,
         ));
+    }
+
+    // -------------------------------------------------------------------------
+    // Legacy support: orders placed on plugin <= 2.5.3 and unpaid at upgrade.
+    //
+    // Their meta stores transactionIds (`_flizpay_issued_tx_ids` allowlist,
+    // `_flizpay_*_tx` terminal markers) and no reference, so their webhooks
+    // authorize and deduplicate through the methods below. Reconciliation never
+    // uses them. Once such orders age out of the settlement window, delete this
+    // section, the `transaction_id` field of SettlementData, and every call
+    // site marked "Legacy (<= 2.5.3)".
+    // -------------------------------------------------------------------------
+
+    /**
+     * Extract the deprecated transactionId carried by legacy webhook payloads.
+     *
+     * @param array<string, mixed> $data Raw provider payload.
+     */
+    private function legacy_transaction_id(array $data): string
+    {
+        $transaction_id = $data['transactionId'] ?? null;
+
+        return is_scalar($transaction_id) ? sanitize_text_field((string) $transaction_id) : '';
+    }
+
+    /**
+     * Authorize a webhook for a legacy order via the transactionId allowlist.
+     *
+     * @param SettlementData $data
+     */
+    private function legacy_is_authorized(\WC_Order $order, array $data, string $source): bool
+    {
+        if ($source !== 'webhook' || $data['transaction_id'] === '') {
+            return false;
+        }
+
+        $issued = $order->get_meta('_flizpay_issued_tx_ids');
+
+        return is_array($issued) && in_array($data['transaction_id'], $issued, true);
+    }
+
+    /**
+     * Detect replays against the transactionId terminal markers.
+     *
+     * Without this check a replayed failed/canceled webhook would
+     * re-terminalize a legacy order and advance the payment attempt twice.
+     *
+     * @param SettlementData $data
+     */
+    private function legacy_is_duplicate(\WC_Order $order, array $data): bool
+    {
+        if ($data['transaction_id'] === '') {
+            return false;
+        }
+
+        $terminal_keys = array(
+            'completed' => '_flizpay_completed_tx',
+            'failed' => '_flizpay_failed_tx',
+            'canceled' => '_flizpay_canceled_tx',
+        );
+
+        return isset($terminal_keys[$data['status']])
+            && $order->get_meta($terminal_keys[$data['status']]) === $data['transaction_id'];
+    }
+
+    /**
+     * Record the transactionId terminal marker for reference-less settlements.
+     *
+     * @param SettlementData $data
+     */
+    private function legacy_mark_terminal(\WC_Order $order, string $status, array $data): void
+    {
+        $order->update_meta_data('_flizpay_' . $status . '_tx', $data['transaction_id']);
     }
 }
