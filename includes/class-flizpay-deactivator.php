@@ -59,6 +59,7 @@ class Flizpay_Deactivator
 					$flizpay_settings['flizpay_managed_connection'],
 					$flizpay_settings['flizpay_api_base_url']
 				);
+				$flizpay_settings['enabled'] = 'no';
 				$flizpay_settings['flizpay_webhook_alive'] = 'no';
 				update_option('woocommerce_flizpay_settings', $flizpay_settings, false);
 			}
