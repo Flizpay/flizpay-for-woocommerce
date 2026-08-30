@@ -65,9 +65,7 @@ class Flizpay_Reconciliation
             'order' => 'ASC',
             'status' => array('pending', 'checkout-draft'),
             'payment_method' => 'flizpay',
-            'date_created' => gmdate('Y-m-d H:i:s', time() - (10 * DAY_IN_SECONDS))
-                . '...'
-                . gmdate('Y-m-d H:i:s', time() - (30 * MINUTE_IN_SECONDS)),
+            'date_created' => (time() - (10 * DAY_IN_SECONDS)) . '...' . (time() - (30 * MINUTE_IN_SECONDS)),
             'return' => 'objects',
         ));
 
@@ -98,18 +96,18 @@ class Flizpay_Reconciliation
             return $this->record($context, $order, $this->result(true, 'not_eligible', 'Order no longer requires reconciliation.'));
         }
 
-        $current = $this->get_current_reference($order);
-        if ($current === null) {
+        $reference = $this->get_current_reference($order);
+        if ($reference === null) {
             return $this->record($context, $order, $this->result(false, 'missing_reference', 'Current transaction reference is unavailable.'));
         }
 
         $this->log('info', 'Checking FLIZpay transaction status.', array(
             'order_id' => $order->get_id(),
-            'transaction_id' => $current['transaction_id'],
+            'reference' => $reference,
             'context' => $context,
         ));
 
-        $response = $this->api_service->get_transaction_status($current['reference']);
+        $response = $this->api_service->get_transaction_status($reference);
         if (!$response['success'] || !isset($response['data'])) {
             return $this->record($context, $order, $this->result(false, $response['result'], $response['message']));
         }
@@ -119,12 +117,12 @@ class Flizpay_Reconciliation
             : '';
         $this->log('info', 'FLIZpay transaction status received.', array(
             'order_id' => $order->get_id(),
-            'transaction_id' => $current['transaction_id'],
+            'reference' => $reference,
             'provider_status' => $provider_status,
             'context' => $context,
         ));
 
-        $settlement = $this->settlement->settle($response['data'], 'reconciliation', $current['reference']);
+        $settlement = $this->settlement->settle($response['data'], 'reconciliation', $reference);
         $settlement['provider_status'] = $provider_status;
 
         return $this->record($context, $order, $settlement);
@@ -265,37 +263,37 @@ class Flizpay_Reconciliation
     }
 
     /**
-     * Find the stored transaction/reference pair for the current payment attempt.
+     * Find the stored reference for the current payment attempt.
      *
      * References from older attempts are ignored. Iteration starts with the most
      * recently stored entry in case malformed metadata contains multiple entries
-     * for the same attempt.
+     * for the same attempt. Legacy orders created by plugin <= 2.5.3 never
+     * stored a reference and return null, so they are skipped by every
+     * reconciliation entry point.
      *
      * @param \WC_Order $order Order containing FLIZpay attempt metadata.
-     * @return array{transaction_id: string, reference: string}|null Current pair, or null when unavailable.
+     * @return string|null Current reference, or null when unavailable.
      */
-    private function get_current_reference(\WC_Order $order): ?array
+    private function get_current_reference(\WC_Order $order): ?string
     {
         $attempt = (int) $order->get_meta('_flizpay_transaction_attempt');
-        $references = $order->get_meta('_flizpay_transaction_references');
-        if (!is_array($references)) {
+        $transactions = $order->get_meta('_flizpay_transactions');
+        if (!is_array($transactions)) {
             return null;
         }
 
-        foreach (array_reverse($references, true) as $transaction_id => $reference) {
+        foreach (array_reverse($transactions, true) as $reference => $snapshot) {
             if (
-                !is_string($transaction_id)
-                || !is_array($reference)
-                || (int) ($reference['attempt'] ?? -1) !== $attempt
-                || !isset($reference['reference'])
-                || !is_scalar($reference['reference'])
+                !is_string($reference)
+                || !is_array($snapshot)
+                || (int) ($snapshot['attempt'] ?? -1) !== $attempt
             ) {
                 continue;
             }
 
-            $value = sanitize_text_field((string) $reference['reference']);
+            $value = sanitize_text_field($reference);
             if ($value !== '') {
-                return array('transaction_id' => $transaction_id, 'reference' => $value);
+                return $value;
             }
         }
 

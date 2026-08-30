@@ -113,7 +113,6 @@ class WC_Flizpay_API
                     'options' => array(
                         'headers' => array(
                             'Content-type' => 'application/json',
-                            'x-api-key' => $this->api_key
                         )
                     )
                 );

@@ -160,7 +160,7 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - HOTIFX: FLIZ logo not showing on mobile loading checkout modal
 
 - 1.2.4
-  - ADDED: Localstorage to store ongoing orders, Properly translated the admin page 
+  - ADDED: Localstorage to store ongoing orders, Properly translated the admin page
   - FIXED: Loadin wheel layout
 
 - 1.3.0
@@ -219,7 +219,7 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
 - v2.1.0
   - ADDED: Support for non-shippable products
   - FIXED: Title length of express checkout button
-  - REMOVED: Status draft for new orders 
+  - REMOVED: Status draft for new orders
 
 - v2.2.0
   - ADDED: Support for custom order status
@@ -323,6 +323,14 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
 - v2.5.3
   - Fixed - Corrected the WooCommerce Cart and Checkout Blocks compatibility declaration to reference the main plugin file.
 
+- v2.5.4
+  - Added         - Automatic order reconciliation: pending FLIZpay orders are periodically re-checked against the FLIZpay API and settled to their final status
+  - Added         - Payment status is also verified on the order confirmation page and before WooCommerce auto-cancels unpaid orders
+  - Added         - Centralized payment settlement service applying validated, idempotent order updates for both webhooks and reconciliation
+  - Fixed         - Duplicate FLIZpay transactions can no longer be created for the same checkout attempt
+  - Changed       - The transaction reference is now the single transaction identifier, with backward-compatible handling of orders created by older versions
+  - Compatibility - Minimum requirements raised to WordPress 6.4, PHP 8.2, and WooCommerce 9.0
+
 == Upgrade Notice ==
 
 = v2.6.0 =
@@ -332,6 +340,14 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
 * Changed - Pairing requires a WooCommerce manager to confirm the connection in wp-admin.
 * Note    - Pairing calls back into this site while the request is open. On hosts limited to a
             single PHP worker, raise the worker count before pairing or the request will time out.
+
+= v2.5.4 =
+* Added         - Automatic order reconciliation: pending FLIZpay orders are periodically re-checked against the FLIZpay API and settled to their final status
+* Added         - Payment status is also verified on the order confirmation page and before WooCommerce auto-cancels unpaid orders
+* Added         - Centralized payment settlement service applying validated, idempotent order updates for both webhooks and reconciliation
+* Fixed         - Duplicate FLIZpay transactions can no longer be created for the same checkout attempt
+* Changed       - The transaction reference is now the single transaction identifier, with backward-compatible handling of orders created by older versions
+* Compatibility - Minimum requirements raised to WordPress 6.4, PHP 8.2, and WooCommerce 9.0
 
 = v2.5.3 =
 * Fixed - Corrected the WooCommerce Cart and Checkout Blocks compatibility declaration to reference the main plugin file.
@@ -480,13 +496,13 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
 = v1.4.0 =
 * The admin page now is presented on the admin user language or defaults to system language. Customer information add to the Transaction and value with cashback displayed on the checkout page
 
-= v1.3.0 = 
+= v1.3.0 =
 * The admin page now has a better UX and the payment failed page was removed in favor of FLIZ payment failed page
 
-= v1.2.4 = 
+= v1.2.4 =
 * Localstorage order storage, admin page translation and fixed on loading wheel layout
 
-= v1.2.3 = 
+= v1.2.3 =
 * Hotfixed the FLIZ logo not showing on the mobile checkout loading modal
 
 = v1.2.2 =
@@ -501,10 +517,10 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
 = v1.1.0 =
 * Refund for discounted items, new logo and pages adjustments
 
-= v1.0.2 = 
+= v1.0.2 =
 * Logo and Descriptions fixes
 
-= v1.0.1 = 
+= v1.0.1 =
 * Readme and Documentation fixes
 
 = v1.0.0 =

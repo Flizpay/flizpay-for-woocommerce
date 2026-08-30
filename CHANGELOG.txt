@@ -1,6 +1,6 @@
 == FLIZpay for WooCommerce Changelog ==
 
-2026-08-28 - version 2.6.0
+2026-08-30 - version 2.6.0
 * Added   - Secure one-click pairing from the FLIZpay merchant dashboard.
 * Added   - Connection-scoped credentials, so a paired shop never holds a full account API key.
 * Added   - Temporary WordPress Application Passwords are revoked once installation finishes.
@@ -9,6 +9,14 @@
 * Changed - Deactivating the plugin clears managed credentials once the backend confirms the disconnect.
 * Note    - Pairing calls back into this site while the request is open. On hosts limited to a
             single PHP worker, raise the worker count before pairing or the request will time out.
+
+2026-08-29 - version 2.5.4
+* Added         - Automatic order reconciliation: pending FLIZpay orders are periodically re-checked against the FLIZpay API and settled to their final status
+* Added         - Payment status is also verified on the order confirmation page and before WooCommerce auto-cancels unpaid orders
+* Added         - Centralized payment settlement service applying validated, idempotent order updates for both webhooks and reconciliation
+* Fixed         - Duplicate FLIZpay transactions can no longer be created for the same checkout attempt
+* Changed       - The transaction reference is now the single transaction identifier, with backward-compatible handling of orders created by older versions
+* Compatibility - Minimum requirements raised to WordPress 6.4, PHP 8.2, and WooCommerce 9.0
 
 2026-07-14 - version 2.5.3
 * Fixed - Corrected the WooCommerce Cart and Checkout Blocks compatibility declaration to reference the main plugin file.
@@ -117,7 +125,7 @@
 * Fix checkout buttons translations and implement instant cashback info update
 
 2025-18-01 - version 2.0.5
-* Fix express checkout button font size and customer/merchant e-mails for orders 
+* Fix express checkout button font size and customer/merchant e-mails for orders
 
 2025-15-01 - version 2.0.4
 * Fix express checkout for items on sale, small adjustments on loading and translations
@@ -179,7 +187,7 @@
 2024-10-10 - version 1.1.0
 
 * Added refund per item when cashback discount is applied
-* Added new logo 
+* Added new logo
 * Fixed SEO for custom payment failed page
 
 2024-09-25 - version 1.0.2

@@ -109,7 +109,7 @@ class Flizpay_API_Service
      * @param Order $order
      * @param string $source
      * @param string $idempotency_key
-     * @return array{reference: string, transactionId: string, redirectUrl: string}|null
+     * @return array{reference: string, redirectUrl: string}|null
      */
     public function create_transaction(Order $order, string $source, string $idempotency_key): ?array
     {
@@ -141,21 +141,17 @@ class Flizpay_API_Service
         $redirect_url = isset($response["redirectUrl"])
             ? (string) $response["redirectUrl"]
             : null;
-        $transaction_id = isset($response["transactionId"])
-            ? (string) $response["transactionId"]
-            : "";
         $reference = isset($response["reference"])
             ? (string) $response["reference"]
             : "";
 
-        if (!$redirect_url || $transaction_id === "" || $reference === "") {
+        if (!$redirect_url || $reference === "") {
             return null;
         }
 
         return [
             "reference" => $reference,
             "redirectUrl" => $redirect_url,
-            "transactionId" => $transaction_id,
         ];
     }
 
@@ -212,9 +208,6 @@ class Flizpay_API_Service
         }
 
         $status_code = is_array($response) ? (int) ($response['_http_status'] ?? 0) : 0;
-        if ($status_code === 401) {
-            return $this->status_error('unauthorized', 'FLIZpay rejected the merchant API key.');
-        }
         if ($status_code === 404) {
             return $this->status_error('not_found', 'FLIZpay transaction was not found.');
         }
@@ -231,11 +224,15 @@ class Flizpay_API_Service
 
         $data = $response;
         unset($data['_http_status']);
-        $required = array('transactionId', 'status', 'amount', 'originalAmount', 'currency', 'orderId');
+        $required = array('reference', 'status', 'amount', 'originalAmount', 'currency', 'orderId');
         foreach ($required as $field) {
             if (!array_key_exists($field, $data) || $data[$field] === '' || $data[$field] === null) {
                 return $this->status_error('invalid_response', 'FLIZpay status response is missing merchant transaction fields.');
             }
+        }
+
+        if (!is_scalar($data['reference']) || !hash_equals($reference, (string) $data['reference'])) {
+            return $this->status_error('reference_mismatch', 'FLIZpay status response reference does not match the request.');
         }
 
         return array(
