@@ -152,6 +152,11 @@ class Flizpay
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-reconciliation.php';
 
 		/**
+		 * The class responsible for the one-click connection with the FLIZpay dashboard.
+		 */
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-flizpay-connect.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-flizpay-admin.php';
@@ -204,6 +209,12 @@ class Flizpay
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
 		$this->loader->add_filter('flizpay_load_settings', $plugin_admin, 'load_form_fields');
 		$this->loader->add_filter('plugin_action_links_' . basename(dirname(__DIR__)) . '/flizpay.php', $plugin_admin, 'flizpay_plugin_links');
+
+		$plugin_connect = new Flizpay_Connect();
+
+		$this->loader->add_action('admin_footer', $plugin_connect, 'render_connect_form');
+		$this->loader->add_action('admin_post_flizpay_connect', $plugin_connect, 'handle_admin_connect');
+		$this->loader->add_action('admin_notices', $plugin_connect, 'render_admin_notice');
 	}
 
 	/**

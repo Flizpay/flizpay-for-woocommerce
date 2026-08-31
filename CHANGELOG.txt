@@ -1,5 +1,9 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2026-08-31 - version 2.6.0
+* Added   - One-click connection from the FLIZpay merchant dashboard: a one-time link opens the FLIZpay settings screen, where a single confirmation connects the shop without copying an API key.
+* Added   - FLIZPAY_API_BASE_URL wp-config constant to point the plugin at a staging or local FLIZpay API.
+
 2026-08-29 - version 2.5.4
 * Added         - Automatic order reconciliation: pending FLIZpay orders are periodically re-checked against the FLIZpay API and settled to their final status
 * Added         - Payment status is also verified on the order confirmation page and before WooCommerce auto-cancels unpaid orders
