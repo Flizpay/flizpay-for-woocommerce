@@ -17,6 +17,42 @@ class Flizpay_API_Service
     }
 
     /**
+     * @return array{cashback: array|null, webhook_key: string, webhook_url: string}|WP_Error
+     */
+    public function establish_connection(): array|WP_Error
+    {
+        try {
+            $webhook_url = $this->generate_webhook_url();
+            $webhook_key = $this->get_webhook_key();
+            $cashback_data = $this->fetch_cashback_data();
+        } catch (\Exception $e) {
+            Flizpay_Sentry::with_scope(static function ($scope) use ($e): void {
+                if ($scope && method_exists($scope, 'setExtras')) {
+                    $scope->setExtras([
+                        'function_name' => 'establish_connection',
+                        'message' => 'Exception occurred while establishing connection to FLIZpay',
+                        'plugin_version' => FLIZPAY_VERSION,
+                    ]);
+                }
+
+                Flizpay_Sentry::capture_exception($e);
+            });
+
+            return new WP_Error('flizpay_connection_failed', $e->getMessage());
+        }
+
+        if (!$webhook_url || !$webhook_key) {
+            return new WP_Error('flizpay_connection_failed', 'FLIZpay did not return a usable webhook configuration.');
+        }
+
+        return array(
+            'cashback' => $cashback_data,
+            'webhook_key' => $webhook_key,
+            'webhook_url' => $webhook_url,
+        );
+    }
+
+    /**
      * Generate the secret used to authenticate callbacks.
      *
      * @return string|null

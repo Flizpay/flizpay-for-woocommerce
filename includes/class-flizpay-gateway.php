@@ -189,36 +189,23 @@ function flizpay_init_gateway_class()
                 return $saved;
             }
 
-            if ($api_key !== $previous_api_key || $this->get_option('flizpay_webhook_alive') === 'no') {
-                try {
-                    $this->update_option('flizpay_webhook_alive', 'no');
-                    usleep(500000); // Sleep for 0.5 seconds to wait for database update
-                    $webhook_url = $this->api_service->generate_webhook_url();
-                    $webhook_key = $this->api_service->get_webhook_key();
-                    $cashback_data = $this->api_service->fetch_cashback_data();
+            $is_new_api_key = $api_key !== $previous_api_key;
 
-                    if ($webhook_key && $webhook_url) {
-                        $this->update_option('flizpay_webhook_key', $webhook_key);
-                        $this->update_option('flizpay_webhook_url', $webhook_url);
-                        $this->update_option('flizpay_api_key', $api_key);
-                        $this->update_option('flizpay_cashback', $cashback_data);
-                        $this->cashback = $cashback_data;
-                    } else {
+            if ($is_new_api_key || $this->get_option('flizpay_webhook_alive') === 'no') {
+                $this->update_option('flizpay_webhook_alive', 'no');
+                usleep(500000); // Sleep for 0.5 seconds to wait for database update
+                $connection = $this->api_service->establish_connection();
+
+                if (is_wp_error($connection)) {
+                    if ($is_new_api_key) {
                         $this->update_option('flizpay_api_key', '');
                     }
-                } catch (\Exception $e) {
-                    Flizpay_Sentry::with_scope(static function ($scope) use ($e): void {
-                        if ($scope && method_exists($scope, 'setExtras')) {
-                            $scope->setExtras([
-                                'function_name' => 'process_admin_options',
-                                'message' => 'Exception occurred while establishing connection to FLIZpay',
-                                'plugin_version' => self::$VERSION,
-                            ]);
-                        }
-
-                        Flizpay_Sentry::capture_exception($e);
-                    });
-                    $this->update_option('flizpay_api_key', '');
+                } else {
+                    $this->update_option('flizpay_webhook_key', $connection['webhook_key']);
+                    $this->update_option('flizpay_webhook_url', $connection['webhook_url']);
+                    $this->update_option('flizpay_api_key', $api_key);
+                    $this->update_option('flizpay_cashback', $connection['cashback']);
+                    $this->cashback = $connection['cashback'];
                 }
             }
 

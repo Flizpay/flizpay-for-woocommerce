@@ -133,25 +133,14 @@ class Flizpay_Connect
         }
         update_option(self::SETTINGS_OPTION, $settings);
 
-        // Same setup the manual API-key save runs: register the webhook URL, obtain the
-        // webhook key (FLIZpay then sends a test webhook that flips flizpay_webhook_alive),
-        // and cache the cashback configuration.
-        try {
-            $api_service = new Flizpay_API_Service($api_key);
-            $webhook_url = $api_service->generate_webhook_url();
-            $webhook_key = $api_service->get_webhook_key();
-            $cashback_data = $api_service->fetch_cashback_data();
-        } catch (\Exception $e) {
-            Flizpay_Sentry::capture_exception($e);
-            return new WP_Error('flizpay_connect_failed', __('FLIZpay could not configure the webhook.', 'flizpay-for-woocommerce'));
-        }
-        if (!$webhook_url || !$webhook_key) {
+        $connection = (new Flizpay_API_Service($api_key))->establish_connection();
+        if (is_wp_error($connection)) {
             return new WP_Error('flizpay_connect_failed', __('FLIZpay could not configure the webhook.', 'flizpay-for-woocommerce'));
         }
 
-        $settings['flizpay_webhook_url'] = $webhook_url;
-        $settings['flizpay_webhook_key'] = $webhook_key;
-        $settings['flizpay_cashback'] = $cashback_data;
+        $settings['flizpay_webhook_url'] = $connection['webhook_url'];
+        $settings['flizpay_webhook_key'] = $connection['webhook_key'];
+        $settings['flizpay_cashback'] = $connection['cashback'];
         update_option(self::SETTINGS_OPTION, $settings);
 
         return true;
