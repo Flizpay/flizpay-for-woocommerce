@@ -55,38 +55,38 @@ msgstr "Die Zahlungsrevolution"
 msgid "accept_payments"
 msgstr "Erhalte gebührenfreie Zahlungen mit FLIZpay."
 
-#: includes/class-flizpay-connect.php:24
+#: admin/class-flizpay-connect.php:27
 msgid "FLIZpay would like to connect this shop:"
 msgstr "FLIZpay möchte sich mit diesem Shop verbinden:"
 
-#: includes/class-flizpay-connect.php:33
+#: admin/class-flizpay-connect.php:36
 msgid "Connect this shop to FLIZpay"
 msgstr "Diesen Shop mit FLIZpay verbinden"
 
-#: includes/class-flizpay-connect.php:58
+#: admin/class-flizpay-connect.php:61
 msgid "You are not allowed to connect FLIZpay."
 msgstr "Du bist nicht berechtigt, FLIZpay zu verbinden."
 
-#: includes/class-flizpay-connect.php:86
+#: admin/class-flizpay-connect.php:89
 msgid "FLIZpay was connected successfully."
 msgstr "FLIZpay wurde erfolgreich verbunden."
 
-#: includes/class-flizpay-connect.php:87
+#: admin/class-flizpay-connect.php:90
 msgid "FLIZpay could not be connected: %s"
 msgstr "FLIZpay konnte nicht verbunden werden: %s"
 
-#: includes/class-flizpay-connect.php:98
+#: admin/class-flizpay-connect.php:101
 msgid "The connection link is invalid or expired."
 msgstr "Der Verbindungslink ist ungültig oder abgelaufen."
 
-#: includes/class-flizpay-connect.php:112
+#: admin/class-flizpay-connect.php:115
 msgid "FLIZpay could not be reached."
 msgstr "FLIZpay konnte nicht erreicht werden."
 
-#: includes/class-flizpay-connect.php:121
+#: admin/class-flizpay-connect.php:124
 msgid "FLIZpay rejected the connection."
 msgstr "FLIZpay hat die Verbindung abgelehnt."
 
-#: includes/class-flizpay-connect.php:149
+#: admin/class-flizpay-connect.php:141
 msgid "FLIZpay could not configure the webhook."
 msgstr "FLIZpay konnte den Webhook nicht einrichten."

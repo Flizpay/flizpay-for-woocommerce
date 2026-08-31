@@ -7,6 +7,9 @@
  * settings screen with the token in the URL fragment. This class renders a confirm
  * button there, exchanges the token for an API key, and then runs the same connection
  * setup the manual API-key save performs.
+ *
+ * @package    Flizpay
+ * @subpackage Flizpay/admin
  */
 class Flizpay_Connect
 {

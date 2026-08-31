@@ -54,3 +54,39 @@ msgstr "The payment revolution"
 #: flizpay.php:18
 msgid "accept_payments"
 msgstr "Accept payments via FLIZpay, its 100% free."
+
+#: admin/class-flizpay-connect.php:27
+msgid "FLIZpay would like to connect this shop:"
+msgstr "FLIZpay would like to connect this shop:"
+
+#: admin/class-flizpay-connect.php:36
+msgid "Connect this shop to FLIZpay"
+msgstr "Connect this shop to FLIZpay"
+
+#: admin/class-flizpay-connect.php:61
+msgid "You are not allowed to connect FLIZpay."
+msgstr "You are not allowed to connect FLIZpay."
+
+#: admin/class-flizpay-connect.php:89
+msgid "FLIZpay was connected successfully."
+msgstr "FLIZpay was connected successfully."
+
+#: admin/class-flizpay-connect.php:90
+msgid "FLIZpay could not be connected: %s"
+msgstr "FLIZpay could not be connected: %s"
+
+#: admin/class-flizpay-connect.php:101
+msgid "The connection link is invalid or expired."
+msgstr "The connection link is invalid or expired."
+
+#: admin/class-flizpay-connect.php:115
+msgid "FLIZpay could not be reached."
+msgstr "FLIZpay could not be reached."
+
+#: admin/class-flizpay-connect.php:124
+msgid "FLIZpay rejected the connection."
+msgstr "FLIZpay rejected the connection."
+
+#: admin/class-flizpay-connect.php:141
+msgid "FLIZpay could not configure the webhook."
+msgstr "FLIZpay could not configure the webhook."
