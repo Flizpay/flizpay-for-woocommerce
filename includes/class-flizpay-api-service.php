@@ -39,7 +39,17 @@ class Flizpay_API_Service
      */
     public function generate_webhook_url(): ?string
     {
-        $webhookUrl = home_url("/flizpay-webhook/", "https");
+        // Local/dev sites may only serve plain http; the FLIZpay backend allows
+        // http webhooks for local development hosts, so only force https elsewhere.
+        $is_local_environment = in_array(
+            wp_get_environment_type(),
+            ["local", "development"],
+            true,
+        );
+        $webhookUrl = home_url(
+            "/flizpay-webhook/",
+            $is_local_environment ? null : "https",
+        );
 
         if (
             str_contains($webhookUrl, "https://") === false &&
