@@ -22,7 +22,7 @@ class Flizpay_Connect
         <div id="flizpay-connect" class="notice notice-info" style="display: none;">
             <p>
                 <?php echo esc_html__('FLIZpay would like to connect this shop:', 'flizpay-for-woocommerce'); ?>
-                <strong><?php echo esc_html($this->get_shop_origin()); ?></strong>
+                <strong><?php echo esc_html($this->get_shop_base_url()); ?></strong>
             </p>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <input type="hidden" name="action" value="flizpay_connect">
@@ -103,7 +103,7 @@ class Flizpay_Connect
             'redirection' => 0,
             'headers' => array('Content-Type' => 'application/json'),
             'body' => wp_json_encode(array(
-                'shopUrl' => $this->get_shop_origin(),
+                'shopUrl' => $this->get_shop_base_url(),
                 'token' => $token,
             )),
             'data_format' => 'body',
@@ -122,6 +122,17 @@ class Flizpay_Connect
             return new WP_Error('flizpay_connect_failed', $message);
         }
 
+        $settings = get_option(self::SETTINGS_OPTION, array());
+        $settings = is_array($settings) ? $settings : array();
+        $settings['flizpay_api_key'] = $api_key;
+        $settings['flizpay_webhook_alive'] = 'no';
+        if (!isset($settings['enabled'])) {
+            // WooCommerce defaults the field to 'yes', so leaving the key absent would
+            // switch the gateway on. The merchant enables it explicitly.
+            $settings['enabled'] = 'no';
+        }
+        update_option(self::SETTINGS_OPTION, $settings);
+
         // Same setup the manual API-key save runs: register the webhook URL, obtain the
         // webhook key (FLIZpay then sends a test webhook that flips flizpay_webhook_alive),
         // and cache the cashback configuration.
@@ -138,18 +149,9 @@ class Flizpay_Connect
             return new WP_Error('flizpay_connect_failed', __('FLIZpay could not configure the webhook.', 'flizpay-for-woocommerce'));
         }
 
-        $settings = get_option(self::SETTINGS_OPTION, array());
-        $settings = is_array($settings) ? $settings : array();
-        $settings['flizpay_api_key'] = $api_key;
         $settings['flizpay_webhook_url'] = $webhook_url;
         $settings['flizpay_webhook_key'] = $webhook_key;
-        $settings['flizpay_webhook_alive'] = 'no';
         $settings['flizpay_cashback'] = $cashback_data;
-        if (!isset($settings['enabled'])) {
-            // WooCommerce defaults the field to 'yes', so leaving the key absent would
-            // switch the gateway on. The merchant enables it explicitly.
-            $settings['enabled'] = 'no';
-        }
         update_option(self::SETTINGS_OPTION, $settings);
 
         return true;
@@ -180,13 +182,16 @@ class Flizpay_Connect
         return untrailingslashit($base_url);
     }
 
-    private function get_shop_origin()
+    private function get_shop_base_url()
     {
         $parts = wp_parse_url(home_url('/'));
-        $origin = $parts['scheme'] . '://' . $parts['host'];
+        $base_url = $parts['scheme'] . '://' . $parts['host'];
         if (!empty($parts['port'])) {
-            $origin .= ':' . $parts['port'];
+            $base_url .= ':' . $parts['port'];
         }
-        return $origin;
+        if (!empty($parts['path'])) {
+            $base_url .= untrailingslashit($parts['path']);
+        }
+        return $base_url;
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 
 if (!defined('FLIZPAY_VERSION')) {
-    define('FLIZPAY_VERSION', '2.5.4');
+    define('FLIZPAY_VERSION', '2.6.0');
 }
 
 /**

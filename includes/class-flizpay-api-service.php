@@ -62,7 +62,7 @@ class Flizpay_API_Service
 
         $response = $client->dispatch(
             "edit_business",
-            ["webhookUrl" => $webhookUrl]
+            ["webhookUrl" => $webhookUrl, "integrationType" => "WooCommerce"]
         );
 
         $webhookUrlResponse = is_array($response) && isset($response["webhookUrl"])
