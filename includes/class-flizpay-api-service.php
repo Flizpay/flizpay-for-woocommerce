@@ -17,6 +17,69 @@ class Flizpay_API_Service
     }
 
     /**
+     * @return array{cashback: array|null, webhook_key: string, webhook_url: string}|WP_Error
+     */
+    public function establish_connection(): array|WP_Error
+    {
+        try {
+            $webhook_url = $this->generate_webhook_url();
+            $webhook_key = $this->get_webhook_key();
+            $cashback_data = $this->fetch_cashback_data();
+        } catch (\Exception $e) {
+            Flizpay_Sentry::with_scope(static function ($scope) use ($e): void {
+                if ($scope && method_exists($scope, 'setExtras')) {
+                    $scope->setExtras([
+                        'function_name' => 'establish_connection',
+                        'message' => 'Exception occurred while establishing connection to FLIZpay',
+                        'plugin_version' => FLIZPAY_VERSION,
+                    ]);
+                }
+
+                Flizpay_Sentry::capture_exception($e);
+            });
+
+            return new WP_Error('flizpay_connection_failed', $e->getMessage());
+        }
+
+        if (!$webhook_url || !$webhook_key) {
+            return new WP_Error('flizpay_connection_failed', 'FLIZpay did not return a usable webhook configuration.');
+        }
+
+        return array(
+            'cashback' => $cashback_data,
+            'webhook_key' => $webhook_key,
+            'webhook_url' => $webhook_url,
+        );
+    }
+
+    /**
+     * @return string|WP_Error
+     */
+    public static function exchange_pairing(string $token, string $shop_url)
+    {
+        $response = WC_Flizpay_API::get_instance('')->dispatch(
+            'pairing_exchange',
+            array('shopUrl' => $shop_url, 'token' => $token)
+        );
+
+        if (is_wp_error($response)) {
+            return new WP_Error('flizpay_connect_unreachable', __('FLIZpay could not be reached.', 'flizpay-for-woocommerce'));
+        }
+
+        $status = is_array($response) ? (int) ($response['_http_status'] ?? 0) : 0;
+        $api_key = is_array($response) && isset($response['apiKey']) ? (string) $response['apiKey'] : '';
+
+        if ($status < 200 || $status >= 300 || $api_key === '') {
+            $message = is_array($response) && !empty($response['message'])
+                ? sanitize_text_field($response['message'])
+                : __('FLIZpay rejected the connection.', 'flizpay-for-woocommerce');
+            return new WP_Error('flizpay_connect_failed', $message);
+        }
+
+        return $api_key;
+    }
+
+    /**
      * Generate the secret used to authenticate callbacks.
      *
      * @return string|null
@@ -39,7 +102,17 @@ class Flizpay_API_Service
      */
     public function generate_webhook_url(): ?string
     {
-        $webhookUrl = home_url("/flizpay-webhook/", "https");
+        // Local/dev sites may only serve plain http; the FLIZpay backend allows
+        // http webhooks for local development hosts, so only force https elsewhere.
+        $is_local_environment = in_array(
+            wp_get_environment_type(),
+            ["local", "development"],
+            true,
+        );
+        $webhookUrl = home_url(
+            "/flizpay-webhook/",
+            $is_local_environment ? null : "https",
+        );
 
         if (
             str_contains($webhookUrl, "https://") === false &&
@@ -52,7 +125,7 @@ class Flizpay_API_Service
 
         $response = $client->dispatch(
             "edit_business",
-            ["webhookUrl" => $webhookUrl]
+            ["webhookUrl" => $webhookUrl, "integrationType" => "WooCommerce"]
         );
 
         $webhookUrlResponse = is_array($response) && isset($response["webhookUrl"])

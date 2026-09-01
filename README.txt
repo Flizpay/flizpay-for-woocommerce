@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, discount, no-fee
 Requires at least: 6.4
 Tested up to: 7.0
-Stable tag: 2.5.4
+Stable tag: 2.6.0
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -331,7 +331,15 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - Changed       - The transaction reference is now the single transaction identifier, with backward-compatible handling of orders created by older versions
   - Compatibility - Minimum requirements raised to WordPress 6.4, PHP 8.2, and WooCommerce 9.0
 
+- v2.6.0
+  - Added   - One-click connection from the FLIZpay merchant dashboard: a one-time link opens the FLIZpay settings screen, where a single confirmation connects the shop without copying an API key.
+  - Added   - FLIZPAY_API_BASE_URL wp-config constant to point the plugin at a staging or local FLIZpay API.
+
 == Upgrade Notice ==
+
+= v2.6.0 =
+* Added   - One-click connection from the FLIZpay merchant dashboard.
+* Added   - FLIZPAY_API_BASE_URL wp-config constant for staging or local FLIZpay APIs.
 
 = v2.5.4 =
 * Added         - Automatic order reconciliation: pending FLIZpay orders are periodically re-checked against the FLIZpay API and settled to their final status

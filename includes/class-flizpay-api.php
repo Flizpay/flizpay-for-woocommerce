@@ -55,7 +55,10 @@ class WC_Flizpay_API
      */
     private function init(): void
     {
-        $this->base_url = 'https://api.flizpay.de';
+        // FLIZPAY_API_BASE_URL (wp-config.php) points the plugin at a staging or local API.
+        $this->base_url = defined('FLIZPAY_API_BASE_URL')
+            ? untrailingslashit(FLIZPAY_API_BASE_URL)
+            : 'https://api.flizpay.de';
         $this->routes = array(
             'generate_webhook_key' => function ($body) {
                 return array(
@@ -105,6 +108,21 @@ class WC_Flizpay_API
                         'headers' => array(
                             'Content-type' => 'application/json',
                         )
+                    )
+                );
+            },
+            'pairing_exchange' => function ($body) {
+                return array(
+                    'path' => $this->base_url . '/business/woocommerce/pairings/exchange',
+                    'method' => 'post',
+                    'options' => array(
+                        'headers' => array(
+                            'Content-type' => 'application/json'
+                        ),
+                        'body' => wp_json_encode($body),
+                        'data_format' => 'body',
+                        'redirection' => 0,
+                        'timeout' => 20,
                     )
                 );
             },
