@@ -111,6 +111,21 @@ class WC_Flizpay_API
                     )
                 );
             },
+            'pairing_exchange' => function ($body) {
+                return array(
+                    'path' => $this->base_url . '/business/woocommerce/pairings/exchange',
+                    'method' => 'post',
+                    'options' => array(
+                        'headers' => array(
+                            'Content-type' => 'application/json'
+                        ),
+                        'body' => wp_json_encode($body),
+                        'data_format' => 'body',
+                        'redirection' => 0,
+                        'timeout' => 20,
+                    )
+                );
+            },
             'fetch_cashback_data' => function ($body) {
                 return array(
                     'path' => $this->base_url . '/business/cashback',

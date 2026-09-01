@@ -53,6 +53,33 @@ class Flizpay_API_Service
     }
 
     /**
+     * @return string|WP_Error
+     */
+    public static function exchange_pairing(string $token, string $shop_url)
+    {
+        $response = WC_Flizpay_API::get_instance('')->dispatch(
+            'pairing_exchange',
+            array('shopUrl' => $shop_url, 'token' => $token)
+        );
+
+        if (is_wp_error($response)) {
+            return new WP_Error('flizpay_connect_unreachable', __('FLIZpay could not be reached.', 'flizpay-for-woocommerce'));
+        }
+
+        $status = is_array($response) ? (int) ($response['_http_status'] ?? 0) : 0;
+        $api_key = is_array($response) && isset($response['apiKey']) ? (string) $response['apiKey'] : '';
+
+        if ($status < 200 || $status >= 300 || $api_key === '') {
+            $message = is_array($response) && !empty($response['message'])
+                ? sanitize_text_field($response['message'])
+                : __('FLIZpay rejected the connection.', 'flizpay-for-woocommerce');
+            return new WP_Error('flizpay_connect_failed', $message);
+        }
+
+        return $api_key;
+    }
+
+    /**
      * Generate the secret used to authenticate callbacks.
      *
      * @return string|null

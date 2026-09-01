@@ -14,7 +14,6 @@
 class Flizpay_Connect
 {
     private const SETTINGS_OPTION = 'woocommerce_flizpay_settings';
-    private const EXCHANGE_TIMEOUT = 20;
 
     public function render_connect_form()
     {
@@ -101,28 +100,9 @@ class Flizpay_Connect
             return new WP_Error('flizpay_connect_invalid', __('The connection link is invalid or expired.', 'flizpay-for-woocommerce'));
         }
 
-        $response = wp_remote_post($this->get_api_base_url() . '/business/woocommerce/pairings/exchange', array(
-            'timeout' => self::EXCHANGE_TIMEOUT,
-            'redirection' => 0,
-            'headers' => array('Content-Type' => 'application/json'),
-            'body' => wp_json_encode(array(
-                'shopUrl' => $this->get_shop_base_url(),
-                'token' => $token,
-            )),
-            'data_format' => 'body',
-        ));
-        if (is_wp_error($response)) {
-            return new WP_Error('flizpay_connect_unreachable', __('FLIZpay could not be reached.', 'flizpay-for-woocommerce'));
-        }
-
-        $status = wp_remote_retrieve_response_code($response);
-        $decoded = json_decode(wp_remote_retrieve_body($response), true);
-        $api_key = is_array($decoded) && isset($decoded['data']['apiKey']) ? (string) $decoded['data']['apiKey'] : '';
-        if ($status < 200 || $status >= 300 || $api_key === '') {
-            $message = is_array($decoded) && !empty($decoded['message'])
-                ? sanitize_text_field($decoded['message'])
-                : __('FLIZpay rejected the connection.', 'flizpay-for-woocommerce');
-            return new WP_Error('flizpay_connect_failed', $message);
+        $api_key = Flizpay_API_Service::exchange_pairing($token, $this->get_shop_base_url());
+        if (is_wp_error($api_key)) {
+            return $api_key;
         }
 
         $settings = get_option(self::SETTINGS_OPTION, array());
@@ -166,12 +146,6 @@ class Flizpay_Connect
         $section = isset($_GET['section']) ? sanitize_text_field(wp_unslash($_GET['section'])) : '';
 
         return $tab === 'checkout' && $section === 'flizpay';
-    }
-
-    private function get_api_base_url()
-    {
-        $base_url = defined('FLIZPAY_API_BASE_URL') ? FLIZPAY_API_BASE_URL : 'https://api.flizpay.de';
-        return untrailingslashit($base_url);
     }
 
     private function get_shop_base_url()
