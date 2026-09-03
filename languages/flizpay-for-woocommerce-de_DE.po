@@ -54,11 +54,6 @@ msgstr "Die Zahlungsrevolution"
 #: flizpay.php:18
 msgid "accept_payments"
 msgstr "Erhalte gebührenfreie Zahlungen mit FLIZpay."
-
-#: admin/class-flizpay-connect.php:27
-msgid "FLIZpay would like to connect this shop:"
-msgstr "FLIZpay möchte sich mit diesem Shop verbinden:"
-
 #: admin/class-flizpay-connect.php:36
 msgid "Connect this shop to FLIZpay"
 msgstr "Diesen Shop mit FLIZpay verbinden"
@@ -90,3 +85,19 @@ msgstr "FLIZpay hat die Verbindung abgelehnt."
 #: admin/class-flizpay-connect.php:141
 msgid "FLIZpay could not configure the webhook."
 msgstr "FLIZpay konnte den Webhook nicht einrichten."
+
+#: admin/class-flizpay-connect.php:37
+msgid "This link connects <strong>%s</strong> to the FLIZpay account:"
+msgstr "Dieser Link verbindet <strong>%s</strong> mit dem FLIZpay-Konto:"
+
+#: admin/class-flizpay-connect.php:47
+msgid "Only continue if you recognise that account. If it is not yours, do not connect — your payments would be paid out to its owner."
+msgstr "Fahre nur fort, wenn du dieses Konto kennst. Wenn es nicht deins ist, verbinde den Shop nicht — deine Zahlungen würden an dessen Inhaber ausgezahlt."
+
+#: admin/class-flizpay-connect.php:30
+msgid "FLIZpay could not confirm which account this connection link belongs to. Reload the page to try again, or connect with an API key instead."
+msgstr "FLIZpay konnte nicht bestätigen, zu welchem Konto dieser Verbindungslink gehört. Lade die Seite neu, um es erneut zu versuchen, oder verbinde den Shop stattdessen mit einem API-Schlüssel."
+
+#: includes/class-flizpay-api-service.php:88
+msgid "FLIZpay did not identify the account behind this link."
+msgstr "FLIZpay hat das Konto hinter diesem Link nicht identifiziert."

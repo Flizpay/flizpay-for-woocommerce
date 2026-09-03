@@ -1,5 +1,8 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2026-09-03 - version 2.6.1
+* Changed - The one-click connection confirmation now names the FLIZpay account the link belongs to, so a shop cannot be connected to a stranger’s account by following a link.
+
 2026-08-31 - version 2.6.0
 * Added   - One-click connection from the FLIZpay merchant dashboard: a one-time link opens the FLIZpay settings screen, where a single confirmation connects the shop without copying an API key.
 * Added   - FLIZPAY_API_BASE_URL wp-config constant to point the plugin at a staging or local FLIZpay API.

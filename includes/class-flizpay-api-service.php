@@ -53,6 +53,44 @@ class Flizpay_API_Service
     }
 
     /**
+     * Describe the FLIZpay account a connect token belongs to, without redeeming it.
+     *
+     * @return string|WP_Error Display label for the account, or an error.
+     */
+    public static function preview_pairing(string $token, string $shop_url)
+    {
+        $response = WC_Flizpay_API::get_instance('')->dispatch(
+            'pairing_preview',
+            array('shopUrl' => $shop_url, 'token' => $token)
+        );
+
+        if (is_wp_error($response)) {
+            return new WP_Error('flizpay_connect_unreachable', __('FLIZpay could not be reached.', 'flizpay-for-woocommerce'));
+        }
+
+        $status = is_array($response) ? (int) ($response['_http_status'] ?? 0) : 0;
+        if ($status < 200 || $status >= 300) {
+            $message = is_array($response) && !empty($response['message'])
+                ? sanitize_text_field($response['message'])
+                : __('FLIZpay rejected the connection.', 'flizpay-for-woocommerce');
+            return new WP_Error('flizpay_connect_failed', $message);
+        }
+
+        $account_email = is_array($response) && isset($response['accountEmail'])
+            ? sanitize_text_field((string) $response['accountEmail'])
+            : '';
+        $account_name = is_array($response) && isset($response['accountName'])
+            ? sanitize_text_field((string) $response['accountName'])
+            : '';
+
+        if ($account_email === '') {
+            return new WP_Error('flizpay_connect_failed', __('FLIZpay did not identify the account behind this link.', 'flizpay-for-woocommerce'));
+        }
+
+        return $account_name === '' ? $account_email : sprintf('%s (%s)', $account_name, $account_email);
+    }
+
+    /**
      * @return string|WP_Error
      */
     public static function exchange_pairing(string $token, string $shop_url)

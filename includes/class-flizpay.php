@@ -213,6 +213,7 @@ class Flizpay
 		$plugin_connect = new Flizpay_Connect();
 
 		$this->loader->add_action('admin_footer', $plugin_connect, 'render_connect_form');
+		$this->loader->add_action('wp_ajax_flizpay_connect_preview', $plugin_connect, 'handle_preview_request');
 		$this->loader->add_action('admin_post_flizpay_connect', $plugin_connect, 'handle_admin_connect');
 		$this->loader->add_action('admin_notices', $plugin_connect, 'render_admin_notice');
 	}
