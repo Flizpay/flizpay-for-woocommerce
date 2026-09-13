@@ -42,6 +42,14 @@ if (!defined('WPINC')) {
 define('FLIZPAY_VERSION', '2.6.0');
 
 /**
+ * Absolute path to the plugin entry file.
+ *
+ * WooCommerce resolves feature-compatibility declarations by matching this path
+ * against the installed plugin list, so it must point at the entry file.
+ */
+define('FLIZPAY_PLUGIN_FILE', __FILE__);
+
+/**
  * Load Composer autoloader only if PHP version meets requirements
  */
 if (file_exists(__DIR__ . '/vendor/autoload.php') && version_compare(PHP_VERSION, '8.2.0', '>=')) {

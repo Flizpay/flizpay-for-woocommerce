@@ -216,7 +216,12 @@ class Flizpay_Reconciliation
     public function add_order_action(array $actions, ?\WC_Order $order = null): array
     {
         if ($order === null) {
-            $order_id = isset($_GET['post']) ? absint(wp_unslash($_GET['post'])) : 0;
+            $order_id = 0;
+            if (isset($_GET['id'])) {
+                $order_id = absint(wp_unslash($_GET['id']));
+            } elseif (isset($_GET['post'])) {
+                $order_id = absint(wp_unslash($_GET['post']));
+            }
             $order = $order_id > 0 ? wc_get_order($order_id) : null;
         }
 

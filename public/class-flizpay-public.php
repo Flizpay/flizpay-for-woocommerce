@@ -13,7 +13,7 @@
 /**
  * The public-facing functionality of the plugin.
  *
- * Defines the plugin name, version, and 
+ * Defines the plugin name, version, and
  * enqueue the public-facing JavaScript.
  *
  * @package    Flizpay
@@ -152,9 +152,9 @@ class Flizpay_Public
     /**
      * Function used by the mobile polling mechanism to check the order status
      * It will then return the redirect URL based on the success or failure of the request.
-     * 
+     *
      * @return void
-     * 
+     *
      * @since 1.0.0
      */
     public function flizpay_order_finish()
@@ -206,15 +206,12 @@ class Flizpay_Public
     }
 
     /**
-     * Custom function to declare compatibility with cart checkout blocks feature
+     * Declare extension compatibilities on before_woocommerce_init hook
      */
-    public function declare_cart_checkout_blocks_compatibility()
+    public function declare_compatibilities()
     {
-        // Check if the required class exists
-        if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-            // Declare compatibility for 'cart_checkout_blocks'
-            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', dirname(__DIR__) . '/flizpay.php', true);
-        }
+        $this->declare_cart_checkout_blocks_compatibility();
+        $this->declare_high_performance_order_storage_compatibility();
     }
 
     /**
@@ -235,5 +232,41 @@ class Flizpay_Public
             // Register an instance of Flizpay_Gateway_blocks
             $payment_method_registry->register(new Flizpay_Gateway_Blocks);
         });
+    }
+
+    /**
+     * Custom function to declare compatibility with cart checkout blocks feature
+     */
+    private function declare_cart_checkout_blocks_compatibility()
+    {
+        // Check if the required class exists
+        if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+            // Declare compatibility for 'cart_checkout_blocks'
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', $this->plugin_file(), true);
+        }
+    }
+
+    /**
+     * Custom function to declare compatibility with HPOS feature
+     */
+    private function declare_high_performance_order_storage_compatibility()
+    {
+        // Check if the required class exists
+        if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', $this->plugin_file(), true);
+        }
+    }
+
+    /**
+     * Absolute path to the plugin entry file.
+     *
+     * WooCommerce matches compatibility declarations against the installed plugin
+     * list by this path, so passing any other file makes the declaration a no-op.
+     *
+     * @return string
+     */
+    private function plugin_file()
+    {
+        return defined('FLIZPAY_PLUGIN_FILE') ? FLIZPAY_PLUGIN_FILE : dirname(__DIR__) . '/flizpay.php';
     }
 }
