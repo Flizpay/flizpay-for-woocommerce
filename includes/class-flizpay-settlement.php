@@ -65,7 +65,12 @@ class Flizpay_Settlement
         }
 
         // Force a fresh read before mutation so concurrent requests get another state check.
-        clean_post_cache($order->get_id());
+        if (
+            !class_exists('\Automattic\WooCommerce\Utilities\OrderUtil')
+            || !\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()
+        ) {
+            clean_post_cache($order->get_id());
+        }
         wp_cache_delete($order->get_id(), 'orders');
         $order = wc_get_order($order->get_id());
         if (!$order instanceof \WC_Order) {
