@@ -234,6 +234,11 @@ class Flizpay
 
         $this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_styles');
         $this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_scripts');
+        $this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_product_placement_script');
+        // Classic themes: summary hook. Block themes: add-to-cart block.
+        $this->loader->add_action('woocommerce_single_product_summary', $plugin_public, 'render_product_placement', 31);
+        $this->loader->add_filter('render_block_woocommerce/add-to-cart-form', $plugin_public, 'append_product_placement');
+        $this->loader->add_filter('render_block_woocommerce/add-to-cart-with-options', $plugin_public, 'append_product_placement');
         $this->loader->add_action("wp_ajax_flizpay_order_finish", $plugin_public, "flizpay_order_finish");
         $this->loader->add_action("wp_ajax_nopriv_flizpay_order_finish", $plugin_public, "flizpay_order_finish");
     }

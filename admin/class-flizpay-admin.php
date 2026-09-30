@@ -213,6 +213,18 @@ class Flizpay_Admin
 				'description' => '',
 				'default' => 'yes',
 			),
+			'flizpay_display_product_promo' => array(
+				'title' => $this->is_english() ? 'Product pages' : 'Produktseiten',
+				'label' => $this->is_english()
+					? 'Show the FLIZpay discount below the add-to-cart button'
+					: 'FLIZpay-Rabatt unter dem Warenkorb-Button anzeigen',
+				'type' => 'checkbox',
+				'description' => $this->is_english()
+					? 'Shows e.g. "Up to 3% discount with FLIZ" on product pages while you offer a discount.'
+					: 'Zeigt z. B. „Bis zu 3 % Rabatt mit FLIZ“ auf Produktseiten, solange du einen Rabatt anbietest.',
+				'default' => 'no',
+				'desc_tip' => true,
+			),
 			'flizpay_order_status' => array(
 				'title' => $this->is_english() ? 'Pending Orders' : 'Ausstehende Zahlungen',
 				'type' => 'select',

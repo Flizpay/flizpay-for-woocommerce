@@ -106,6 +106,71 @@ class Flizpay_Public
     }
 
     /**
+     * Load the discount placement script on product pages that show the placement.
+     */
+    public function enqueue_product_placement_script()
+    {
+        if (!$this->should_show_product_placement()) {
+            return;
+        }
+
+        wp_enqueue_script(
+            $this->plugin_name . '-placement',
+            // FLIZPAY_PLACEMENT_SCRIPT_URL (wp-config.php) points at a staging build.
+            defined('FLIZPAY_PLACEMENT_SCRIPT_URL') ? FLIZPAY_PLACEMENT_SCRIPT_URL : 'https://app.flizpay.de/web-components/flizpay.js',
+            array(),
+            null,
+            array('strategy' => 'async')
+        );
+    }
+
+    public function render_product_placement()
+    {
+        // Block themes also fire this hook via WooCommerce's compatibility layer, above add-to-cart.
+        if (wp_is_block_theme()) {
+            return;
+        }
+
+        echo $this->product_placement_html(); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in product_placement_html()
+    }
+
+    public function append_product_placement($block_content)
+    {
+        if (!wp_is_block_theme()) {
+            return $block_content;
+        }
+
+        return $block_content . $this->product_placement_html();
+    }
+
+    private function product_placement_html(): string
+    {
+        static $rendered = false;
+
+        if ($rendered || !$this->should_show_product_placement()) {
+            return '';
+        }
+
+        $rendered = true;
+
+        return sprintf(
+            '<fliz-placement public-id="%s" locale="%s"></fliz-placement>',
+            esc_attr($this->settings['flizpay_public_id']),
+            esc_attr(get_locale())
+        );
+    }
+
+    private function should_show_product_placement(): bool
+    {
+        return function_exists('is_product')
+            && is_product()
+            && is_array($this->settings)
+            && ($this->settings['enabled'] ?? 'no') === 'yes'
+            && ($this->settings['flizpay_display_product_promo'] ?? 'no') === 'yes'
+            && !empty($this->settings['flizpay_public_id']);
+    }
+
+    /**
      * True only on pages where the customer has a known order context —
      * the checkout page, the order-pay endpoint (paying for an existing order
      * via a WC-verified key URL), or the order-received (thank-you) page.
