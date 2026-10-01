@@ -41,15 +41,13 @@ class Flizpay_Public
      */
     private $version;
 
-    /** Placement slot → the merchant setting that switches it on. */
+    /** Placement slot → the merchant setting that switches it on. Slots not listed follow any enabled area. */
     public const PLACEMENT_SETTINGS = array(
         'listing-item' => 'flizpay_placement_listing',
         'product-price' => 'flizpay_placement_product',
         'product-page' => 'flizpay_placement_product',
         'cart' => 'flizpay_placement_cart',
-        'mini-cart' => 'flizpay_placement_cart',
-        'checkout' => 'flizpay_placement_checkout',
-        'order-received' => 'flizpay_placement_order_received',
+        'mini-cart' => 'flizpay_placement_mini_cart',
     );
 
     /**
@@ -338,7 +336,7 @@ class Flizpay_Public
     {
         $setting = self::PLACEMENT_SETTINGS[$slot] ?? null;
 
-        return $setting !== null && $this->placements_enabled() && ($this->settings[$setting] ?? 'no') === 'yes';
+        return $this->placements_enabled() && ($setting === null || ($this->settings[$setting] ?? 'no') === 'yes');
     }
 
     /**

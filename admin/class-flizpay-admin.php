@@ -239,19 +239,13 @@ class Flizpay_Admin
 				'checkboxgroup' => '',
 			),
 			'flizpay_placement_cart' => array(
-				'label' => $this->is_english() ? 'Show discount message in the cart and mini-cart' : 'Rabatthinweis im Warenkorb und Mini-Warenkorb anzeigen',
+				'label' => $this->is_english() ? 'Show discount message in the cart' : 'Rabatthinweis im Warenkorb anzeigen',
 				'type' => 'checkbox',
 				'default' => 'no',
 				'checkboxgroup' => '',
 			),
-			'flizpay_placement_checkout' => array(
-				'label' => $this->is_english() ? 'Show discount message in the checkout' : 'Rabatthinweis an der Kasse anzeigen',
-				'type' => 'checkbox',
-				'default' => 'no',
-				'checkboxgroup' => '',
-			),
-			'flizpay_placement_order_received' => array(
-				'label' => $this->is_english() ? 'Show discount message on the order confirmation' : 'Rabatthinweis auf der Bestellbestätigung anzeigen',
+			'flizpay_placement_mini_cart' => array(
+				'label' => $this->is_english() ? 'Show discount message in the mini-cart' : 'Rabatthinweis im Mini-Warenkorb anzeigen',
 				'type' => 'checkbox',
 				'default' => 'no',
 				'checkboxgroup' => 'end',

@@ -473,28 +473,12 @@
           ],
         },
         {
-          setting: "cart",
+          setting: "mini_cart",
           caption: t("Mini-cart", "Mini-Warenkorb"),
           lines: [
             ["price", t("Subtotal", "Zwischensumme") + " " + price],
             ["slot", "mini-cart"],
             ["button", t("View cart", "Warenkorb ansehen")],
-          ],
-        },
-        {
-          setting: "checkout",
-          caption: t("Checkout", "Kasse"),
-          lines: [
-            ["slot", "checkout"],
-            ["title", t("Payment method", "Zahlungsart")],
-          ],
-        },
-        {
-          setting: "order_received",
-          caption: t("Order confirmation", "Bestellbestätigung"),
-          lines: [
-            ["title", t("Thank you for your order", "Vielen Dank für deine Bestellung")],
-            ["slot", "order-received"],
           ],
         },
       ];
