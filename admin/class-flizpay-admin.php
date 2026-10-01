@@ -223,10 +223,6 @@ class Flizpay_Admin
 			),
 			'flizpay_placement_product' => array(
 				'title' => $this->is_english() ? 'Areas' : 'Bereiche',
-				'description' => $this->is_english()
-					? 'Shows FLIZpay discount messages such as "Up to 3% discount with FLIZ" while you offer a discount. Text and design are managed by FLIZpay.'
-					: 'Zeigt FLIZpay-Rabatthinweise wie „Bis zu 3 % Rabatt mit FLIZ“, solange du einen Rabatt anbietest. Text und Gestaltung steuert FLIZpay.',
-				'desc_tip' => true,
 				'label' => $this->is_english() ? 'Show discount message on product pages' : 'Rabatthinweis auf Produktseiten anzeigen',
 				'type' => 'checkbox',
 				'default' => 'no',
