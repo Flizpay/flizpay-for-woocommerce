@@ -123,6 +123,17 @@ class Flizpay_Admin
 	}
 
 	/**
+	 * Pick up the public id for on-site messaging without a settings save (throttled on failure).
+	 */
+	public function ensure_public_id()
+	{
+		$gateways = function_exists('WC') && WC()->payment_gateways() ? WC()->payment_gateways()->payment_gateways() : array();
+		if (isset($gateways['flizpay'])) {
+			$gateways['flizpay']->ensure_public_id(true);
+		}
+	}
+
+	/**
 	 * Define the admin page links on the plugin table row
 	 * 
 	 * @param $links
