@@ -106,12 +106,31 @@ class Flizpay_Admin
 			? $gateway->cashback_helper->get_checkout_preview_data()
 			: null;
 
+		$settings = get_option('woocommerce_flizpay_settings');
+		wp_enqueue_script($this->plugin_name . '-placement', Flizpay_Public::placement_script_url(), array(), null, array('strategy' => 'async'));
+
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
 			'nonce' => wp_create_nonce('test_connection_nonce'),
 			'loading_icon' => "$this->assets_url/loading.svg",
 			'checkout_preview' => $checkout_preview,
+			'placement_preview' => array(
+				'publicId' => is_array($settings) ? ($settings['flizpay_public_id'] ?? '') : '',
+				'currency' => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'EUR',
+				'amount' => 1995,
+			),
 			'wp_locale' => get_user_locale() ?? get_locale(),
 		));
+	}
+
+	/**
+	 * Pick up the public id for on-site messaging without a settings save (throttled on failure).
+	 */
+	public function ensure_public_id()
+	{
+		$gateways = function_exists('WC') && WC()->payment_gateways() ? WC()->payment_gateways()->payment_gateways() : array();
+		if (isset($gateways['flizpay'])) {
+			$gateways['flizpay']->ensure_public_id(true);
+		}
 	}
 
 	/**
@@ -212,6 +231,31 @@ class Flizpay_Admin
 				'type' => 'checkbox',
 				'description' => '',
 				'default' => 'yes',
+			),
+			'flizpay_placement_product' => array(
+				'title' => $this->is_english() ? 'Areas' : 'Bereiche',
+				'label' => $this->is_english() ? 'Show discount message on product pages' : 'Rabatthinweis auf Produktseiten anzeigen',
+				'type' => 'checkbox',
+				'default' => 'yes',
+				'checkboxgroup' => 'start',
+			),
+			'flizpay_placement_listing' => array(
+				'label' => $this->is_english() ? 'Show discount message in product listings' : 'Rabatthinweis in Produktlisten anzeigen',
+				'type' => 'checkbox',
+				'default' => 'yes',
+				'checkboxgroup' => '',
+			),
+			'flizpay_placement_cart' => array(
+				'label' => $this->is_english() ? 'Show discount message in the cart' : 'Rabatthinweis im Warenkorb anzeigen',
+				'type' => 'checkbox',
+				'default' => 'yes',
+				'checkboxgroup' => '',
+			),
+			'flizpay_placement_mini_cart' => array(
+				'label' => $this->is_english() ? 'Show discount message in the mini-cart' : 'Rabatthinweis im Mini-Warenkorb anzeigen',
+				'type' => 'checkbox',
+				'default' => 'yes',
+				'checkboxgroup' => 'end',
 			),
 			'flizpay_order_status' => array(
 				'title' => $this->is_english() ? 'Pending Orders' : 'Ausstehende Zahlungen',

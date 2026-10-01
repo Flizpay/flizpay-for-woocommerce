@@ -209,6 +209,12 @@ function flizpay_init_gateway_class()
                 }
             }
 
+            if ($is_new_api_key) {
+                $this->update_option('flizpay_public_id', '');
+            }
+
+            $this->ensure_public_id();
+
             $this->init_gateway_info();
             return $saved;
         }
@@ -286,6 +292,28 @@ function flizpay_init_gateway_class()
          *
          * @since 1.0.0
          */
+        /**
+         * Fetch and store the public id the on-site messages need. Runs on settings save and on
+         * admin_init (throttled), so merchants who got the areas by default pick it up without saving.
+         */
+        public function ensure_public_id(bool $throttled = false): void
+        {
+            $placements_enabled = in_array('yes', array_map(array($this, 'get_option'), Flizpay_Public::PLACEMENT_SETTINGS), true);
+            if (!$placements_enabled || $this->get_option('flizpay_public_id') !== '' || $this->get_option('flizpay_api_key') === '') {
+                return;
+            }
+            if ($throttled && get_transient('flizpay_public_id_retry')) {
+                return;
+            }
+
+            $public_id = $this->api_service->fetch_public_id();
+            if ($public_id !== null) {
+                $this->update_option('flizpay_public_id', $public_id);
+            } else {
+                set_transient('flizpay_public_id_retry', 1, HOUR_IN_SECONDS);
+            }
+        }
+
         private function is_order_pay_page(): bool
         {
             global $wp;

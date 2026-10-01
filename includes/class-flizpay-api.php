@@ -126,6 +126,18 @@ class WC_Flizpay_API
                     )
                 );
             },
+            'fetch_public_id' => function ($body) {
+                return array(
+                    'path' => $this->base_url . '/business/public-id',
+                    'method' => 'get',
+                    'options' => array(
+                        'headers' => array(
+                            'Content-type' => 'application/json',
+                            'x-api-key' => $this->api_key
+                        )
+                    )
+                );
+            },
             'fetch_cashback_data' => function ($body) {
                 return array(
                     'path' => $this->base_url . '/business/cashback',

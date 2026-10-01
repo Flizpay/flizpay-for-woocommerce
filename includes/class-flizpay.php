@@ -206,6 +206,7 @@ class Flizpay
         $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
         $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
         $this->loader->add_filter('flizpay_load_settings', $plugin_admin, 'load_form_fields');
+        $this->loader->add_action('admin_init', $plugin_admin, 'ensure_public_id');
         $this->loader->add_filter('plugin_action_links_' . basename(dirname(__DIR__)) . '/flizpay.php', $plugin_admin, 'flizpay_plugin_links');
 
         $plugin_connect = new Flizpay_Connect();
@@ -234,6 +235,21 @@ class Flizpay
 
         $this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_styles');
         $this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_scripts');
+        // On-site messaging: the plugin only emits <fliz-placement> slots with what the page knows,
+        // FLIZpay decides what each one shows. Classic themes: template hooks. Block themes: block
+        // filters (the compatibility layer fires the classic product hooks too, so those are skipped there).
+        $this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_placement_scripts');
+        $this->loader->add_filter('script_loader_tag', $plugin_public, 'placement_script_tag', 10, 2);
+        $this->loader->add_action('woocommerce_after_shop_loop_item', $plugin_public, 'render_listing_placement', 7);
+        $this->loader->add_action('woocommerce_single_product_summary', $plugin_public, 'render_product_price_placement', 11);
+        $this->loader->add_action('woocommerce_single_product_summary', $plugin_public, 'render_product_placement', 31);
+        $this->loader->add_action('woocommerce_proceed_to_checkout', $plugin_public, 'render_cart_placement', 15);
+        $this->loader->add_action('woocommerce_widget_shopping_cart_total', $plugin_public, 'render_mini_cart_placement', 20);
+        $this->loader->add_action('woocommerce_review_order_before_payment', $plugin_public, 'render_checkout_placement');
+        $this->loader->add_action('woocommerce_thankyou', $plugin_public, 'render_order_received_placement', 5);
+        $this->loader->add_filter('render_block_woocommerce/product-price', $plugin_public, 'append_price_placement', 10, 3);
+        $this->loader->add_filter('render_block_woocommerce/add-to-cart-form', $plugin_public, 'append_product_placement');
+        $this->loader->add_filter('render_block_woocommerce/add-to-cart-with-options', $plugin_public, 'append_product_placement');
         $this->loader->add_action("wp_ajax_flizpay_order_finish", $plugin_public, "flizpay_order_finish");
         $this->loader->add_action("wp_ajax_nopriv_flizpay_order_finish", $plugin_public, "flizpay_order_finish");
     }

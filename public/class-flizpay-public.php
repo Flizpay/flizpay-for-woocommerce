@@ -41,6 +41,15 @@ class Flizpay_Public
      */
     private $version;
 
+    /** Placement slot → the merchant setting that switches it on. Slots not listed follow any enabled area. */
+    public const PLACEMENT_SETTINGS = array(
+        'listing-item' => 'flizpay_placement_listing',
+        'product-price' => 'flizpay_placement_product',
+        'product-page' => 'flizpay_placement_product',
+        'cart' => 'flizpay_placement_cart',
+        'mini-cart' => 'flizpay_placement_mini_cart',
+    );
+
     /**
      * The FLIZpay settings
      *
@@ -103,6 +112,237 @@ class Flizpay_Public
         }
 
         $this->enqueue_checkout_scripts();
+    }
+
+    /**
+     * Load the hosted placement script wherever placements are enabled. The Cart and Checkout
+     * blocks have no template hooks, so there a small slot-fill script carries the slot.
+     */
+    public function enqueue_placement_scripts()
+    {
+        if (!$this->placements_enabled()) {
+            return;
+        }
+
+        wp_enqueue_script($this->plugin_name . '-placement', self::placement_script_url(), array(), null, array('strategy' => 'async'));
+
+        $block_slot = $this->block_checkout_slot();
+        if ($block_slot !== null && $this->slot_enabled($block_slot)) {
+            wp_enqueue_script(
+                $this->plugin_name . '-placement-fill',
+                plugin_dir_url(__FILE__) . 'js/flizpay-placement-fill.js',
+                array('wp-plugins', 'wp-element', 'wc-blocks-checkout'),
+                $this->version,
+                true
+            );
+            wp_add_inline_script(
+                $this->plugin_name . '-placement-fill',
+                'window.flizpayPlacement = ' . wp_json_encode($this->placement_attributes($block_slot, $this->cart_attributes())) . ';',
+                'before'
+            );
+        }
+    }
+
+    /**
+     * FLIZPAY_PLACEMENT_SCRIPT_URL (wp-config.php) points at a staging build.
+     */
+    public static function placement_script_url(): string
+    {
+        return defined('FLIZPAY_PLACEMENT_SCRIPT_URL') ? FLIZPAY_PLACEMENT_SCRIPT_URL : 'https://app.flizpay.de/web-components/v1/flizpay.js';
+    }
+
+    /**
+     * The script sets no cookies or storage; tell consent managers not to block it.
+     */
+    public function placement_script_tag($tag, $handle)
+    {
+        if ($handle !== $this->plugin_name . '-placement') {
+            return $tag;
+        }
+
+        return str_replace('<script ', '<script data-cookieconsent="ignore" data-borlabs-cookie-script-blocker-ignore ', $tag);
+    }
+
+    public function render_listing_placement()
+    {
+        if (!wp_is_block_theme()) {
+            echo $this->placement_html('listing-item', $this->product_attributes()); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in placement_html()
+        }
+    }
+
+    public function render_product_price_placement()
+    {
+        if (!wp_is_block_theme()) {
+            echo $this->placement_html('product-price', $this->product_attributes()); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in placement_html()
+        }
+    }
+
+    public function render_product_placement()
+    {
+        if (!wp_is_block_theme()) {
+            echo $this->product_placement_html(); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in placement_html()
+        }
+    }
+
+    public function render_cart_placement()
+    {
+        echo $this->placement_html('cart', $this->cart_attributes()); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in placement_html()
+    }
+
+    public function render_mini_cart_placement()
+    {
+        echo $this->placement_html('mini-cart', $this->cart_attributes()); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in placement_html()
+    }
+
+    public function render_checkout_placement()
+    {
+        echo $this->placement_html('checkout', $this->cart_attributes()); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in placement_html()
+    }
+
+    public function render_order_received_placement($order_id)
+    {
+        $order = wc_get_order($order_id);
+        if (!$order) {
+            return;
+        }
+
+        echo $this->placement_html('order-received', array( // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in placement_html()
+            'amount' => $this->minor_units($order->get_total()),
+            'currency' => $order->get_currency(),
+        ));
+    }
+
+    public function append_price_placement($block_content, $block, $instance)
+    {
+        if (!wp_is_block_theme()) {
+            return $block_content;
+        }
+
+        $product = wc_get_product($instance->context['postId'] ?? 0);
+        if (!$product) {
+            return $block_content;
+        }
+
+        // On its own page the main product's price block is the product-price slot, anywhere else a listing item.
+        $is_main_product = function_exists('is_product') && is_product() && $product->get_id() === get_queried_object_id();
+
+        return $block_content . $this->placement_html($is_main_product ? 'product-price' : 'listing-item', $this->product_attributes($product));
+    }
+
+    public function append_product_placement($block_content)
+    {
+        if (!wp_is_block_theme()) {
+            return $block_content;
+        }
+
+        return $block_content . $this->product_placement_html();
+    }
+
+    private function product_placement_html(): string
+    {
+        static $rendered = false;
+
+        if ($rendered || !function_exists('is_product') || !is_product()) {
+            return '';
+        }
+
+        $rendered = true;
+
+        return $this->placement_html('product-page', $this->product_attributes());
+    }
+
+    private function placement_html(string $slot, array $context = array()): string
+    {
+        if (!$this->slot_enabled($slot)) {
+            return '';
+        }
+
+        $attributes = '';
+        foreach ($this->placement_attributes($slot, $context) as $name => $value) {
+            $attributes .= sprintf(' data-%s="%s"', $name, esc_attr((string) $value));
+        }
+
+        return '<fliz-placement' . $attributes . '></fliz-placement>';
+    }
+
+    /**
+     * Everything the page knows travels with the slot; the script uses what the current layouts need.
+     */
+    private function placement_attributes(string $slot, array $context = array()): array
+    {
+        return array_merge(array(
+            'public-id' => $this->settings['flizpay_public_id'],
+            'slot' => $slot,
+            'locale' => get_locale(),
+            'currency' => get_woocommerce_currency(),
+            'platform' => 'woocommerce',
+            'plugin-version' => $this->version,
+        ), $context);
+    }
+
+    private function product_attributes($product = null): array
+    {
+        $product = $product ?: ($GLOBALS['product'] ?? null);
+        if (!$product instanceof WC_Product) {
+            return array();
+        }
+
+        $attributes = array('product-id' => $product->get_id());
+        if ($product->get_price() !== '') {
+            $attributes['amount'] = $this->minor_units($product->get_price());
+        }
+
+        return $attributes;
+    }
+
+    private function cart_attributes(): array
+    {
+        if (!function_exists('WC') || !WC()->cart) {
+            return array();
+        }
+
+        return array('amount' => $this->minor_units(WC()->cart->get_total('edit')));
+    }
+
+    /**
+     * Amounts travel in minor units (cents), like other on-site messaging SDKs.
+     */
+    private function minor_units($amount): int
+    {
+        return (int) round((float) $amount * pow(10, wc_get_price_decimals()));
+    }
+
+    private function block_checkout_slot(): ?string
+    {
+        if (function_exists('is_cart') && is_cart() && has_block('woocommerce/cart')) {
+            return 'cart';
+        }
+        if (function_exists('is_checkout') && is_checkout() && !is_wc_endpoint_url('order-received') && has_block('woocommerce/checkout')) {
+            return 'checkout';
+        }
+
+        return null;
+    }
+
+    private function placements_enabled(): bool
+    {
+        return is_array($this->settings)
+            && ($this->settings['enabled'] ?? 'no') === 'yes'
+            && !empty($this->settings['flizpay_public_id'])
+            && count(array_filter(array_unique(self::PLACEMENT_SETTINGS), array($this, 'area_enabled'))) > 0;
+    }
+
+    private function slot_enabled(string $slot): bool
+    {
+        $setting = self::PLACEMENT_SETTINGS[$slot] ?? null;
+
+        return $this->placements_enabled() && ($setting === null || $this->area_enabled($setting));
+    }
+
+    /** Areas default to on, like their settings fields. */
+    private function area_enabled(string $setting): bool
+    {
+        return ($this->settings[$setting] ?? 'yes') === 'yes';
     }
 
     /**
