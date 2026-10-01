@@ -213,17 +213,40 @@ class Flizpay_Admin
 				'description' => '',
 				'default' => 'yes',
 			),
-			'flizpay_display_placements' => array(
+			'flizpay_placement_product' => array(
 				'title' => $this->is_english() ? 'On-site messaging' : 'Shop-Hinweise',
-				'label' => $this->is_english()
-					? 'Show FLIZpay discount messages in your shop'
-					: 'FLIZpay-Rabatthinweise im Shop anzeigen',
-				'type' => 'checkbox',
 				'description' => $this->is_english()
-					? 'Shows e.g. "Up to 3% discount with FLIZ" on product pages, in the cart and in the mini-cart while you offer a discount. What is shown where is managed by FLIZpay.'
-					: 'Zeigt z. B. „Bis zu 3 % Rabatt mit FLIZ“ auf Produktseiten, im Warenkorb und im Mini-Warenkorb, solange du einen Rabatt anbietest. Was wo angezeigt wird, steuert FLIZpay.',
-				'default' => 'no',
+					? 'Shows FLIZpay discount messages such as "Up to 3% discount with FLIZ" while you offer a discount. Text and design are managed by FLIZpay.'
+					: 'Zeigt FLIZpay-Rabatthinweise wie „Bis zu 3 % Rabatt mit FLIZ“, solange du einen Rabatt anbietest. Text und Gestaltung steuert FLIZpay.',
 				'desc_tip' => true,
+				'label' => $this->is_english() ? 'Show discount message on product pages' : 'Rabatthinweis auf Produktseiten anzeigen',
+				'type' => 'checkbox',
+				'default' => 'no',
+				'checkboxgroup' => 'start',
+			),
+			'flizpay_placement_listing' => array(
+				'label' => $this->is_english() ? 'Show discount message in product listings' : 'Rabatthinweis in Produktlisten anzeigen',
+				'type' => 'checkbox',
+				'default' => 'no',
+				'checkboxgroup' => '',
+			),
+			'flizpay_placement_cart' => array(
+				'label' => $this->is_english() ? 'Show discount message in the cart and mini-cart' : 'Rabatthinweis im Warenkorb und Mini-Warenkorb anzeigen',
+				'type' => 'checkbox',
+				'default' => 'no',
+				'checkboxgroup' => '',
+			),
+			'flizpay_placement_checkout' => array(
+				'label' => $this->is_english() ? 'Show discount message in the checkout' : 'Rabatthinweis an der Kasse anzeigen',
+				'type' => 'checkbox',
+				'default' => 'no',
+				'checkboxgroup' => '',
+			),
+			'flizpay_placement_order_received' => array(
+				'label' => $this->is_english() ? 'Show discount message on the order confirmation' : 'Rabatthinweis auf der Bestellbestätigung anzeigen',
+				'type' => 'checkbox',
+				'default' => 'no',
+				'checkboxgroup' => 'end',
 			),
 			'flizpay_order_status' => array(
 				'title' => $this->is_english() ? 'Pending Orders' : 'Ausstehende Zahlungen',

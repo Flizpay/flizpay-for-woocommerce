@@ -41,6 +41,17 @@ class Flizpay_Public
      */
     private $version;
 
+    /** Placement slot → the merchant setting that switches it on. */
+    public const PLACEMENT_SETTINGS = array(
+        'listing-item' => 'flizpay_placement_listing',
+        'product-price' => 'flizpay_placement_product',
+        'product-page' => 'flizpay_placement_product',
+        'cart' => 'flizpay_placement_cart',
+        'mini-cart' => 'flizpay_placement_cart',
+        'checkout' => 'flizpay_placement_checkout',
+        'order-received' => 'flizpay_placement_order_received',
+    );
+
     /**
      * The FLIZpay settings
      *
@@ -125,7 +136,7 @@ class Flizpay_Public
         );
 
         $block_slot = $this->block_checkout_slot();
-        if ($block_slot !== null) {
+        if ($block_slot !== null && $this->slot_enabled($block_slot)) {
             wp_enqueue_script(
                 $this->plugin_name . '-placement-fill',
                 plugin_dir_url(__FILE__) . 'js/flizpay-placement-fill.js',
@@ -243,7 +254,7 @@ class Flizpay_Public
 
     private function placement_html(string $slot, array $context = array()): string
     {
-        if (!$this->placements_enabled()) {
+        if (!$this->slot_enabled($slot)) {
             return '';
         }
 
@@ -318,8 +329,15 @@ class Flizpay_Public
     {
         return is_array($this->settings)
             && ($this->settings['enabled'] ?? 'no') === 'yes'
-            && ($this->settings['flizpay_display_placements'] ?? 'no') === 'yes'
-            && !empty($this->settings['flizpay_public_id']);
+            && !empty($this->settings['flizpay_public_id'])
+            && in_array('yes', array_intersect_key($this->settings, array_flip(self::PLACEMENT_SETTINGS)), true);
+    }
+
+    private function slot_enabled(string $slot): bool
+    {
+        $setting = self::PLACEMENT_SETTINGS[$slot] ?? null;
+
+        return $setting !== null && $this->placements_enabled() && ($this->settings[$setting] ?? 'no') === 'yes';
     }
 
     /**

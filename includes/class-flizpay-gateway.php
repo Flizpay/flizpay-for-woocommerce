@@ -213,7 +213,8 @@ function flizpay_init_gateway_class()
                 $this->update_option('flizpay_public_id', '');
             }
 
-            if ($this->get_option('flizpay_display_placements') === 'yes' && $this->get_option('flizpay_public_id') === '') {
+            $placements_enabled = in_array('yes', array_map(array($this, 'get_option'), Flizpay_Public::PLACEMENT_SETTINGS), true);
+            if ($placements_enabled && $this->get_option('flizpay_public_id') === '') {
                 $public_id = $this->api_service->fetch_public_id();
                 if ($public_id !== null) {
                     $this->update_option('flizpay_public_id', $public_id);
