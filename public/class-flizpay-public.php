@@ -126,14 +126,7 @@ class Flizpay_Public
             return;
         }
 
-        wp_enqueue_script(
-            $this->plugin_name . '-placement',
-            // FLIZPAY_PLACEMENT_SCRIPT_URL (wp-config.php) points at a staging build.
-            defined('FLIZPAY_PLACEMENT_SCRIPT_URL') ? FLIZPAY_PLACEMENT_SCRIPT_URL : 'https://app.flizpay.de/web-components/v1/flizpay.js',
-            array(),
-            null,
-            array('strategy' => 'async')
-        );
+        wp_enqueue_script($this->plugin_name . '-placement', self::placement_script_url(), array(), null, array('strategy' => 'async'));
 
         $block_slot = $this->block_checkout_slot();
         if ($block_slot !== null && $this->slot_enabled($block_slot)) {
@@ -150,6 +143,14 @@ class Flizpay_Public
                 'before'
             );
         }
+    }
+
+    /**
+     * FLIZPAY_PLACEMENT_SCRIPT_URL (wp-config.php) points at a staging build.
+     */
+    public static function placement_script_url(): string
+    {
+        return defined('FLIZPAY_PLACEMENT_SCRIPT_URL') ? FLIZPAY_PLACEMENT_SCRIPT_URL : 'https://app.flizpay.de/web-components/v1/flizpay.js';
     }
 
     /**

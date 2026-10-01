@@ -106,10 +106,18 @@ class Flizpay_Admin
 			? $gateway->cashback_helper->get_checkout_preview_data()
 			: null;
 
+		$settings = get_option('woocommerce_flizpay_settings');
+		wp_enqueue_script($this->plugin_name . '-placement', Flizpay_Public::placement_script_url(), array(), null, array('strategy' => 'async'));
+
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
 			'nonce' => wp_create_nonce('test_connection_nonce'),
 			'loading_icon' => "$this->assets_url/loading.svg",
 			'checkout_preview' => $checkout_preview,
+			'placement_preview' => array(
+				'publicId' => is_array($settings) ? ($settings['flizpay_public_id'] ?? '') : '',
+				'currency' => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'EUR',
+				'amount' => 1995,
+			),
 			'wp_locale' => get_user_locale() ?? get_locale(),
 		));
 	}
@@ -214,7 +222,7 @@ class Flizpay_Admin
 				'default' => 'yes',
 			),
 			'flizpay_placement_product' => array(
-				'title' => $this->is_english() ? 'On-site messaging' : 'Shop-Hinweise',
+				'title' => $this->is_english() ? 'Areas' : 'Bereiche',
 				'description' => $this->is_english()
 					? 'Shows FLIZpay discount messages such as "Up to 3% discount with FLIZ" while you offer a discount. Text and design are managed by FLIZpay.'
 					: 'Zeigt FLIZpay-Rabatthinweise wie „Bis zu 3 % Rabatt mit FLIZ“, solange du einen Rabatt anbietest. Text und Gestaltung steuert FLIZpay.',
