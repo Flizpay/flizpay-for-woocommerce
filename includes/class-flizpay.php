@@ -237,7 +237,7 @@ class Flizpay
         // On-site messaging: the plugin only emits <fliz-placement> slots, FLIZpay decides what each one shows.
         // Classic themes: template hooks. Block themes: block filters (the compatibility layer fires the classic hooks too).
         $this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_placement_scripts');
-        $this->loader->add_action('woocommerce_after_shop_loop_item_title', $plugin_public, 'render_listing_placement', 11);
+        $this->loader->add_action('woocommerce_after_shop_loop_item', $plugin_public, 'render_listing_placement', 7);
         $this->loader->add_action('woocommerce_single_product_summary', $plugin_public, 'render_product_placement', 31);
         $this->loader->add_action('woocommerce_proceed_to_checkout', $plugin_public, 'render_cart_placement', 15);
         $this->loader->add_action('woocommerce_widget_shopping_cart_total', $plugin_public, 'render_mini_cart_placement', 20);
