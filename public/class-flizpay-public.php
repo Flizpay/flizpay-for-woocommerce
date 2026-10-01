@@ -329,14 +329,20 @@ class Flizpay_Public
         return is_array($this->settings)
             && ($this->settings['enabled'] ?? 'no') === 'yes'
             && !empty($this->settings['flizpay_public_id'])
-            && in_array('yes', array_intersect_key($this->settings, array_flip(self::PLACEMENT_SETTINGS)), true);
+            && count(array_filter(array_unique(self::PLACEMENT_SETTINGS), array($this, 'area_enabled'))) > 0;
     }
 
     private function slot_enabled(string $slot): bool
     {
         $setting = self::PLACEMENT_SETTINGS[$slot] ?? null;
 
-        return $this->placements_enabled() && ($setting === null || ($this->settings[$setting] ?? 'no') === 'yes');
+        return $this->placements_enabled() && ($setting === null || $this->area_enabled($setting));
+    }
+
+    /** Areas default to on, like their settings fields. */
+    private function area_enabled(string $setting): bool
+    {
+        return ($this->settings[$setting] ?? 'yes') === 'yes';
     }
 
     /**
