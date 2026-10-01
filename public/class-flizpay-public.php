@@ -106,32 +106,73 @@ class Flizpay_Public
     }
 
     /**
-     * Load the discount placement script on product pages that show the placement.
+     * Load the hosted placement script wherever placements are enabled. The Cart block
+     * has no template hook, so it gets a small slot-fill script as well.
      */
-    public function enqueue_product_placement_script()
+    public function enqueue_placement_scripts()
     {
-        if (!$this->should_show_product_placement()) {
+        if (!$this->placements_enabled()) {
             return;
         }
 
         wp_enqueue_script(
             $this->plugin_name . '-placement',
             // FLIZPAY_PLACEMENT_SCRIPT_URL (wp-config.php) points at a staging build.
-            defined('FLIZPAY_PLACEMENT_SCRIPT_URL') ? FLIZPAY_PLACEMENT_SCRIPT_URL : 'https://app.flizpay.de/web-components/flizpay.js',
+            defined('FLIZPAY_PLACEMENT_SCRIPT_URL') ? FLIZPAY_PLACEMENT_SCRIPT_URL : 'https://app.flizpay.de/web-components/v1/flizpay.js',
             array(),
             null,
             array('strategy' => 'async')
         );
+
+        if (function_exists('is_cart') && is_cart() && has_block('woocommerce/cart')) {
+            wp_enqueue_script(
+                $this->plugin_name . '-placement-cart',
+                plugin_dir_url(__FILE__) . 'js/flizpay-placement-cart.js',
+                array('wp-plugins', 'wp-element', 'wc-blocks-checkout'),
+                $this->version,
+                true
+            );
+            wp_add_inline_script(
+                $this->plugin_name . '-placement-cart',
+                'window.flizpayPlacement = ' . wp_json_encode($this->placement_attributes('cart')) . ';',
+                'before'
+            );
+        }
+    }
+
+    public function render_listing_placement()
+    {
+        if (!wp_is_block_theme()) {
+            echo $this->placement_html('listing-item'); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in placement_html()
+        }
     }
 
     public function render_product_placement()
     {
-        // Block themes also fire this hook via WooCommerce's compatibility layer, above add-to-cart.
-        if (wp_is_block_theme()) {
-            return;
+        if (!wp_is_block_theme()) {
+            echo $this->product_placement_html(); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in placement_html()
+        }
+    }
+
+    public function render_cart_placement()
+    {
+        echo $this->placement_html('cart'); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in placement_html()
+    }
+
+    public function render_mini_cart_placement()
+    {
+        echo $this->placement_html('mini-cart'); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in placement_html()
+    }
+
+    public function append_listing_placement($block_content, $block, $instance)
+    {
+        // The price block also renders the main product on its own page; that one is not a listing item.
+        $is_main_product = function_exists('is_product') && is_product() && ($instance->context['postId'] ?? null) === get_queried_object_id();
+        if (!wp_is_block_theme() || $is_main_product) {
+            return $block_content;
         }
 
-        echo $this->product_placement_html(); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in product_placement_html()
+        return $block_content . $this->placement_html('listing-item');
     }
 
     public function append_product_placement($block_content)
@@ -147,26 +188,43 @@ class Flizpay_Public
     {
         static $rendered = false;
 
-        if ($rendered || !$this->should_show_product_placement()) {
+        if ($rendered || !function_exists('is_product') || !is_product()) {
             return '';
         }
 
         $rendered = true;
 
-        return sprintf(
-            '<fliz-placement public-id="%s" locale="%s"></fliz-placement>',
-            esc_attr($this->settings['flizpay_public_id']),
-            esc_attr(get_locale())
+        return $this->placement_html('product-page');
+    }
+
+    private function placement_html(string $slot): string
+    {
+        if (!$this->placements_enabled()) {
+            return '';
+        }
+
+        $attributes = '';
+        foreach ($this->placement_attributes($slot) as $name => $value) {
+            $attributes .= sprintf(' data-%s="%s"', $name, esc_attr($value));
+        }
+
+        return '<fliz-placement' . $attributes . '></fliz-placement>';
+    }
+
+    private function placement_attributes(string $slot): array
+    {
+        return array(
+            'public-id' => $this->settings['flizpay_public_id'],
+            'slot' => $slot,
+            'locale' => get_locale(),
         );
     }
 
-    private function should_show_product_placement(): bool
+    private function placements_enabled(): bool
     {
-        return function_exists('is_product')
-            && is_product()
-            && is_array($this->settings)
+        return is_array($this->settings)
             && ($this->settings['enabled'] ?? 'no') === 'yes'
-            && ($this->settings['flizpay_display_product_promo'] ?? 'no') === 'yes'
+            && ($this->settings['flizpay_display_placements'] ?? 'no') === 'yes'
             && !empty($this->settings['flizpay_public_id']);
     }
 
