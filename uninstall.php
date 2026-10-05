@@ -32,6 +32,8 @@ foreach ($options as $option) {
 	delete_option($option);
 }
 
+delete_metadata('user', 0, 'flizpay_auto_update_notice_dismissed', '', true);
+
 // For multisite: Delete options across all sites
 if (is_multisite()) {
 	$blog_ids = get_sites(array('fields' => 'ids'));

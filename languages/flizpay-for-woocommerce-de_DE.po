@@ -90,3 +90,23 @@ msgstr "FLIZpay hat die Verbindung abgelehnt."
 #: admin/class-flizpay-connect.php:141
 msgid "FLIZpay could not configure the webhook."
 msgstr "FLIZpay konnte den Webhook nicht einrichten."
+
+#: admin/class-flizpay-auto-update.php:22
+msgid "Automatic updates for FLIZpay are enabled."
+msgstr "Automatische Updates für FLIZpay sind aktiviert."
+
+#: admin/class-flizpay-auto-update.php:32
+msgid "Enable automatic updates so FLIZpay always runs the latest fixes and improvements."
+msgstr "Aktiviere automatische Updates, damit FLIZpay immer die neuesten Fehlerbehebungen und Verbesserungen erhält."
+
+#: admin/class-flizpay-auto-update.php:32
+msgid "Enable automatic updates"
+msgstr "Automatische Updates aktivieren"
+
+#: admin/class-flizpay-auto-update.php:41
+msgid "Don't ask again"
+msgstr "Nicht mehr fragen"
+
+#: admin/class-flizpay-auto-update.php:52
+msgid "You are not allowed to manage plugin updates."
+msgstr "Du darfst Plugin-Updates nicht verwalten."
