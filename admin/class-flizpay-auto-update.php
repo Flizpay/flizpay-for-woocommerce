@@ -37,7 +37,7 @@ class Flizpay_Auto_Update
                     <button type="submit" name="choice" value="enable" class="button button-primary">
                         <?php echo esc_html__('Enable automatic updates', 'flizpay-for-woocommerce'); ?>
                     </button>
-                    <button type="submit" name="choice" value="dismiss" class="button button-link">
+                    <button type="submit" name="choice" value="dismiss" class="button button-link" style="margin-left: 16px; font-size: 12px;">
                         <?php echo esc_html__("Don't ask again", 'flizpay-for-woocommerce'); ?>
                     </button>
                 </p>
