@@ -161,6 +161,11 @@ class Flizpay
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-flizpay-connect.php';
 
         /**
+         * The class responsible for the automatic-updates opt-in prompt.
+         */
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-flizpay-auto-update.php';
+
+        /**
          * The class responsible for defining all actions that occur in the public-facing
          * side of the site.
          */
@@ -214,6 +219,11 @@ class Flizpay
         $this->loader->add_action('admin_footer', $plugin_connect, 'render_connect_form');
         $this->loader->add_action('admin_post_flizpay_connect', $plugin_connect, 'handle_admin_connect');
         $this->loader->add_action('admin_notices', $plugin_connect, 'render_admin_notice');
+
+        $plugin_auto_update = new Flizpay_Auto_Update();
+
+        $this->loader->add_action('admin_notices', $plugin_auto_update, 'render_admin_notice');
+        $this->loader->add_action('admin_post_flizpay_auto_update', $plugin_auto_update, 'handle_choice');
     }
 
     /**
