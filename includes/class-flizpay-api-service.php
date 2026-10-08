@@ -140,7 +140,7 @@ class Flizpay_API_Service
     }
 
     /**
-     * Fetch the merchant's non-secret id used by the product page placement.
+     * Fetch the merchant's non-secret id used by the product page widget.
      */
     public function fetch_public_id(): ?string
     {

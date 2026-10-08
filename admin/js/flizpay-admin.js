@@ -66,7 +66,7 @@
     const dividerRow2 = document.createElement("tr");
     const dividerRow3 = document.createElement("tr");
     const checkoutSectionTitle = document.createElement("h2");
-    const placementSectionTitle = document.createElement("h2");
+    const widgetSectionTitle = document.createElement("h2");
     const orderStatusLabel = document.createElement("h2");
 
     // Live checkout-preview sub-elements (assigned in buildCheckoutPreview).
@@ -179,7 +179,7 @@
 
       // Add unique classes to our divider rows to make them easier to find/remove
       dividerRow.classList.add("flizpay-divider", "checkout-section");
-      dividerRow2.classList.add("flizpay-divider", "placement-section");
+      dividerRow2.classList.add("flizpay-divider", "widget-section");
       dividerRow3.classList.add("flizpay-divider", "admin-options-section");
 
       // Remove any existing dividers first to avoid duplicates
@@ -202,13 +202,13 @@
       dividerRow3.setAttribute("style", dividerStyle + " gap: 20px;");
 
       checkoutSectionTitle.setAttribute("style", "width: 100%;");
-      placementSectionTitle.setAttribute("style", "width: 100%;");
+      widgetSectionTitle.setAttribute("style", "width: 100%;");
 
       // Set section titles
       checkoutSectionTitle.innerHTML = flizpayParams.wp_locale.includes("en")
         ? "Checkout Settings"
         : "Kasse Einstellung";
-      placementSectionTitle.innerHTML = flizpayParams.wp_locale.includes("en")
+      widgetSectionTitle.innerHTML = flizpayParams.wp_locale.includes("en")
         ? "On-site Messaging"
         : "Shop-Hinweise";
       orderStatusLabel.innerHTML = adminOptionTitle;
@@ -223,8 +223,8 @@
 
       // Build on-site messaging section divider
       dividerRow2.append(divider2);
-      dividerRow2.append(placementSectionTitle);
-      dividerRow2.append(buildPlacementPreview());
+      dividerRow2.append(widgetSectionTitle);
+      dividerRow2.append(buildWidgetPreview());
 
       // Build admin options section divider
       dividerRow3.append(divider3);
@@ -257,11 +257,11 @@
       }
 
       // Add on-site messaging section before its checkbox group
-      const placementRow = table.querySelector(
-        "tr:has(#woocommerce_flizpay_flizpay_placement_product)",
+      const widgetRow = table.querySelector(
+        "tr:has(#woocommerce_flizpay_flizpay_widget_product)",
       );
-      if (placementRow) {
-        placementRow.insertAdjacentElement("beforebegin", dividerRow2);
+      if (widgetRow) {
+        widgetRow.insertAdjacentElement("beforebegin", dividerRow2);
       }
 
       // Add admin options section before order status
@@ -415,19 +415,19 @@
 
     /**
      * Preview of the on-site messages, one card per area. The cards hold real
-     * <fliz-placement> elements rendered by the hosted script, so they show
+     * <fliz-widget> elements rendered by the hosted script, so they show
      * exactly what FLIZpay currently returns for this shop. Each card follows
      * its area checkbox.
      */
-    function buildPlacementPreview() {
+    function buildWidgetPreview() {
       const isEnglish = flizpayParams.wp_locale.includes("en");
-      const data = flizpayParams.placement_preview || {};
+      const data = flizpayParams.widget_preview || {};
       const container = document.createElement("div");
-      container.classList.add("flizpay-placement-preview");
+      container.classList.add("flizpay-widget-preview");
 
       if (!data.publicId) {
         const hint = document.createElement("p");
-        hint.classList.add("flizpay-placement-preview__hint");
+        hint.classList.add("flizpay-widget-preview__hint");
         hint.textContent = isEnglish
           ? "Enable an area and save to load the preview."
           : "Aktiviere einen Bereich und speichere, um die Vorschau zu laden.";
@@ -485,17 +485,17 @@
 
       areas.forEach((area) => {
         const card = document.createElement("div");
-        card.classList.add("flizpay-placement-preview__card");
+        card.classList.add("flizpay-widget-preview__card");
 
         const caption = document.createElement("div");
-        caption.classList.add("flizpay-placement-preview__caption");
+        caption.classList.add("flizpay-widget-preview__caption");
         caption.textContent = area.caption;
         card.append(caption);
 
         area.lines.forEach(([kind, value]) => {
           let line;
           if (kind === "slot") {
-            line = document.createElement("fliz-placement");
+            line = document.createElement("fliz-widget");
             line.dataset.publicId = data.publicId;
             line.dataset.slot = value;
             line.dataset.locale = isEnglish ? "en" : "de";
@@ -503,14 +503,14 @@
             line.dataset.amount = String(data.amount);
           } else {
             line = document.createElement("div");
-            line.classList.add("flizpay-placement-preview__" + kind);
+            line.classList.add("flizpay-widget-preview__" + kind);
             line.textContent = value;
           }
           card.append(line);
         });
 
         const checkbox = document.querySelector(
-          "#woocommerce_flizpay_flizpay_placement_" + area.setting,
+          "#woocommerce_flizpay_flizpay_widget_" + area.setting,
         );
         const sync = () => {
           card.style.display = checkbox && !checkbox.checked ? "none" : "";
@@ -522,7 +522,7 @@
       });
 
       const note = document.createElement("p");
-      note.classList.add("flizpay-placement-preview__hint");
+      note.classList.add("flizpay-widget-preview__hint");
       note.textContent = t(
         "Messages appear only while you offer a discount. Text and design are managed by FLIZpay.",
         "Hinweise erscheinen nur, solange du einen Rabatt anbietest. Text und Gestaltung steuert FLIZpay.",

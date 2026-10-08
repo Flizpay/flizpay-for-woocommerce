@@ -170,7 +170,7 @@
   text-align: left;
 }
 
-.flizpay-placement-preview {
+.flizpay-widget-preview {
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
@@ -180,7 +180,7 @@
   gap: 16px;
 }
 
-.flizpay-placement-preview .flizpay-placement-preview__card {
+.flizpay-widget-preview .flizpay-widget-preview__card {
   flex: 1 1 260px;
   max-width: 300px;
   padding: 14px 16px;
@@ -192,7 +192,7 @@
   color: #1d2327;
 }
 
-.flizpay-placement-preview .flizpay-placement-preview__caption {
+.flizpay-widget-preview .flizpay-widget-preview__caption {
   margin-bottom: 10px;
   font-size: 11px;
   font-weight: 600;
@@ -201,15 +201,15 @@
   color: #646970;
 }
 
-.flizpay-placement-preview .flizpay-placement-preview__title {
+.flizpay-widget-preview .flizpay-widget-preview__title {
   font-weight: 600;
 }
 
-.flizpay-placement-preview .flizpay-placement-preview__price {
+.flizpay-widget-preview .flizpay-widget-preview__price {
   margin: 4px 0;
 }
 
-.flizpay-placement-preview .flizpay-placement-preview__button {
+.flizpay-widget-preview .flizpay-widget-preview__button {
   display: inline-block;
   margin: 4px 0;
   padding: 6px 14px;
@@ -218,7 +218,7 @@
   color: #fff;
 }
 
-.flizpay-placement-preview .flizpay-placement-preview__hint {
+.flizpay-widget-preview .flizpay-widget-preview__hint {
   width: 100%;
   margin: 0;
   font-size: 12px;

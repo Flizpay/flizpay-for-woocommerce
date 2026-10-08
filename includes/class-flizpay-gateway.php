@@ -298,8 +298,8 @@ function flizpay_init_gateway_class()
          */
         public function ensure_public_id(bool $throttled = false): void
         {
-            $placements_enabled = in_array('yes', array_map(array($this, 'get_option'), Flizpay_Public::PLACEMENT_SETTINGS), true);
-            if (!$placements_enabled || $this->get_option('flizpay_public_id') !== '' || $this->get_option('flizpay_api_key') === '') {
+            $widgets_enabled = in_array('yes', array_map(array($this, 'get_option'), Flizpay_Public::WIDGET_SETTINGS), true);
+            if (!$widgets_enabled || $this->get_option('flizpay_public_id') !== '' || $this->get_option('flizpay_api_key') === '') {
                 return;
             }
             if ($throttled && get_transient('flizpay_public_id_retry')) {

@@ -107,13 +107,13 @@ class Flizpay_Admin
 			: null;
 
 		$settings = get_option('woocommerce_flizpay_settings');
-		wp_enqueue_script($this->plugin_name . '-placement', Flizpay_Public::placement_script_url(), array(), null, array('strategy' => 'async'));
+		wp_enqueue_script($this->plugin_name . '-widget', Flizpay_Public::widget_script_url(), array(), null, array('strategy' => 'async'));
 
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
 			'nonce' => wp_create_nonce('test_connection_nonce'),
 			'loading_icon' => "$this->assets_url/loading.svg",
 			'checkout_preview' => $checkout_preview,
-			'placement_preview' => array(
+			'widget_preview' => array(
 				'publicId' => is_array($settings) ? ($settings['flizpay_public_id'] ?? '') : '',
 				'currency' => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'EUR',
 				'amount' => 1995,
@@ -232,26 +232,26 @@ class Flizpay_Admin
 				'description' => '',
 				'default' => 'yes',
 			),
-			'flizpay_placement_product' => array(
+			'flizpay_widget_product' => array(
 				'title' => $this->is_english() ? 'Areas' : 'Bereiche',
 				'label' => $this->is_english() ? 'Show discount message on product pages' : 'Rabatthinweis auf Produktseiten anzeigen',
 				'type' => 'checkbox',
 				'default' => 'yes',
 				'checkboxgroup' => 'start',
 			),
-			'flizpay_placement_listing' => array(
+			'flizpay_widget_listing' => array(
 				'label' => $this->is_english() ? 'Show discount message in product listings' : 'Rabatthinweis in Produktlisten anzeigen',
 				'type' => 'checkbox',
 				'default' => 'yes',
 				'checkboxgroup' => '',
 			),
-			'flizpay_placement_cart' => array(
+			'flizpay_widget_cart' => array(
 				'label' => $this->is_english() ? 'Show discount message in the cart' : 'Rabatthinweis im Warenkorb anzeigen',
 				'type' => 'checkbox',
 				'default' => 'yes',
 				'checkboxgroup' => '',
 			),
-			'flizpay_placement_mini_cart' => array(
+			'flizpay_widget_mini_cart' => array(
 				'label' => $this->is_english() ? 'Show discount message in the mini-cart' : 'Rabatthinweis im Mini-Warenkorb anzeigen',
 				'type' => 'checkbox',
 				'default' => 'yes',
