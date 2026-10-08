@@ -41,6 +41,15 @@ class Flizpay_Public
      */
     private $version;
 
+    /** Widget slot → the merchant setting that switches it on. Slots not listed follow any enabled area. */
+    public const WIDGET_SETTINGS = array(
+        'listing-item' => 'flizpay_widget_listing',
+        'product-price' => 'flizpay_widget_product',
+        'product-page' => 'flizpay_widget_product',
+        'cart' => 'flizpay_widget_cart',
+        'mini-cart' => 'flizpay_widget_mini_cart',
+    );
+
     /**
      * The FLIZpay settings
      *
@@ -103,6 +112,237 @@ class Flizpay_Public
         }
 
         $this->enqueue_checkout_scripts();
+    }
+
+    /**
+     * Load the hosted widget script wherever widgets are enabled. The Cart and Checkout
+     * blocks have no template hooks, so there a small slot-fill script carries the slot.
+     */
+    public function enqueue_widget_scripts()
+    {
+        if (!$this->widgets_enabled()) {
+            return;
+        }
+
+        wp_enqueue_script($this->plugin_name . '-widget', self::widget_script_url(), array(), null, array('strategy' => 'async'));
+
+        $block_slot = $this->block_checkout_slot();
+        if ($block_slot !== null && $this->slot_enabled($block_slot)) {
+            wp_enqueue_script(
+                $this->plugin_name . '-widget-fill',
+                plugin_dir_url(__FILE__) . 'js/flizpay-widget-fill.js',
+                array('wp-plugins', 'wp-element', 'wc-blocks-checkout'),
+                $this->version,
+                true
+            );
+            wp_add_inline_script(
+                $this->plugin_name . '-widget-fill',
+                'window.flizpayWidget = ' . wp_json_encode($this->widget_attributes($block_slot, $this->cart_attributes())) . ';',
+                'before'
+            );
+        }
+    }
+
+    /**
+     * FLIZPAY_WIDGET_SCRIPT_URL (wp-config.php) points at a staging build.
+     */
+    public static function widget_script_url(): string
+    {
+        return defined('FLIZPAY_WIDGET_SCRIPT_URL') ? FLIZPAY_WIDGET_SCRIPT_URL : 'https://app.flizpay.de/web-components/v1/flizpay.js';
+    }
+
+    /**
+     * The script sets no cookies or storage; tell consent managers not to block it.
+     */
+    public function widget_script_tag($tag, $handle)
+    {
+        if ($handle !== $this->plugin_name . '-widget') {
+            return $tag;
+        }
+
+        return str_replace('<script ', '<script data-cookieconsent="ignore" data-borlabs-cookie-script-blocker-ignore ', $tag);
+    }
+
+    public function render_listing_widget()
+    {
+        if (!wp_is_block_theme()) {
+            echo $this->widget_html('listing-item', $this->product_attributes()); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in widget_html()
+        }
+    }
+
+    public function render_product_price_widget()
+    {
+        if (!wp_is_block_theme()) {
+            echo $this->widget_html('product-price', $this->product_attributes()); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in widget_html()
+        }
+    }
+
+    public function render_product_widget()
+    {
+        if (!wp_is_block_theme()) {
+            echo $this->product_widget_html(); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in widget_html()
+        }
+    }
+
+    public function render_cart_widget()
+    {
+        echo $this->widget_html('cart', $this->cart_attributes()); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in widget_html()
+    }
+
+    public function render_mini_cart_widget()
+    {
+        echo $this->widget_html('mini-cart', $this->cart_attributes()); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in widget_html()
+    }
+
+    public function render_checkout_widget()
+    {
+        echo $this->widget_html('checkout', $this->cart_attributes()); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in widget_html()
+    }
+
+    public function render_order_received_widget($order_id)
+    {
+        $order = wc_get_order($order_id);
+        if (!$order) {
+            return;
+        }
+
+        echo $this->widget_html('order-received', array( // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in widget_html()
+            'amount' => $this->minor_units($order->get_total()),
+            'currency' => $order->get_currency(),
+        ));
+    }
+
+    public function append_price_widget($block_content, $block, $instance)
+    {
+        if (!wp_is_block_theme()) {
+            return $block_content;
+        }
+
+        $product = wc_get_product($instance->context['postId'] ?? 0);
+        if (!$product) {
+            return $block_content;
+        }
+
+        // On its own page the main product's price block is the product-price slot, anywhere else a listing item.
+        $is_main_product = function_exists('is_product') && is_product() && $product->get_id() === get_queried_object_id();
+
+        return $block_content . $this->widget_html($is_main_product ? 'product-price' : 'listing-item', $this->product_attributes($product));
+    }
+
+    public function append_product_widget($block_content)
+    {
+        if (!wp_is_block_theme()) {
+            return $block_content;
+        }
+
+        return $block_content . $this->product_widget_html();
+    }
+
+    private function product_widget_html(): string
+    {
+        static $rendered = false;
+
+        if ($rendered || !function_exists('is_product') || !is_product()) {
+            return '';
+        }
+
+        $rendered = true;
+
+        return $this->widget_html('product-page', $this->product_attributes());
+    }
+
+    private function widget_html(string $slot, array $context = array()): string
+    {
+        if (!$this->slot_enabled($slot)) {
+            return '';
+        }
+
+        $attributes = '';
+        foreach ($this->widget_attributes($slot, $context) as $name => $value) {
+            $attributes .= sprintf(' data-%s="%s"', $name, esc_attr((string) $value));
+        }
+
+        return '<fliz-widget' . $attributes . '></fliz-widget>';
+    }
+
+    /**
+     * Everything the page knows travels with the slot; the script uses what the current layouts need.
+     */
+    private function widget_attributes(string $slot, array $context = array()): array
+    {
+        return array_merge(array(
+            'public-id' => $this->settings['flizpay_public_id'],
+            'slot' => $slot,
+            'locale' => get_locale(),
+            'currency' => get_woocommerce_currency(),
+            'platform' => 'woocommerce',
+            'plugin-version' => $this->version,
+        ), $context);
+    }
+
+    private function product_attributes($product = null): array
+    {
+        $product = $product ?: ($GLOBALS['product'] ?? null);
+        if (!$product instanceof WC_Product) {
+            return array();
+        }
+
+        $attributes = array('product-id' => $product->get_id());
+        if ($product->get_price() !== '') {
+            $attributes['amount'] = $this->minor_units($product->get_price());
+        }
+
+        return $attributes;
+    }
+
+    private function cart_attributes(): array
+    {
+        if (!function_exists('WC') || !WC()->cart) {
+            return array();
+        }
+
+        return array('amount' => $this->minor_units(WC()->cart->get_total('edit')));
+    }
+
+    /**
+     * Amounts travel in minor units (cents), like other on-site messaging SDKs.
+     */
+    private function minor_units($amount): int
+    {
+        return (int) round((float) $amount * pow(10, wc_get_price_decimals()));
+    }
+
+    private function block_checkout_slot(): ?string
+    {
+        if (function_exists('is_cart') && is_cart() && has_block('woocommerce/cart')) {
+            return 'cart';
+        }
+        if (function_exists('is_checkout') && is_checkout() && !is_wc_endpoint_url('order-received') && has_block('woocommerce/checkout')) {
+            return 'checkout';
+        }
+
+        return null;
+    }
+
+    private function widgets_enabled(): bool
+    {
+        return is_array($this->settings)
+            && ($this->settings['enabled'] ?? 'no') === 'yes'
+            && !empty($this->settings['flizpay_public_id'])
+            && count(array_filter(array_unique(self::WIDGET_SETTINGS), array($this, 'area_enabled'))) > 0;
+    }
+
+    private function slot_enabled(string $slot): bool
+    {
+        $setting = self::WIDGET_SETTINGS[$slot] ?? null;
+
+        return $this->widgets_enabled() && ($setting === null || $this->area_enabled($setting));
+    }
+
+    /** Areas default to on, like their settings fields. */
+    private function area_enabled(string $setting): bool
+    {
+        return ($this->settings[$setting] ?? 'yes') === 'yes';
     }
 
     /**

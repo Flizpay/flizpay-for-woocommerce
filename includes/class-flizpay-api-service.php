@@ -140,6 +140,18 @@ class Flizpay_API_Service
     }
 
     /**
+     * Fetch the merchant's non-secret id used by the product page widget.
+     */
+    public function fetch_public_id(): ?string
+    {
+        $response = WC_Flizpay_API::get_instance($this->api_key)->dispatch("fetch_public_id");
+
+        return is_array($response) && !empty($response["publicId"])
+            ? (string) $response["publicId"]
+            : null;
+    }
+
+    /**
      * Fetch normalized cashback percentages configured for the merchant.
      *
      * @return array{first_purchase_amount: float, standard_amount: float}

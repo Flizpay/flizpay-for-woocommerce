@@ -60,10 +60,13 @@
       "#connection-stablished-description",
     );
     const divider = document.createElement("hr");
+    const divider2 = document.createElement("hr");
     const divider3 = document.createElement("hr");
     const dividerRow = document.createElement("tr");
+    const dividerRow2 = document.createElement("tr");
     const dividerRow3 = document.createElement("tr");
     const checkoutSectionTitle = document.createElement("h2");
+    const widgetSectionTitle = document.createElement("h2");
     const orderStatusLabel = document.createElement("h2");
 
     // Live checkout-preview sub-elements (assigned in buildCheckoutPreview).
@@ -176,6 +179,7 @@
 
       // Add unique classes to our divider rows to make them easier to find/remove
       dividerRow.classList.add("flizpay-divider", "checkout-section");
+      dividerRow2.classList.add("flizpay-divider", "widget-section");
       dividerRow3.classList.add("flizpay-divider", "admin-options-section");
 
       // Remove any existing dividers first to avoid duplicates
@@ -188,19 +192,25 @@
 
       // Set styles for dividers and titles
       divider.setAttribute("style", "width: 100%");
+      divider2.setAttribute("style", "width: 100%");
       divider3.setAttribute("style", "width: 100%");
 
       const dividerStyle =
         "width: 80vw; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; padding: 10px; text-align: center;";
       dividerRow.setAttribute("style", dividerStyle);
+      dividerRow2.setAttribute("style", dividerStyle);
       dividerRow3.setAttribute("style", dividerStyle + " gap: 20px;");
 
       checkoutSectionTitle.setAttribute("style", "width: 100%;");
+      widgetSectionTitle.setAttribute("style", "width: 100%;");
 
       // Set section titles
       checkoutSectionTitle.innerHTML = flizpayParams.wp_locale.includes("en")
         ? "Checkout Settings"
         : "Kasse Einstellung";
+      widgetSectionTitle.innerHTML = flizpayParams.wp_locale.includes("en")
+        ? "On-site Messaging"
+        : "Shop-Hinweise";
       orderStatusLabel.innerHTML = adminOptionTitle;
 
       // Build checkout section divider
@@ -210,6 +220,11 @@
       if (checkoutPreview) {
         dividerRow.append(checkoutPreview);
       }
+
+      // Build on-site messaging section divider
+      dividerRow2.append(divider2);
+      dividerRow2.append(widgetSectionTitle);
+      dividerRow2.append(buildWidgetPreview());
 
       // Build admin options section divider
       dividerRow3.append(divider3);
@@ -239,6 +254,14 @@
         if (apiKeyRow) {
           apiKeyRow.insertAdjacentElement("afterend", dividerRow);
         }
+      }
+
+      // Add on-site messaging section before its checkbox group
+      const widgetRow = table.querySelector(
+        "tr:has(#woocommerce_flizpay_flizpay_widget_product)",
+      );
+      if (widgetRow) {
+        widgetRow.insertAdjacentElement("beforebegin", dividerRow2);
       }
 
       // Add admin options section before order status
@@ -388,6 +411,125 @@
         ? displayDescriptionInput.checked
         : true;
       previewDescriptionEl.style.display = showDescription ? "" : "none";
+    }
+
+    /**
+     * Preview of the on-site messages, one card per area. The cards hold real
+     * <fliz-widget> elements rendered by the hosted script, so they show
+     * exactly what FLIZpay currently returns for this shop. Each card follows
+     * its area checkbox.
+     */
+    function buildWidgetPreview() {
+      const isEnglish = flizpayParams.wp_locale.includes("en");
+      const data = flizpayParams.widget_preview || {};
+      const container = document.createElement("div");
+      container.classList.add("flizpay-widget-preview");
+
+      if (!data.publicId) {
+        const hint = document.createElement("p");
+        hint.classList.add("flizpay-widget-preview__hint");
+        hint.textContent = isEnglish
+          ? "Enable an area and save to load the preview."
+          : "Aktiviere einen Bereich und speichere, um die Vorschau zu laden.";
+        container.append(hint);
+        return container;
+      }
+
+      const t = (en, de) => (isEnglish ? en : de);
+      const price = new Intl.NumberFormat(isEnglish ? "en-GB" : "de-DE", {
+        style: "currency",
+        currency: data.currency || "EUR",
+      }).format(data.amount / 100);
+
+      const areas = [
+        {
+          setting: "product",
+          caption: t("Product page", "Produktseite"),
+          lines: [
+            ["title", t("Example product", "Beispielprodukt")],
+            ["price", price],
+            ["slot", "product-price"],
+            ["button", t("Add to cart", "In den Warenkorb")],
+            ["slot", "product-page"],
+          ],
+        },
+        {
+          setting: "listing",
+          caption: t("Product listing", "Produktliste"),
+          lines: [
+            ["title", t("Example product", "Beispielprodukt")],
+            ["price", price],
+            ["slot", "listing-item"],
+            ["button", t("Add to cart", "In den Warenkorb")],
+          ],
+        },
+        {
+          setting: "cart",
+          caption: t("Cart", "Warenkorb"),
+          lines: [
+            ["price", t("Total", "Gesamtsumme") + " " + price],
+            ["slot", "cart"],
+            ["button", t("Proceed to checkout", "Zur Kasse")],
+          ],
+        },
+        {
+          setting: "mini_cart",
+          caption: t("Mini-cart", "Mini-Warenkorb"),
+          lines: [
+            ["price", t("Subtotal", "Zwischensumme") + " " + price],
+            ["slot", "mini-cart"],
+            ["button", t("View cart", "Warenkorb ansehen")],
+          ],
+        },
+      ];
+
+      areas.forEach((area) => {
+        const card = document.createElement("div");
+        card.classList.add("flizpay-widget-preview__card");
+
+        const caption = document.createElement("div");
+        caption.classList.add("flizpay-widget-preview__caption");
+        caption.textContent = area.caption;
+        card.append(caption);
+
+        area.lines.forEach(([kind, value]) => {
+          let line;
+          if (kind === "slot") {
+            line = document.createElement("fliz-widget");
+            line.dataset.publicId = data.publicId;
+            line.dataset.slot = value;
+            line.dataset.locale = isEnglish ? "en" : "de";
+            line.dataset.currency = data.currency || "EUR";
+            line.dataset.amount = String(data.amount);
+          } else {
+            line = document.createElement("div");
+            line.classList.add("flizpay-widget-preview__" + kind);
+            line.textContent = value;
+          }
+          card.append(line);
+        });
+
+        const checkbox = document.querySelector(
+          "#woocommerce_flizpay_flizpay_widget_" + area.setting,
+        );
+        const sync = () => {
+          card.style.display = checkbox && !checkbox.checked ? "none" : "";
+        };
+        if (checkbox) jQuery(checkbox).on("change", sync);
+        sync();
+
+        container.append(card);
+      });
+
+      const note = document.createElement("p");
+      note.classList.add("flizpay-widget-preview__hint");
+      note.textContent = t(
+        "Messages appear only while you offer a discount. Text and design are managed by FLIZpay.",
+        "Hinweise erscheinen nur, solange du einen Rabatt anbietest. Text und Gestaltung steuert FLIZpay.",
+      );
+      container.append(note);
+
+      return container;
     }
   });
 })(jQuery);
