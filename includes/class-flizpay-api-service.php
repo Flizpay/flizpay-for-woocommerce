@@ -140,6 +140,14 @@ class Flizpay_API_Service
     }
 
     /**
+     * Report which widget areas the merchant enabled (usage analytics).
+     */
+    public function report_widget_areas(array $areas): void
+    {
+        WC_Flizpay_API::get_instance($this->api_key)->dispatch("edit_business", ["pluginWidgetAreas" => $areas]);
+    }
+
+    /**
      * Fetch the merchant's non-secret id used by the product page widget.
      */
     public function fetch_public_id(): ?string

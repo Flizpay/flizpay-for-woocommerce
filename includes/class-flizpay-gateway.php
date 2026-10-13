@@ -214,6 +214,10 @@ function flizpay_init_gateway_class()
             }
 
             $this->ensure_public_id();
+            if ($this->get_option('flizpay_api_key') !== '') {
+                $areas = array('flizpay_widget_product' => 'product', 'flizpay_widget_listing' => 'listing', 'flizpay_widget_cart' => 'cart', 'flizpay_widget_mini_cart' => 'mini-cart');
+                $this->api_service->report_widget_areas(array_values(array_filter($areas, fn($key) => $this->get_option($key) === 'yes', ARRAY_FILTER_USE_KEY)));
+            }
 
             $this->init_gateway_info();
             return $saved;
