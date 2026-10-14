@@ -109,6 +109,8 @@ class Flizpay_Connect
         $settings = is_array($settings) ? $settings : array();
         $settings['flizpay_api_key'] = $api_key;
         $settings['flizpay_webhook_alive'] = 'no';
+        $settings['flizpay_public_id'] = '';
+        delete_transient('flizpay_public_id_retry');
         if (!isset($settings['enabled'])) {
             // WooCommerce defaults the field to 'yes', so leaving the key absent would
             // switch the gateway on. The merchant enables it explicitly.

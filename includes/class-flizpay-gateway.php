@@ -143,8 +143,7 @@ function flizpay_init_gateway_class()
         }
 
         /**
-         * Apply translations to FLIZ gateway title and description
-         * The title and description will vary depending on whether the cashback is active or not.
+         * Keep canonical payment metadata plain. The browser component owns offer text.
          *
          * @return void
          *
@@ -152,9 +151,33 @@ function flizpay_init_gateway_class()
          */
         public function init_gateway_info(): void
         {
-            $this->cashback_helper->set_cashback_info();
-            $this->cashback_helper->set_title();
-            $this->cashback_helper->set_description();
+            $this->title = 'FLIZpay';
+            $this->description = '';
+        }
+
+        /** Classic checkout metadata is regenerated with every payment fragment. */
+        public function payment_fields(): void
+        {
+            $total = function_exists('WC') && WC()->cart ? WC()->cart->get_total('edit') : null;
+            $data = Flizpay_Public::checkout_data($this->settings, Flizpay_Public::checkout_amount($total));
+            $attributes = array(
+                'public-id' => $data['publicId'],
+                'locale' => $data['locale'],
+                'show-headline' => $data['showHeadline'] ? 'yes' : 'no',
+                'show-description' => $data['showDescription'] ? 'yes' : 'no',
+            );
+            if (isset($data['amount'])) {
+                $attributes['amount'] = $data['amount'];
+            }
+
+            echo '<span class="flizpay-checkout-context" hidden';
+            foreach ($attributes as $name => $value) {
+                echo ' data-' . esc_attr($name) . '="' . esc_attr((string) $value) . '"';
+            }
+            echo '></span>';
+            if ($data['showDescription']) {
+                echo '<span class="flizpay-checkout-description"></span>';
+            }
         }
 
         /**
@@ -183,13 +206,17 @@ function flizpay_init_gateway_class()
             $this->api_key = $api_key;
             $this->api_service = new Flizpay_API_Service($api_key);
 
+            $is_new_api_key = $api_key !== $previous_api_key;
+            if ($is_new_api_key || $api_key === '') {
+                $this->update_option('flizpay_public_id', '');
+                delete_transient('flizpay_public_id_retry');
+            }
+
             if ($api_key === '') {
                 $this->update_option('flizpay_webhook_alive', 'no');
                 $this->init_gateway_info();
                 return $saved;
             }
-
-            $is_new_api_key = $api_key !== $previous_api_key;
 
             if ($is_new_api_key || $this->get_option('flizpay_webhook_alive') === 'no') {
                 $this->update_option('flizpay_webhook_alive', 'no');
@@ -207,10 +234,6 @@ function flizpay_init_gateway_class()
                     $this->update_option('flizpay_cashback', $connection['cashback']);
                     $this->cashback = $connection['cashback'];
                 }
-            }
-
-            if ($is_new_api_key) {
-                $this->update_option('flizpay_public_id', '');
             }
 
             $this->ensure_public_id();
@@ -286,20 +309,12 @@ function flizpay_init_gateway_class()
         }
 
         /**
-         * Check if we are on the order-pay (Customer Payment Page) page.
-         *
-         * @return bool
-         *
-         * @since 1.0.0
-         */
-        /**
-         * Fetch and store the public id the on-site messages need. Runs on settings save and on
-         * admin_init (throttled), so merchants who got the areas by default pick it up without saving.
+         * Fetch the public id for checkout and on-site messages on settings save/admin_init.
+         * Failure is throttled; storefront rendering never acquires an id.
          */
         public function ensure_public_id(bool $throttled = false): void
         {
-            $widgets_enabled = in_array('yes', array_map(array($this, 'get_option'), Flizpay_Public::WIDGET_SETTINGS), true);
-            if (!$widgets_enabled || $this->get_option('flizpay_public_id') !== '' || $this->get_option('flizpay_api_key') === '') {
+            if ($this->get_option('flizpay_public_id') !== '' || $this->get_option('flizpay_api_key') === '') {
                 return;
             }
             if ($throttled && get_transient('flizpay_public_id_retry')) {
@@ -309,6 +324,7 @@ function flizpay_init_gateway_class()
             $public_id = $this->api_service->fetch_public_id();
             if ($public_id !== null) {
                 $this->update_option('flizpay_public_id', $public_id);
+                delete_transient('flizpay_public_id_retry');
             } else {
                 set_transient('flizpay_public_id_retry', 1, HOUR_IN_SECONDS);
             }

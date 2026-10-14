@@ -310,17 +310,15 @@
       }
     }
 
-    /**
-     * Decode HTML entities (e.g. &ndash;) coming from server-side, localized
-     * strings without relying on window.wp.htmlEntities (not loaded in admin).
-     * The decoded value is always assigned to the DOM via textContent by the
-     * callers, so this never introduces an innerHTML/XSS surface.
-     */
-    function decodeEntities(str) {
-      if (!str) return "";
-      const textarea = document.createElement("textarea");
-      textarea.innerHTML = str;
-      return textarea.value;
+    function createCheckoutSurface(surface) {
+      const data = flizpayParams.checkout_preview;
+      const element = document.createElement("fliz-checkout");
+      element.dataset.publicId = data.publicId;
+      element.dataset.surface = surface;
+      element.dataset.locale = data.locale;
+      element.dataset.amount = String(data.amount);
+      if (surface === "title") element.textContent = "FLIZpay";
+      return element;
     }
 
     /**
@@ -370,7 +368,6 @@
         "flizpay-checkout-preview__description",
         "flizpay-preview-description",
       );
-      previewDescriptionEl.textContent = decodeEntities(data.description);
 
       inputWrapper.append(input);
       option.append(inputWrapper);
@@ -392,10 +389,8 @@
       const showHeadline = displayHeadlineInput
         ? displayHeadlineInput.checked
         : true;
-      previewTitleEl.textContent = decodeEntities(
-        showHeadline
-          ? flizpayParams.checkout_preview.titleFull
-          : flizpayParams.checkout_preview.titlePlain,
+      previewTitleEl.replaceChildren(
+        showHeadline ? createCheckoutSurface("title") : "FLIZpay",
       );
     }
 
@@ -410,6 +405,9 @@
       const showDescription = displayDescriptionInput
         ? displayDescriptionInput.checked
         : true;
+      previewDescriptionEl.replaceChildren(
+        ...(showDescription ? [createCheckoutSurface("description")] : []),
+      );
       previewDescriptionEl.style.display = showDescription ? "" : "none";
     }
 
@@ -429,8 +427,8 @@
         const hint = document.createElement("p");
         hint.classList.add("flizpay-widget-preview__hint");
         hint.textContent = isEnglish
-          ? "Enable an area and save to load the preview."
-          : "Aktiviere einen Bereich und speichere, um die Vorschau zu laden.";
+          ? "Connect your shop to FLIZpay to load the preview."
+          : "Verbinde deinen Shop mit FLIZpay, um die Vorschau zu laden.";
         container.append(hint);
         return container;
       }

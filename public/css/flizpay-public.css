@@ -7,6 +7,10 @@
   align-items: center;
 }
 
+.flizpay-checkout-description {
+  display: block;
+}
+
 .fliz-cancel-button {
   cursor: pointer;
   text-decoration: none;
@@ -56,4 +60,4 @@
   100% {
     transform: rotate(360deg);
   }
-} 
+}

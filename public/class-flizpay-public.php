@@ -41,6 +41,8 @@ class Flizpay_Public
      */
     private $version;
 
+    public const CHECKOUT_SCRIPT_HANDLE = 'flizpay-checkout-component';
+
     /** Widget slot → the merchant setting that switches it on. Slots not listed follow any enabled area. */
     public const WIDGET_SETTINGS = array(
         'listing-item' => 'flizpay_widget_listing',
@@ -112,6 +114,22 @@ class Flizpay_Public
         }
 
         $this->enqueue_checkout_scripts();
+
+        if (is_wc_endpoint_url('order-pay') || is_order_received_page()) {
+            return;
+        }
+
+        self::register_checkout_script();
+        wp_enqueue_script(self::CHECKOUT_SCRIPT_HANDLE);
+        if (!has_block('woocommerce/checkout')) {
+            wp_enqueue_script(
+                $this->plugin_name . '-checkout-classic',
+                plugin_dir_url(__FILE__) . 'js/flizpay-checkout-classic.js',
+                array('jquery'),
+                $this->version,
+                true
+            );
+        }
     }
 
     /**
@@ -151,12 +169,58 @@ class Flizpay_Public
         return defined('FLIZPAY_WIDGET_SCRIPT_URL') ? FLIZPAY_WIDGET_SCRIPT_URL : 'https://app.flizpay.de/web-components/v1/flizpay.js';
     }
 
+    /** Hosted checkout text uses the same public-id inputs as the dashboard. */
+    public static function checkout_script_url(): string
+    {
+        return defined('FLIZPAY_CHECKOUT_SCRIPT_URL')
+            ? FLIZPAY_CHECKOUT_SCRIPT_URL
+            : 'https://app.flizpay.de/web-components/v1/flizpay-checkout.js';
+    }
+
+    public static function register_checkout_script(): void
+    {
+        wp_register_script(
+            self::CHECKOUT_SCRIPT_HANDLE,
+            self::checkout_script_url(),
+            array(),
+            null,
+            array('strategy' => 'async', 'in_footer' => true)
+        );
+    }
+
+    /** Convert raw WooCommerce EUR totals, regardless of its price-display decimals. */
+    public static function checkout_amount($amount): ?int
+    {
+        if (!is_numeric($amount)) {
+            return null;
+        }
+        $cents = round((float) $amount * 100);
+        return is_finite($cents) && $cents >= 0 && $cents <= 9007199254740991
+            ? (int) $cents
+            : null;
+    }
+
+    /** Browser inputs contain no credentials or locally stored discount rules. */
+    public static function checkout_data(array $settings, ?int $amount = null, ?string $locale = null): array
+    {
+        $data = array(
+            'publicId' => (string) ($settings['flizpay_public_id'] ?? ''),
+            'locale' => $locale ?? get_locale(),
+            'showHeadline' => ($settings['flizpay_display_headline'] ?? 'yes') === 'yes',
+            'showDescription' => ($settings['flizpay_display_description'] ?? 'yes') === 'yes',
+        );
+        if ($amount !== null) {
+            $data['amount'] = $amount;
+        }
+        return $data;
+    }
+
     /**
      * The script sets no cookies or storage; tell consent managers not to block it.
      */
     public function widget_script_tag($tag, $handle)
     {
-        if ($handle !== $this->plugin_name . '-widget') {
+        if (!in_array($handle, array($this->plugin_name . '-widget', self::CHECKOUT_SCRIPT_HANDLE), true)) {
             return $tag;
         }
 

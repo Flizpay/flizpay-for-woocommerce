@@ -102,11 +102,14 @@ class Flizpay_Admin
 
 		$gateways = function_exists('WC') && WC()->payment_gateways() ? WC()->payment_gateways()->payment_gateways() : array();
 		$gateway = isset($gateways['flizpay']) ? $gateways['flizpay'] : null;
-		$checkout_preview = ($gateway && isset($gateway->cashback_helper))
-			? $gateway->cashback_helper->get_checkout_preview_data()
-			: null;
-
-		$settings = get_option('woocommerce_flizpay_settings');
+		$settings = get_option('woocommerce_flizpay_settings', array());
+		$settings = is_array($settings) ? $settings : array();
+		$checkout_preview = $gateway ? array_merge(
+			Flizpay_Public::checkout_data($settings, 10000, get_user_locale()),
+			array('logoUrl' => "$this->assets_url/fliz-checkout-logo.svg")
+		) : null;
+		Flizpay_Public::register_checkout_script();
+		wp_enqueue_script(Flizpay_Public::CHECKOUT_SCRIPT_HANDLE);
 		wp_enqueue_script($this->plugin_name . '-widget', Flizpay_Public::widget_script_url(), array(), null, array('strategy' => 'async'));
 
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
@@ -123,7 +126,7 @@ class Flizpay_Admin
 	}
 
 	/**
-	 * Pick up the public id for on-site messaging without a settings save (throttled on failure).
+	 * Pick up the public id for checkout and on-site messaging (throttled on failure).
 	 */
 	public function ensure_public_id()
 	{
