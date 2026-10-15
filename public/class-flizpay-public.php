@@ -41,6 +41,8 @@ class Flizpay_Public
      */
     private $version;
 
+    public const WIDGET_SCRIPT_HANDLE = 'flizpay-widget';
+
     /** Widget slot → the merchant setting that switches it on. Slots not listed follow any enabled area. */
     public const WIDGET_SETTINGS = array(
         'listing-item' => 'flizpay_widget_listing',
@@ -112,6 +114,22 @@ class Flizpay_Public
         }
 
         $this->enqueue_checkout_scripts();
+
+        if (is_wc_endpoint_url('order-pay') || is_order_received_page()) {
+            return;
+        }
+
+        self::register_widget_script();
+        wp_enqueue_script(self::WIDGET_SCRIPT_HANDLE);
+        if (!has_block('woocommerce/checkout')) {
+            wp_enqueue_script(
+                $this->plugin_name . '-checkout-classic',
+                plugin_dir_url(__FILE__) . 'js/flizpay-checkout-classic.js',
+                array('jquery'),
+                $this->version,
+                true
+            );
+        }
     }
 
     /**
@@ -124,7 +142,8 @@ class Flizpay_Public
             return;
         }
 
-        wp_enqueue_script($this->plugin_name . '-widget', self::widget_script_url(), array(), null, array('strategy' => 'async'));
+        self::register_widget_script();
+        wp_enqueue_script(self::WIDGET_SCRIPT_HANDLE);
 
         $block_slot = $this->block_checkout_slot();
         if ($block_slot !== null && $this->slot_enabled($block_slot)) {
@@ -144,11 +163,50 @@ class Flizpay_Public
     }
 
     /**
-     * FLIZPAY_WIDGET_SCRIPT_URL (wp-config.php) points at a staging build.
+     * One hosted bundle registers both fliz-widget and fliz-checkout.
+     * FLIZPAY_WIDGET_SCRIPT_URL (wp-config.php) points both at a staging build.
      */
     public static function widget_script_url(): string
     {
         return defined('FLIZPAY_WIDGET_SCRIPT_URL') ? FLIZPAY_WIDGET_SCRIPT_URL : 'https://app.flizpay.de/web-components/v1/flizpay.js';
+    }
+
+    public static function register_widget_script(): void
+    {
+        wp_register_script(
+            self::WIDGET_SCRIPT_HANDLE,
+            self::widget_script_url(),
+            array(),
+            null,
+            array('strategy' => 'async', 'in_footer' => true)
+        );
+    }
+
+    /** Convert raw WooCommerce EUR totals, regardless of its price-display decimals. */
+    public static function checkout_amount($amount): ?int
+    {
+        if (!is_numeric($amount)) {
+            return null;
+        }
+        $cents = round((float) $amount * 100);
+        return is_finite($cents) && $cents >= 0 && $cents <= 9007199254740991
+            ? (int) $cents
+            : null;
+    }
+
+    /** Browser inputs contain no credentials or locally stored discount rules. */
+    public static function checkout_data(array $settings, ?int $amount = null, ?string $locale = null): array
+    {
+        $data = array(
+            'publicId' => (string) ($settings['flizpay_public_id'] ?? ''),
+            'locale' => $locale ?? get_locale(),
+            'showHeadline' => ($settings['flizpay_display_headline'] ?? 'yes') === 'yes',
+            'showDescription' => ($settings['flizpay_display_description'] ?? 'yes') === 'yes',
+        );
+        if ($amount !== null) {
+            $data['amount'] = $amount;
+        }
+        return $data;
     }
 
     /**
@@ -156,7 +214,7 @@ class Flizpay_Public
      */
     public function widget_script_tag($tag, $handle)
     {
-        if ($handle !== $this->plugin_name . '-widget') {
+        if ($handle !== self::WIDGET_SCRIPT_HANDLE) {
             return $tag;
         }
 

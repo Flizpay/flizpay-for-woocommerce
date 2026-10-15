@@ -37,6 +37,7 @@ final class Flizpay_Gateway_Blocks extends AbstractPaymentMethodType
      */
     public function get_payment_method_script_handles()
     {
+        Flizpay_Public::register_widget_script();
         wp_register_script(
             'flizpay-blocks-integration',
             plugin_dir_url(__FILE__) . 'js/flizpay-checkout.js',
@@ -44,8 +45,8 @@ final class Flizpay_Gateway_Blocks extends AbstractPaymentMethodType
                 'wc-blocks-registry',
                 'wc-settings',
                 'wp-element',
-                'wp-html-entities',
-                //                'wp-il8n'
+                'wp-data',
+                'wc-blocks-data-store',
             ],
             $this->gateway::$VERSION,
             true
@@ -55,7 +56,7 @@ final class Flizpay_Gateway_Blocks extends AbstractPaymentMethodType
             wp_set_script_translations('flizpay-blocks-integration');
         }
 
-        return ['flizpay-blocks-integration'];
+        return [Flizpay_Public::WIDGET_SCRIPT_HANDLE, 'flizpay-blocks-integration'];
     }
 
     /**
@@ -64,12 +65,12 @@ final class Flizpay_Gateway_Blocks extends AbstractPaymentMethodType
      */
     public function get_payment_method_data()
     {
-        return [
+        return array_merge(Flizpay_Public::checkout_data($this->settings), [
             'enabled' => $this->gateway->is_available(),
-            'title' => $this->gateway->title,
-            'description' => $this->gateway->description,
+            'title' => 'FLIZpay',
+            'description' => '',
             'icon' => $this->gateway->icon,
             'restrictToGermany' => $this->gateway->get_option('flizpay_restrict_to_germany') === 'yes',
-        ];
+        ]);
     }
 }
