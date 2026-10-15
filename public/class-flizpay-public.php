@@ -41,7 +41,7 @@ class Flizpay_Public
      */
     private $version;
 
-    public const CHECKOUT_SCRIPT_HANDLE = 'flizpay-checkout-component';
+    public const WIDGET_SCRIPT_HANDLE = 'flizpay-widget';
 
     /** Widget slot → the merchant setting that switches it on. Slots not listed follow any enabled area. */
     public const WIDGET_SETTINGS = array(
@@ -119,8 +119,8 @@ class Flizpay_Public
             return;
         }
 
-        self::register_checkout_script();
-        wp_enqueue_script(self::CHECKOUT_SCRIPT_HANDLE);
+        self::register_widget_script();
+        wp_enqueue_script(self::WIDGET_SCRIPT_HANDLE);
         if (!has_block('woocommerce/checkout')) {
             wp_enqueue_script(
                 $this->plugin_name . '-checkout-classic',
@@ -142,7 +142,8 @@ class Flizpay_Public
             return;
         }
 
-        wp_enqueue_script($this->plugin_name . '-widget', self::widget_script_url(), array(), null, array('strategy' => 'async'));
+        self::register_widget_script();
+        wp_enqueue_script(self::WIDGET_SCRIPT_HANDLE);
 
         $block_slot = $this->block_checkout_slot();
         if ($block_slot !== null && $this->slot_enabled($block_slot)) {
@@ -162,26 +163,19 @@ class Flizpay_Public
     }
 
     /**
-     * FLIZPAY_WIDGET_SCRIPT_URL (wp-config.php) points at a staging build.
+     * One hosted bundle registers both fliz-widget and fliz-checkout.
+     * FLIZPAY_WIDGET_SCRIPT_URL (wp-config.php) points both at a staging build.
      */
     public static function widget_script_url(): string
     {
         return defined('FLIZPAY_WIDGET_SCRIPT_URL') ? FLIZPAY_WIDGET_SCRIPT_URL : 'https://app.flizpay.de/web-components/v1/flizpay.js';
     }
 
-    /** Hosted checkout text uses the same public-id inputs as the dashboard. */
-    public static function checkout_script_url(): string
-    {
-        return defined('FLIZPAY_CHECKOUT_SCRIPT_URL')
-            ? FLIZPAY_CHECKOUT_SCRIPT_URL
-            : 'https://app.flizpay.de/web-components/v1/flizpay-checkout.js';
-    }
-
-    public static function register_checkout_script(): void
+    public static function register_widget_script(): void
     {
         wp_register_script(
-            self::CHECKOUT_SCRIPT_HANDLE,
-            self::checkout_script_url(),
+            self::WIDGET_SCRIPT_HANDLE,
+            self::widget_script_url(),
             array(),
             null,
             array('strategy' => 'async', 'in_footer' => true)
@@ -220,7 +214,7 @@ class Flizpay_Public
      */
     public function widget_script_tag($tag, $handle)
     {
-        if (!in_array($handle, array($this->plugin_name . '-widget', self::CHECKOUT_SCRIPT_HANDLE), true)) {
+        if ($handle !== self::WIDGET_SCRIPT_HANDLE) {
             return $tag;
         }
 

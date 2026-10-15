@@ -108,9 +108,8 @@ class Flizpay_Admin
 			Flizpay_Public::checkout_data($settings, 10000, get_user_locale()),
 			array('logoUrl' => "$this->assets_url/fliz-checkout-logo.svg")
 		) : null;
-		Flizpay_Public::register_checkout_script();
-		wp_enqueue_script(Flizpay_Public::CHECKOUT_SCRIPT_HANDLE);
-		wp_enqueue_script($this->plugin_name . '-widget', Flizpay_Public::widget_script_url(), array(), null, array('strategy' => 'async'));
+		Flizpay_Public::register_widget_script();
+		wp_enqueue_script(Flizpay_Public::WIDGET_SCRIPT_HANDLE);
 
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
 			'nonce' => wp_create_nonce('test_connection_nonce'),

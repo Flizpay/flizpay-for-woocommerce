@@ -37,7 +37,7 @@ final class Flizpay_Gateway_Blocks extends AbstractPaymentMethodType
      */
     public function get_payment_method_script_handles()
     {
-        Flizpay_Public::register_checkout_script();
+        Flizpay_Public::register_widget_script();
         wp_register_script(
             'flizpay-blocks-integration',
             plugin_dir_url(__FILE__) . 'js/flizpay-checkout.js',
@@ -56,7 +56,7 @@ final class Flizpay_Gateway_Blocks extends AbstractPaymentMethodType
             wp_set_script_translations('flizpay-blocks-integration');
         }
 
-        return [Flizpay_Public::CHECKOUT_SCRIPT_HANDLE, 'flizpay-blocks-integration'];
+        return [Flizpay_Public::WIDGET_SCRIPT_HANDLE, 'flizpay-blocks-integration'];
     }
 
     /**
