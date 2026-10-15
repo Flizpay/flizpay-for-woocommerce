@@ -1,5 +1,11 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2026-10-15 - version 2.7.0
+* Added   - On-site discount messages: FLIZpay shows its discount offer (e.g. "Bis zu 10 % Rabatt mit FLIZ") on product pages, product listings, cart and mini-cart. Each area can be turned on or off in the new "On-site messaging" settings section, with a live preview.
+* Changed - The FLIZpay payment method title and description at checkout now show the merchant's current FLIZpay discount, rendered by FLIZpay for classic checkout and Checkout Blocks.
+* Added   - Prompt for admins to enable automatic updates for FLIZpay.
+* Added   - Declared compatibility with WooCommerce High-Performance Order Storage (HPOS).
+
 2026-08-31 - version 2.6.0
 * Added   - One-click connection from the FLIZpay merchant dashboard: a one-time link opens the FLIZpay settings screen, where a single confirmation connects the shop without copying an API key.
 * Added   - FLIZPAY_API_BASE_URL wp-config constant to point the plugin at a staging or local FLIZpay API.

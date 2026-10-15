@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, discount, no-fee
 Requires at least: 6.4
 Tested up to: 7.0
-Stable tag: 2.6.0
+Stable tag: 2.7.0
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -89,6 +89,8 @@ Weitere Informationen:
 * FLIZpay-Geschäftsbedingungen: [https://flizpay.de/business-terms-and-conditions](https://flizpay.de/business-terms-and-conditions)
 
 Für die Nutzung des FLIZpay-Services gelten die Bedingungen deines FLIZpay-Business-Kontos und die dazugehörigen Datenschutzinformationen.
+
+Für die Rabatthinweise im Shop und an der Kasse lädt der Browser des Besuchers ein Skript von FLIZpay ([https://app.flizpay.de/web-components/v1/flizpay.js](https://app.flizpay.de/web-components/v1/flizpay.js)) und ruft damit die aktuellen Rabattprogramme des Händlers ab. Dabei werden nur die öffentliche Händler-ID sowie die vom Browser technisch übertragenen Verbindungsdaten (z. B. IP-Adresse) verarbeitet; Cookies oder Kundendaten werden nicht gesendet. Die Hinweise lassen sich in den Plugin-Einstellungen deaktivieren.
 
 = Telemetrie und Fehlerberichte – freiwilliges Opt-in =
 
@@ -335,7 +337,19 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - Added   - One-click connection from the FLIZpay merchant dashboard: a one-time link opens the FLIZpay settings screen, where a single confirmation connects the shop without copying an API key.
   - Added   - FLIZPAY_API_BASE_URL wp-config constant to point the plugin at a staging or local FLIZpay API.
 
+- v2.7.0
+  - Added   - On-site discount messages: FLIZpay shows its discount offer (e.g. "Bis zu 10 % Rabatt mit FLIZ") on product pages, product listings, cart and mini-cart. Each area can be turned on or off in the new "On-site messaging" settings section, with a live preview.
+  - Changed - The FLIZpay payment method title and description at checkout now show the merchant's current FLIZpay discount, rendered by FLIZpay for classic checkout and Checkout Blocks.
+  - Added   - Prompt for admins to enable automatic updates for FLIZpay.
+  - Added   - Declared compatibility with WooCommerce High-Performance Order Storage (HPOS).
+
 == Upgrade Notice ==
+
+= v2.7.0 =
+* Added   - On-site discount messages on product pages, listings, cart and mini-cart.
+* Changed - Checkout title and description show the current FLIZpay discount.
+* Added   - Prompt to enable automatic updates.
+* Added   - HPOS compatibility.
 
 = v2.6.0 =
 * Added   - One-click connection from the FLIZpay merchant dashboard.
