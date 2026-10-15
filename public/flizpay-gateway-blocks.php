@@ -56,7 +56,7 @@ final class Flizpay_Gateway_Blocks extends AbstractPaymentMethodType
             wp_set_script_translations('flizpay-blocks-integration');
         }
 
-        return [Flizpay_Public::WIDGET_SCRIPT_HANDLE, 'flizpay-blocks-integration'];
+        return ['flizpay-blocks-integration'];
     }
 
     /**
