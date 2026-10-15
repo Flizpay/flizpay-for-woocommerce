@@ -129,6 +129,11 @@ class Flizpay_Admin
 	 */
 	public function ensure_public_id()
 	{
+		$settings = get_option('woocommerce_flizpay_settings');
+		if (!is_array($settings) || ($settings['flizpay_public_id'] ?? '') !== '' || empty($settings['flizpay_api_key']) || get_transient('flizpay_public_id_retry')) {
+			return;
+		}
+
 		$gateways = function_exists('WC') && WC()->payment_gateways() ? WC()->payment_gateways()->payment_gateways() : array();
 		if (isset($gateways['flizpay'])) {
 			$gateways['flizpay']->ensure_public_id(true);
