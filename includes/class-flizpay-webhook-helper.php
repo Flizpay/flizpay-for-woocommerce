@@ -73,8 +73,9 @@ class Flizpay_Webhook_Helper
                     return;
                 }
 
-                $this->update_cashback_info($data);
-                wp_send_json_success('Cashback information updated', 200);
+                // Legacy notification: hosted components now own discount data.
+                // Acknowledge it without persisting it or routing it to settlement.
+                wp_send_json_success('Cashback information acknowledged', 200);
             } else {
                 $this->finish_order($data);
                 wp_send_json_success('Order updated successfully', 200);
@@ -123,22 +124,6 @@ class Flizpay_Webhook_Helper
     private function update_webhook_status(bool $status): void
     {
         $this->gateway->update_option('flizpay_webhook_alive', $status ? 'yes' : 'no');
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    private function update_cashback_info(array $data): void
-    {
-        $first_purchase_amount = floatval($data['firstPurchaseAmount']);
-        $standard_amount = floatval($data['amount']);
-        $cashback = array(
-            'first_purchase_amount' => $first_purchase_amount,
-            'standard_amount' => $standard_amount
-        );
-        $this->gateway->cashback = $cashback;
-        $this->gateway->update_option('flizpay_cashback', $cashback);
-        $this->gateway->init_gateway_info();
     }
 
     /**

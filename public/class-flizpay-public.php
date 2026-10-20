@@ -437,12 +437,9 @@ class Flizpay_Public
         );
         $variables = array(
             'ajaxurl' => admin_url('admin-ajax.php'),
-            'public_dir_path' => plugin_dir_url(__FILE__),
             'order_finish_nonce' => wp_create_nonce('order_finish_nonce'),
             'fliz_logo' => $this->assets_url . '/fliz-logo.svg',
             'fliz_loading_wheel' => $this->assets_url . '/fliz-loading-wheel.svg',
-            'cashback' => get_transient('flizpay_cashback_transient'),
-            'flizpay_version' => $this->version,
         );
         wp_localize_script($this->plugin_name, "flizpay_frontend", $variables);
     }

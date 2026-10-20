@@ -97,8 +97,7 @@ class Flizpay_Admin
 			return;
 		}
 
-		wp_enqueue_script('select2');
-		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-admin.js', array('jquery', 'select2'), $this->version, false);
+		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/flizpay-admin.js', array('jquery'), $this->version, false);
 
 		$gateways = function_exists('WC') && WC()->payment_gateways() ? WC()->payment_gateways()->payment_gateways() : array();
 		$gateway = isset($gateways['flizpay']) ? $gateways['flizpay'] : null;
@@ -112,7 +111,6 @@ class Flizpay_Admin
 		wp_enqueue_script(Flizpay_Public::WIDGET_SCRIPT_HANDLE);
 
 		wp_localize_script($this->plugin_name, 'flizpayParams', array(
-			'nonce' => wp_create_nonce('test_connection_nonce'),
 			'loading_icon' => "$this->assets_url/loading.svg",
 			'checkout_preview' => $checkout_preview,
 			'widget_preview' => array(
