@@ -19,38 +19,6 @@ msgstr "Settings"
 msgid "Docs"
 msgstr "Docs"
 
-#: includes/class-flizpay-gateway.php:100
-msgid "cashback-title"
-msgstr "FLIZpay - Up to %s%% Discount"
-
-#: includes/class-flizpay-gateway.php:106
-msgid "cashback-description-both"
-msgstr "Secure payments in direct collaboration with your bank. After your first FLIZ payment at %s, you will continue to receive %s%% Discount."
-
-#: includes/class-flizpay-gateway.php:108
-msgid "cashback-description-standard"
-msgstr "Secure payments in direct collaboration with your bank.\n %s%% Discount for every FLIZ-payment at %s."
-
-#: includes/class-flizpay-gateway.php:113
-msgid "cashback-description-first"
-msgstr "Secure payments in direct collaboration with your bank. No additional discount after your first FLIZ-payment at %s."
-
-#: includes/class-flizpay-gateway.php:47
-msgid "title"
-msgstr "FLIZpay - The Payment Revolution"
-
-#: includes/class-flizpay-gateway.php:49
-msgid "description"
-msgstr "Secure payments in direct collaboration with your bank. We support small businesses and keep your data private – stored securely in Germany."
-
-#: includes/class-flizpay-gateway.php:144
-msgid "cashback-express-title"
-msgstr "Up to %s%% Discount"
-
-#: includes/class-flizpay-gateway.php:170
-msgid "express-title"
-msgstr "The payment revolution"
-
 #: flizpay.php:18
 msgid "accept_payments"
 msgstr "Accept payments via FLIZpay, its 100% free."

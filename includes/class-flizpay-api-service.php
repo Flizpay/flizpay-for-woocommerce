@@ -17,14 +17,13 @@ class Flizpay_API_Service
     }
 
     /**
-     * @return array{cashback: array|null, webhook_key: string, webhook_url: string}|WP_Error
+     * @return array{webhook_key: string, webhook_url: string}|WP_Error
      */
     public function establish_connection(): array|WP_Error
     {
         try {
             $webhook_url = $this->generate_webhook_url();
             $webhook_key = $this->get_webhook_key();
-            $cashback_data = $this->fetch_cashback_data();
         } catch (\Exception $e) {
             Flizpay_Sentry::with_scope(static function ($scope) use ($e): void {
                 if ($scope && method_exists($scope, 'setExtras')) {
@@ -46,7 +45,6 @@ class Flizpay_API_Service
         }
 
         return array(
-            'cashback' => $cashback_data,
             'webhook_key' => $webhook_key,
             'webhook_url' => $webhook_url,
         );
@@ -149,43 +147,6 @@ class Flizpay_API_Service
         return is_array($response) && !empty($response["publicId"])
             ? (string) $response["publicId"]
             : null;
-    }
-
-    /**
-     * Fetch normalized cashback percentages configured for the merchant.
-     *
-     * @return array{first_purchase_amount: float, standard_amount: float}
-     */
-    public function fetch_cashback_data(): ?array
-    {
-        $client = WC_Flizpay_API::get_instance($this->api_key);
-        $response = $client->dispatch("fetch_cashback_data");
-
-        if (
-            is_array($response) &&
-            isset($response["cashbacks"]) &&
-            is_array($response["cashbacks"]) &&
-            count($response["cashbacks"]) > 0
-        ) {
-            foreach ($response["cashbacks"] as $cashback) {
-                $firstPurchaseAmount = floatval(
-                    $cashback["firstPurchaseAmount"],
-                );
-                $amount = floatval($cashback["amount"]);
-
-                if (
-                    $cashback["active"] &&
-                    ($firstPurchaseAmount > 0 || $amount > 0)
-                ) {
-                    return [
-                        "first_purchase_amount" => $firstPurchaseAmount,
-                        "standard_amount" => $amount,
-                    ];
-                }
-            }
-        }
-
-        return null;
     }
 
     /**

@@ -8,10 +8,6 @@
    * @since 1.0.0
    */
   jQuery(document).ready(function ($) {
-    new Promise((resolve) => setTimeout(resolve, 1000)).then(() => {
-      console.log("FlizPay Admin JS loaded");
-    });
-
     const connectionAttempts =
       Number.parseInt(
         localStorage.getItem("flizpay_admin_connection_attempts"),
@@ -33,7 +29,6 @@
     const adminOptionTitle = flizpayParams.wp_locale.includes("en")
       ? "Admin Display Options"
       : "Anzeigeoptionen für Admins";
-    const testButton = document.createElement("div");
     const resultField = document.createElement("div");
     const apiKeyInput = document.querySelector(
       "#woocommerce_flizpay_flizpay_api_key",
@@ -161,11 +156,9 @@
             .querySelector(".flizpay-english-banner")
             .setAttribute("style", "display: none;");
 
-      testButton.setAttribute("id", "woocommerce_flizpay_test_connection");
       resultField.setAttribute("id", "woocommerce_flizpay_connection_result");
       // Only append if apiKeyInput exists
       if (apiKeyInput && apiKeyInput.parentNode) {
-        apiKeyInput.parentNode.appendChild(testButton);
         apiKeyInput.parentNode.appendChild(resultField);
       }
       // Safely set attributes on elements, checking if they exist first

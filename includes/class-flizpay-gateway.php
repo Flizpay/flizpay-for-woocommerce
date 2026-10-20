@@ -18,35 +18,23 @@ function flizpay_init_gateway_class()
     {
         public static string $VERSION = FLIZPAY_VERSION;
 
-        public array|null $cashback;
         public Flizpay_i18n $i18n;
         public string $api_key;
-        public string $webhook_key;
-        public string $webhook_url;
-        public string $flizpay_webhook_alive;
         public string $flizpay_display_logo;
-        public string $flizpay_display_description;
-        public string $flizpay_display_headline;
         public string $flizpay_order_status;
-        public string $flizpay_sentry_enabled;
-        public string $flizpay_restrict_to_germany;
-        public Flizpay_Cashback_Helper $cashback_helper;
         public Flizpay_Webhook_Helper $webhook_helper;
         public Flizpay_API_Service $api_service;
         public Flizpay_Settlement $settlement;
 
         /**
          * The class constructor will set FLIZ id, load translations, description, icon and etc.
-         * It's also responsible for instantiating all FLIZ variables like API KEY and WEBHOOK KEY
-         * Additionally it will obtain the Cashback information of the merchant from the transients
-         * or from the API and also apply the translations.
+         * It's also responsible for loading the API key and initializing payment helpers.
          * The constructor will also register the template redirects for webhooks .
          *
          * @since 1.0.0
          */
         public function __construct()
         {
-            require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-cashback-helper.php';
             require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-webhook-helper.php';
             require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-api-service.php';
             require_once plugin_dir_path(__DIR__) . 'includes/class-flizpay-settlement.php';
@@ -67,17 +55,9 @@ function flizpay_init_gateway_class()
 
             $this->enabled = $this->get_option('enabled', 'yes');
             $this->api_key = $this->get_option('flizpay_api_key');
-            $this->webhook_key = $this->get_option('flizpay_webhook_key');
-            $this->webhook_url = $this->get_option('flizpay_webhook_url');
-            $this->flizpay_webhook_alive = $this->get_option('flizpay_webhook_alive');
             $this->flizpay_display_logo = $this->get_option('flizpay_display_logo');
-            $this->flizpay_display_description = $this->get_option('flizpay_display_description');
-            $this->flizpay_display_headline = $this->get_option('flizpay_display_headline');
             $this->flizpay_order_status = $this->get_option('flizpay_order_status');
-            $this->flizpay_sentry_enabled = $this->get_option('flizpay_sentry_enabled');
-            $this->flizpay_restrict_to_germany = $this->get_option('flizpay_restrict_to_germany');
             // Initialize helper classes
-            $this->cashback_helper = new Flizpay_Cashback_Helper($this);
             $this->settlement = new Flizpay_Settlement();
             $this->webhook_helper = new Flizpay_Webhook_Helper($this, $this->settlement);
             $this->api_service = new Flizpay_API_Service($this->api_key);
@@ -85,8 +65,6 @@ function flizpay_init_gateway_class()
             if ($this->flizpay_display_logo === 'yes') {
                 $this->icon = plugins_url() . '/' . basename(dirname(__DIR__)) . '/assets/images/fliz-checkout-logo.svg';
             }
-
-            $this->cashback = $this->get_cashback_data();
 
             $this->init_gateway_info();
 
@@ -231,8 +209,6 @@ function flizpay_init_gateway_class()
                     $this->update_option('flizpay_webhook_key', $connection['webhook_key']);
                     $this->update_option('flizpay_webhook_url', $connection['webhook_url']);
                     $this->update_option('flizpay_api_key', $api_key);
-                    $this->update_option('flizpay_cashback', $connection['cashback']);
-                    $this->cashback = $connection['cashback'];
                 }
             }
 
@@ -240,43 +216,6 @@ function flizpay_init_gateway_class()
 
             $this->init_gateway_info();
             return $saved;
-        }
-
-        /**
-         * Obtain the current cashback value of the merchant from the transient
-         *
-         * @return array{
-         *     first_purchase_amount: float,
-         *     standard_amount: float
-         * }|null
-         *
-         * @since 1.0.0
-         */
-        public function get_cashback_data(): ?array
-        {
-            $cashback_data = $this->get_option('flizpay_cashback');
-
-            if (
-                !is_array($cashback_data) ||
-                !isset(
-                    $cashback_data['first_purchase_amount'],
-                    $cashback_data['standard_amount']
-                )
-            ) {
-                return null;
-            }
-
-            $first_purchase_amount = (float) $cashback_data['first_purchase_amount'];
-            $standard_amount = (float) $cashback_data['standard_amount'];
-
-            if ($first_purchase_amount <= 0 && $standard_amount <= 0) {
-                return null;
-            }
-
-            return [
-                'first_purchase_amount' => $first_purchase_amount,
-                'standard_amount' => $standard_amount,
-            ];
         }
 
         /**

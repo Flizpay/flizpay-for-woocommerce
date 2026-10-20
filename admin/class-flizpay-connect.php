@@ -125,7 +125,6 @@ class Flizpay_Connect
 
         $settings['flizpay_webhook_url'] = $connection['webhook_url'];
         $settings['flizpay_webhook_key'] = $connection['webhook_key'];
-        $settings['flizpay_cashback'] = $connection['cashback'];
         update_option(self::SETTINGS_OPTION, $settings);
 
         return true;
