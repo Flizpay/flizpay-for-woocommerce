@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, discount, no-fee
 Requires at least: 6.4
 Tested up to: 7.0
-Stable tag: 2.7.0
+Stable tag: 2.7.1
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -343,7 +343,14 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - Added   - Prompt for admins to enable automatic updates for FLIZpay.
   - Added   - Declared compatibility with WooCommerce High-Performance Order Storage (HPOS).
 
+- v2.7.1
+  - Fixed   - Mini-cart discount messages now appear below the subtotal and align with the cart buttons instead of colliding with totals in some themes.
+  - Changed - Removed obsolete local cashback handling now that hosted FLIZpay components provide the current discount information.
+
 == Upgrade Notice ==
+
+= v2.7.1 =
+Fixes mini-cart widget placement and alignment and removes obsolete local cashback handling. No settings changes are required.
 
 = v2.7.0 =
 * Added   - On-site discount messages on product pages, listings, cart and mini-cart.
