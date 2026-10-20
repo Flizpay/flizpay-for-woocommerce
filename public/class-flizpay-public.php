@@ -249,7 +249,10 @@ class Flizpay_Public
 
     public function render_mini_cart_widget()
     {
-        echo $this->widget_html('mini-cart', $this->cart_attributes()); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in widget_html()
+        $widget = $this->widget_html('mini-cart', $this->cart_attributes());
+        if ($widget !== '') {
+            echo '<p class="buttons flizpay-mini-cart-widget">' . $widget . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in widget_html()
+        }
     }
 
     public function render_checkout_widget()
