@@ -254,7 +254,7 @@ class Flizpay
         $this->loader->add_action('woocommerce_single_product_summary', $plugin_public, 'render_product_price_widget', 11);
         $this->loader->add_action('woocommerce_single_product_summary', $plugin_public, 'render_product_widget', 31);
         $this->loader->add_action('woocommerce_proceed_to_checkout', $plugin_public, 'render_cart_widget', 15);
-        $this->loader->add_action('woocommerce_widget_shopping_cart_total', $plugin_public, 'render_mini_cart_widget', 20);
+        $this->loader->add_action('woocommerce_widget_shopping_cart_before_buttons', $plugin_public, 'render_mini_cart_widget', 20);
         $this->loader->add_action('woocommerce_review_order_before_payment', $plugin_public, 'render_checkout_widget');
         $this->loader->add_action('woocommerce_thankyou', $plugin_public, 'render_order_received_widget', 5);
         $this->loader->add_filter('render_block_woocommerce/product-price', $plugin_public, 'append_price_widget', 10, 3);
