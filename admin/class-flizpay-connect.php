@@ -191,8 +191,8 @@ class Flizpay_Connect
     {
         ?>
         <div class="notice notice-info">
-            <p><?php echo esc_html__('Waiting for you to confirm this shop in your FLIZpay dashboard.', 'flizpay-for-woocommerce'); ?></p>
-            <p><?php echo esc_html__('If the dashboard did not open, paste this connection code there instead:', 'flizpay-for-woocommerce'); ?></p>
+            <p><?php echo esc_html__('Confirm your shop’s connection in your FLIZpay account.', 'flizpay-for-woocommerce'); ?></p>
+            <p><?php echo esc_html__('If you’re not redirected automatically, open the FLIZpay setup and paste the connection code below.', 'flizpay-for-woocommerce'); ?></p>
             <p>
                 <input type="text" id="flizpay-connect-code" readonly
                     value="<?php echo esc_attr($challenge['code']); ?>"
@@ -202,15 +202,17 @@ class Flizpay_Connect
                     <?php echo esc_html__('Copy code', 'flizpay-for-woocommerce'); ?>
                 </button>
                 <a class="button" href="<?php echo esc_url($this->build_confirm_url($challenge['code'], $challenge['shop_url'], $this->challenge_language($challenge))); ?>">
-                    <?php echo esc_html__('Open my FLIZpay dashboard', 'flizpay-for-woocommerce'); ?>
+                    <?php echo esc_html__('Open FLIZpay setup', 'flizpay-for-woocommerce'); ?>
                 </a>
             </p>
+            <hr>
+            <p><?php echo esc_html__('Once you’ve entered the code and confirmed the connection in your FLIZ account, return here and click “Complete connection”.', 'flizpay-for-woocommerce'); ?></p>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <input type="hidden" name="action" value="flizpay_finish_connect">
                 <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('flizpay_finish_connect')); ?>">
                 <p>
                     <button type="submit" class="button button-primary">
-                        <?php echo esc_html__('I confirmed it, finish the connection', 'flizpay-for-woocommerce'); ?>
+                        <?php echo esc_html__('Complete connection', 'flizpay-for-woocommerce'); ?>
                     </button>
                 </p>
             </form>

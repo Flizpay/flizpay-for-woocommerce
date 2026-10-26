@@ -84,25 +84,29 @@ msgid "This connection attempt expired. Start it again."
 msgstr "Dieser Verbindungsversuch ist abgelaufen. Starte ihn erneut."
 
 #: admin/class-flizpay-connect.php
-msgid "Waiting for you to confirm this shop in your FLIZpay dashboard."
-msgstr "Warten auf deine Bestätigung dieses Shops in deinem FLIZpay-Dashboard."
-
-#: admin/class-flizpay-connect.php
-msgid "If the dashboard did not open, paste this connection code there instead:"
-msgstr "Falls das Dashboard nicht geöffnet wurde, füge dort stattdessen diesen Verbindungscode ein:"
-
-#: admin/class-flizpay-connect.php
 msgid "Copy code"
 msgstr "Code kopieren"
-
-#: admin/class-flizpay-connect.php
-msgid "Open my FLIZpay dashboard"
-msgstr "Mein FLIZpay-Dashboard öffnen"
-
-#: admin/class-flizpay-connect.php
-msgid "I confirmed it, finish the connection"
-msgstr "Ich habe bestätigt, Verbindung abschließen"
 
 #: includes/class-flizpay-api-service.php
 msgid "This shop is not confirmed in your FLIZpay dashboard yet."
 msgstr "Dieser Shop ist in deinem FLIZpay-Dashboard noch nicht bestätigt."
+
+#: admin/class-flizpay-connect.php
+msgid "Confirm your shop’s connection in your FLIZpay account."
+msgstr "Bestätige die Verbindung Deines Shops in Deinem FLIZpay-Konto."
+
+#: admin/class-flizpay-connect.php
+msgid "If you’re not redirected automatically, open the FLIZpay setup and paste the connection code below."
+msgstr "Falls Du nicht automatisch weitergeleitet wirst, öffne FLIZ einrichten und füge dort den Verbindungscode ein."
+
+#: admin/class-flizpay-connect.php
+msgid "Open FLIZpay setup"
+msgstr "FLIZ einrichten öffnen"
+
+#: admin/class-flizpay-connect.php
+msgid "Once you’ve entered the code and confirmed the connection in your FLIZ account, return here and click “Complete connection”."
+msgstr "Sobald du den Code in deinem FLIZ-Konto eingegeben und die Verbindung bestätigt hast, kehre hierher zurück und klicke auf „Verbindung abschließen“."
+
+#: admin/class-flizpay-connect.php
+msgid "Complete connection"
+msgstr "Verbindung abschließen"
