@@ -25,6 +25,9 @@ class Flizpay_Connect
     /** Crockford-style alphabet: no 0/O/1/I, so the code survives being read aloud. */
     private const CODE_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 
+    /** Languages the FLIZpay dashboard serves, as its URL prefixes. */
+    private const DASHBOARD_LANGUAGES = array('de', 'en');
+
     public function render_connect_panel()
     {
         if (!$this->is_flizpay_settings_screen() || !current_user_can('manage_woocommerce')) {
@@ -38,7 +41,23 @@ class Flizpay_Connect
             return;
         }
 
+        // The settings below already show the API key and connection state of a connected
+        // shop; offering "Connect" again here would read as if nothing had happened.
+        if ($this->is_connected()) {
+            return;
+        }
+
         $this->render_start_panel($challenge !== null);
+    }
+
+    private function is_connected()
+    {
+        $settings = get_option(self::SETTINGS_OPTION, array());
+        if (!is_array($settings)) {
+            return false;
+        }
+
+        return !empty($settings['flizpay_api_key']) && !empty($settings['flizpay_webhook_url']);
     }
 
     /**
@@ -54,15 +73,17 @@ class Flizpay_Connect
 
         $code = $this->generate_code();
         $shop_url = $this->get_shop_base_url();
+        $language = $this->read_dashboard_language($_POST);
 
         update_option(self::CHALLENGE_OPTION, array(
             'code' => $code,
             'shop_url' => $shop_url,
+            'language' => $language,
             'expires_at' => time() + self::CHALLENGE_LIFETIME,
         ), false);
 
         // wp_safe_redirect() would refuse an external host; the dashboard is a known FLIZpay host.
-        wp_redirect($this->build_confirm_url($code, $shop_url));
+        wp_redirect($this->build_confirm_url($code, $shop_url, $language));
         exit;
     }
 
@@ -110,7 +131,15 @@ class Flizpay_Connect
             return;
         }
 
-        $this->claim($challenge, false);
+        if (!$this->claim($challenge, false)) {
+            return;
+        }
+
+        // WooCommerce already cached the gateway settings before admin_init, so this
+        // request would still render an empty API key. Reload so the merchant sees the
+        // stored connection instead of having to refresh.
+        wp_safe_redirect($this->get_settings_screen_url());
+        exit;
     }
 
     public function render_admin_notice()
@@ -146,6 +175,7 @@ class Flizpay_Connect
             <p><?php echo esc_html__('You will confirm in your FLIZpay dashboard which account this shop belongs to.', 'flizpay-for-woocommerce'); ?></p>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <input type="hidden" name="action" value="flizpay_start_connect">
+                <input type="hidden" name="flizpay_lang" value="<?php echo esc_attr($this->read_dashboard_language($_GET)); ?>">
                 <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('flizpay_start_connect')); ?>">
                 <p>
                     <button type="submit" class="button button-primary">
@@ -171,7 +201,7 @@ class Flizpay_Connect
                 <button type="button" class="button" id="flizpay-copy-connect-code">
                     <?php echo esc_html__('Copy code', 'flizpay-for-woocommerce'); ?>
                 </button>
-                <a class="button" href="<?php echo esc_url($this->build_confirm_url($challenge['code'], $challenge['shop_url'])); ?>">
+                <a class="button" href="<?php echo esc_url($this->build_confirm_url($challenge['code'], $challenge['shop_url'], $this->challenge_language($challenge))); ?>">
                     <?php echo esc_html__('Open my FLIZpay dashboard', 'flizpay-for-woocommerce'); ?>
                 </a>
             </p>
@@ -199,6 +229,10 @@ class Flizpay_Connect
         <?php
     }
 
+    /**
+     * @return bool True once the code was redeemed, so the caller can reload the screen.
+     *              A code the merchant has not confirmed yet leaves the challenge in place.
+     */
     private function claim(array $challenge, $report_pending)
     {
         $api_key = Flizpay_API_Service::exchange_pairing($challenge['code'], $challenge['shop_url']);
@@ -209,16 +243,18 @@ class Flizpay_Connect
                 if ($report_pending) {
                     $this->set_notice($api_key->get_error_message());
                 }
-                return;
+                return false;
             }
             $this->set_notice($api_key->get_error_message());
-            return;
+            return false;
         }
 
         delete_option(self::CHALLENGE_OPTION);
 
         $connection = $this->store_connection($api_key);
         $this->set_notice(is_wp_error($connection) ? $connection->get_error_message() : 'connected');
+
+        return true;
     }
 
     private function store_connection($api_key)
@@ -258,7 +294,7 @@ class Flizpay_Connect
         return $code;
     }
 
-    private function build_confirm_url($code, $shop_url)
+    private function build_confirm_url($code, $shop_url, $language)
     {
         // FLIZPAY_DASHBOARD_BASE_URL (wp-config.php) points the plugin at a staging or local dashboard.
         $dashboard_base_url = defined('FLIZPAY_DASHBOARD_BASE_URL')
@@ -272,7 +308,30 @@ class Flizpay_Connect
             'code=' . rawurlencode($code),
         );
 
-        return $dashboard_base_url . '/installation?' . implode('&', $query);
+        return $dashboard_base_url . '/' . $language . '/installation?' . implode('&', $query);
+    }
+
+    /**
+     * The dashboard reads its language from the path, so returning the merchant to an
+     * unprefixed URL would switch them to German. The dashboard hands its language over
+     * in `flizpay_lang` when it links here; otherwise fall back to the language of the
+     * admin who started the connection.
+     *
+     * @param array<string, mixed> $source
+     */
+    private function read_dashboard_language(array $source)
+    {
+        $requested = isset($source['flizpay_lang'])
+            ? strtolower(sanitize_text_field(wp_unslash((string) $source['flizpay_lang'])))
+            : '';
+
+        if (in_array($requested, self::DASHBOARD_LANGUAGES, true)) {
+            return $requested;
+        }
+
+        $locale = function_exists('get_user_locale') ? get_user_locale() : get_locale();
+
+        return stripos((string) $locale, 'de') === 0 ? 'de' : 'en';
     }
 
     /**
@@ -290,6 +349,13 @@ class Flizpay_Connect
     private function has_expired(array $challenge)
     {
         return (int) ($challenge['expires_at'] ?? 0) < time();
+    }
+
+    private function challenge_language(array $challenge)
+    {
+        $language = (string) ($challenge['language'] ?? '');
+
+        return in_array($language, self::DASHBOARD_LANGUAGES, true) ? $language : $this->read_dashboard_language($_GET);
     }
 
     private function set_notice($message)
