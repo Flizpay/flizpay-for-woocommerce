@@ -51,13 +51,20 @@ class Flizpay_API_Service
     }
 
     /**
+     * Exchanges this shop's own connect code for the API key of the FLIZpay account the
+     * merchant confirmed it with.
+     *
+     * A 404 is reported separately: it means no account has confirmed this code yet,
+     * which is the normal state while the merchant is still in the dashboard.
+     *
      * @return string|WP_Error
      */
-    public static function exchange_pairing(string $token, string $shop_url)
+    public static function exchange_pairing(string $code, string $shop_url)
     {
+        // dispatch() already sends the plugin version on every request.
         $response = WC_Flizpay_API::get_instance('')->dispatch(
             'pairing_exchange',
-            array('shopUrl' => $shop_url, 'token' => $token)
+            array('shopUrl' => $shop_url, 'token' => $code)
         );
 
         if (is_wp_error($response)) {
@@ -66,6 +73,13 @@ class Flizpay_API_Service
 
         $status = is_array($response) ? (int) ($response['_http_status'] ?? 0) : 0;
         $api_key = is_array($response) && isset($response['apiKey']) ? (string) $response['apiKey'] : '';
+
+        if ($status === 404) {
+            return new WP_Error(
+                'flizpay_connect_unconfirmed',
+                __('This shop is not confirmed in your FLIZpay dashboard yet.', 'flizpay-for-woocommerce')
+            );
+        }
 
         if ($status < 200 || $status >= 300 || $api_key === '') {
             $message = is_array($response) && !empty($response['message'])
@@ -121,9 +135,16 @@ class Flizpay_API_Service
 
         $client = WC_Flizpay_API::get_instance($this->api_key);
 
+        // Registering the webhook is the last step of connecting, so the integration is
+        // live from here. Without isActive the merchant dashboard never leaves "waiting".
         $response = $client->dispatch(
             "edit_business",
-            ["webhookUrl" => $webhookUrl, "integrationType" => "WooCommerce"]
+            [
+                "webhookUrl" => $webhookUrl,
+                "integrationType" => "WooCommerce",
+                "isActive" => true,
+                "pluginVersion" => FLIZPAY_VERSION,
+            ]
         );
 
         $webhookUrlResponse = is_array($response) && isset($response["webhookUrl"])

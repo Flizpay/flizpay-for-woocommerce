@@ -3,76 +3,114 @@
 /**
  * One-click connection to FLIZpay.
  *
- * The merchant dashboard mints a one-time token and links the merchant to the FLIZpay
- * settings screen with the token in the URL fragment. This class renders a confirm
- * button there, exchanges the token for an API key, and then runs the same connection
- * setup the manual API-key save performs.
+ * This shop generates the connect code, so only someone who can reach these settings
+ * can start a connection. The merchant then confirms it in the FLIZpay dashboard,
+ * where the account is authenticated, and the shop exchanges its own code for that
+ * account's API key. A code minted elsewhere cannot be redeemed here.
  *
  * @package    Flizpay
  * @subpackage Flizpay/admin
  */
+
 class Flizpay_Connect
 {
     private const SETTINGS_OPTION = 'woocommerce_flizpay_settings';
+    private const CHALLENGE_OPTION = 'flizpay_connect_challenge';
 
-    public function render_connect_form()
+    /** Matches the backend pairing window. */
+    private const CHALLENGE_LIFETIME = 900;
+
+    private const CODE_LENGTH = 12;
+
+    /** Crockford-style alphabet: no 0/O/1/I, so the code survives being read aloud. */
+    private const CODE_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+    public function render_connect_panel()
     {
         if (!$this->is_flizpay_settings_screen() || !current_user_can('manage_woocommerce')) {
             return;
         }
-        ?>
-        <div id="flizpay-connect" class="notice notice-info" style="display: none;">
-            <p>
-                <?php echo esc_html__('FLIZpay would like to connect this shop:', 'flizpay-for-woocommerce'); ?>
-                <strong><?php echo esc_html($this->get_shop_base_url()); ?></strong>
-            </p>
-            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                <input type="hidden" name="action" value="flizpay_connect">
-                <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('flizpay_connect')); ?>">
-                <input type="hidden" name="flizpay_connect_token" value="">
-                <p>
-                    <button type="submit" class="button button-primary">
-                        <?php echo esc_html__('Connect this shop to FLIZpay', 'flizpay-for-woocommerce'); ?>
-                    </button>
-                </p>
-            </form>
-        </div>
-        <script>
-            (() => {
-                const fragment = new URLSearchParams(window.location.hash.slice(1));
-                const token = fragment.get('flizpay_connect_token');
-                if (!token) return;
 
-                window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
-                const panel = document.getElementById('flizpay-connect');
-                panel.querySelector('form').elements.flizpay_connect_token.value = token;
-                // Submitting is left to the administrator on purpose: auto-submitting would let
-                // any link carrying a token connect the shop to someone else's FLIZpay account.
-                panel.style.display = '';
-            })();
-        </script>
-        <?php
+        $challenge = $this->read_challenge();
+
+        if ($challenge && !$this->has_expired($challenge)) {
+            $this->render_pending_panel($challenge);
+            return;
+        }
+
+        $this->render_start_panel($challenge !== null);
     }
 
-    public function handle_admin_connect()
+    /**
+     * Starts a connection: mints the code, remembers it, and hands the merchant to the
+     * dashboard to confirm which FLIZpay account the shop should belong to.
+     */
+    public function handle_start_connect()
     {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(esc_html__('You are not allowed to connect FLIZpay.', 'flizpay-for-woocommerce'), 403);
         }
-        check_admin_referer('flizpay_connect');
+        check_admin_referer('flizpay_start_connect');
 
-        $token = isset($_POST['flizpay_connect_token'])
-            ? sanitize_text_field(wp_unslash($_POST['flizpay_connect_token']))
-            : '';
-        $result = $this->connect($token);
-        set_transient(
-            'flizpay_connect_notice_' . get_current_user_id(),
-            is_wp_error($result) ? $result->get_error_message() : 'connected',
-            60
-        );
+        $code = $this->generate_code();
+        $shop_url = $this->get_shop_base_url();
 
-        wp_safe_redirect(admin_url('admin.php?page=wc-settings&tab=checkout&section=flizpay'));
+        update_option(self::CHALLENGE_OPTION, array(
+            'code' => $code,
+            'shop_url' => $shop_url,
+            'expires_at' => time() + self::CHALLENGE_LIFETIME,
+        ), false);
+
+        // wp_safe_redirect() would refuse an external host; the dashboard is a known FLIZpay host.
+        wp_redirect($this->build_confirm_url($code, $shop_url));
         exit;
+    }
+
+    /**
+     * Retries the exchange on demand, for a merchant who confirmed in the dashboard but
+     * did not land back on this screen.
+     */
+    public function handle_finish_connect()
+    {
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(esc_html__('You are not allowed to connect FLIZpay.', 'flizpay-for-woocommerce'), 403);
+        }
+        check_admin_referer('flizpay_finish_connect');
+
+        $challenge = $this->read_challenge();
+        if (!$challenge || $this->has_expired($challenge)) {
+            delete_option(self::CHALLENGE_OPTION);
+            $this->set_notice(__('This connection attempt expired. Start it again.', 'flizpay-for-woocommerce'));
+        } else {
+            $this->claim($challenge, true);
+        }
+
+        wp_safe_redirect($this->get_settings_screen_url());
+        exit;
+    }
+
+    /**
+     * Exchanges a pending code for the API key once the merchant has confirmed. Runs
+     * where the merchant can see the outcome: this settings screen, or the return trip
+     * from the dashboard.
+     */
+    public function maybe_claim()
+    {
+        if (!current_user_can('manage_woocommerce') || !$this->is_flizpay_settings_request()) {
+            return;
+        }
+
+        $challenge = $this->read_challenge();
+        if (!$challenge) {
+            return;
+        }
+
+        if ($this->has_expired($challenge)) {
+            delete_option(self::CHALLENGE_OPTION);
+            return;
+        }
+
+        $this->claim($challenge, false);
     }
 
     public function render_admin_notice()
@@ -94,17 +132,97 @@ class Flizpay_Connect
         );
     }
 
-    private function connect($token)
+    private function render_start_panel($was_expired)
     {
-        if (strlen($token) < 32) {
-            return new WP_Error('flizpay_connect_invalid', __('The connection link is invalid or expired.', 'flizpay-for-woocommerce'));
-        }
+        ?>
+        <div class="notice notice-info">
+            <?php if ($was_expired) : ?>
+                <p><?php echo esc_html__('This connection attempt expired. Start it again.', 'flizpay-for-woocommerce'); ?></p>
+            <?php endif; ?>
+            <p>
+                <?php echo esc_html__('Connect this shop to your FLIZpay account:', 'flizpay-for-woocommerce'); ?>
+                <strong><?php echo esc_html($this->get_shop_base_url()); ?></strong>
+            </p>
+            <p><?php echo esc_html__('You will confirm in your FLIZpay dashboard which account this shop belongs to.', 'flizpay-for-woocommerce'); ?></p>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action" value="flizpay_start_connect">
+                <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('flizpay_start_connect')); ?>">
+                <p>
+                    <button type="submit" class="button button-primary">
+                        <?php echo esc_html__('Connect with FLIZpay', 'flizpay-for-woocommerce'); ?>
+                    </button>
+                </p>
+            </form>
+        </div>
+        <?php
+    }
 
-        $api_key = Flizpay_API_Service::exchange_pairing($token, $this->get_shop_base_url());
+    private function render_pending_panel(array $challenge)
+    {
+        ?>
+        <div class="notice notice-info">
+            <p><?php echo esc_html__('Waiting for you to confirm this shop in your FLIZpay dashboard.', 'flizpay-for-woocommerce'); ?></p>
+            <p><?php echo esc_html__('If the dashboard did not open, paste this connection code there instead:', 'flizpay-for-woocommerce'); ?></p>
+            <p>
+                <input type="text" id="flizpay-connect-code" readonly
+                    value="<?php echo esc_attr($challenge['code']); ?>"
+                    style="font-family: monospace; letter-spacing: 1px; width: 14em;"
+                    onclick="this.select();">
+                <button type="button" class="button" id="flizpay-copy-connect-code">
+                    <?php echo esc_html__('Copy code', 'flizpay-for-woocommerce'); ?>
+                </button>
+                <a class="button" href="<?php echo esc_url($this->build_confirm_url($challenge['code'], $challenge['shop_url'])); ?>">
+                    <?php echo esc_html__('Open my FLIZpay dashboard', 'flizpay-for-woocommerce'); ?>
+                </a>
+            </p>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action" value="flizpay_finish_connect">
+                <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('flizpay_finish_connect')); ?>">
+                <p>
+                    <button type="submit" class="button button-primary">
+                        <?php echo esc_html__('I confirmed it, finish the connection', 'flizpay-for-woocommerce'); ?>
+                    </button>
+                </p>
+            </form>
+        </div>
+        <script>
+            (() => {
+                const field = document.getElementById('flizpay-connect-code');
+                const button = document.getElementById('flizpay-copy-connect-code');
+                if (!field || !button) return;
+                button.addEventListener('click', () => {
+                    field.select();
+                    navigator.clipboard?.writeText(field.value);
+                });
+            })();
+        </script>
+        <?php
+    }
+
+    private function claim(array $challenge, $report_pending)
+    {
+        $api_key = Flizpay_API_Service::exchange_pairing($challenge['code'], $challenge['shop_url']);
+
         if (is_wp_error($api_key)) {
-            return $api_key;
+            // Not confirmed in the dashboard yet, which is the normal state while waiting.
+            if ($api_key->get_error_code() === 'flizpay_connect_unconfirmed') {
+                if ($report_pending) {
+                    $this->set_notice($api_key->get_error_message());
+                }
+                return;
+            }
+            $this->set_notice($api_key->get_error_message());
+            return;
         }
 
+        delete_option(self::CHALLENGE_OPTION);
+
+        $connection = $this->store_connection($api_key);
+        $this->set_notice(is_wp_error($connection) ? $connection->get_error_message() : 'connected');
+    }
+
+    private function store_connection($api_key)
+    {
         $settings = get_option(self::SETTINGS_OPTION, array());
         $settings = is_array($settings) ? $settings : array();
         $settings['flizpay_api_key'] = $api_key;
@@ -130,10 +248,73 @@ class Flizpay_Connect
         return true;
     }
 
+    private function generate_code()
+    {
+        $alphabet_size = strlen(self::CODE_ALPHABET);
+        $code = '';
+        for ($index = 0; $index < self::CODE_LENGTH; $index++) {
+            $code .= self::CODE_ALPHABET[random_int(0, $alphabet_size - 1)];
+        }
+        return $code;
+    }
+
+    private function build_confirm_url($code, $shop_url)
+    {
+        // FLIZPAY_DASHBOARD_BASE_URL (wp-config.php) points the plugin at a staging or local dashboard.
+        $dashboard_base_url = defined('FLIZPAY_DASHBOARD_BASE_URL')
+            ? untrailingslashit(FLIZPAY_DASHBOARD_BASE_URL)
+            : 'https://app.flizpay.de';
+
+        // add_query_arg() does not encode values, and the shop URL carries a scheme and slashes.
+        $query = array(
+            'platform=' . rawurlencode('WooCommerce'),
+            'shop=' . rawurlencode($shop_url),
+            'code=' . rawurlencode($code),
+        );
+
+        return $dashboard_base_url . '/installation?' . implode('&', $query);
+    }
+
     /**
-     * True on the FLIZpay payment gateway settings screen, which is where the merchant
-     * dashboard's connection link points.
+     * @return array<string, mixed>|null
      */
+    private function read_challenge()
+    {
+        $challenge = get_option(self::CHALLENGE_OPTION);
+        if (!is_array($challenge) || empty($challenge['code']) || empty($challenge['shop_url'])) {
+            return null;
+        }
+        return $challenge;
+    }
+
+    private function has_expired(array $challenge)
+    {
+        return (int) ($challenge['expires_at'] ?? 0) < time();
+    }
+
+    private function set_notice($message)
+    {
+        set_transient('flizpay_connect_notice_' . get_current_user_id(), $message, 60);
+    }
+
+    private function get_settings_screen_url()
+    {
+        return admin_url('admin.php?page=wc-settings&tab=checkout&section=flizpay');
+    }
+
+    /**
+     * True when the current request targets the FLIZpay gateway settings screen. Works
+     * before `get_current_screen()` exists, so `admin_init` can use it too.
+     */
+    private function is_flizpay_settings_request()
+    {
+        $page = isset($_GET['page']) ? sanitize_text_field(wp_unslash($_GET['page'])) : '';
+        $tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])) : '';
+        $section = isset($_GET['section']) ? sanitize_text_field(wp_unslash($_GET['section'])) : '';
+
+        return $page === 'wc-settings' && $tab === 'checkout' && $section === 'flizpay';
+    }
+
     private function is_flizpay_settings_screen()
     {
         $screen = function_exists('get_current_screen') ? get_current_screen() : null;
@@ -141,12 +322,7 @@ class Flizpay_Connect
             return false;
         }
 
-        // Screen detection only; the connection itself is nonce- and capability-checked
-        // in handle_admin_connect().
-        $tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])) : '';
-        $section = isset($_GET['section']) ? sanitize_text_field(wp_unslash($_GET['section'])) : '';
-
-        return $tab === 'checkout' && $section === 'flizpay';
+        return $this->is_flizpay_settings_request();
     }
 
     private function get_shop_base_url()

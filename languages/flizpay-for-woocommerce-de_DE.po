@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: FlizPay 2.7.1\n"
+"Project-Id-Version: FlizPay 2.8.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-07-30 10:00+0000\n"
 "PO-Revision-Date: 2024-07-30 10:00+0000\n"
@@ -23,14 +23,6 @@ msgstr "Dokumentation"
 msgid "accept_payments"
 msgstr "Erhalte gebührenfreie Zahlungen mit FLIZpay."
 
-#: admin/class-flizpay-connect.php:27
-msgid "FLIZpay would like to connect this shop:"
-msgstr "FLIZpay möchte sich mit diesem Shop verbinden:"
-
-#: admin/class-flizpay-connect.php:36
-msgid "Connect this shop to FLIZpay"
-msgstr "Diesen Shop mit FLIZpay verbinden"
-
 #: admin/class-flizpay-connect.php:61
 msgid "You are not allowed to connect FLIZpay."
 msgstr "Du bist nicht berechtigt, FLIZpay zu verbinden."
@@ -42,10 +34,6 @@ msgstr "FLIZpay wurde erfolgreich verbunden."
 #: admin/class-flizpay-connect.php:90
 msgid "FLIZpay could not be connected: %s"
 msgstr "FLIZpay konnte nicht verbunden werden: %s"
-
-#: admin/class-flizpay-connect.php:101
-msgid "The connection link is invalid or expired."
-msgstr "Der Verbindungslink ist ungültig oder abgelaufen."
 
 #: admin/class-flizpay-connect.php:115
 msgid "FLIZpay could not be reached."
@@ -78,3 +66,43 @@ msgstr "Nicht mehr fragen"
 #: admin/class-flizpay-auto-update.php:52
 msgid "You are not allowed to manage plugin updates."
 msgstr "Du darfst Plugin-Updates nicht verwalten."
+
+#: admin/class-flizpay-connect.php
+msgid "Connect this shop to your FLIZpay account:"
+msgstr "Verbinde diesen Shop mit deinem FLIZpay-Konto:"
+
+#: admin/class-flizpay-connect.php
+msgid "You will confirm in your FLIZpay dashboard which account this shop belongs to."
+msgstr "In deinem FLIZpay-Dashboard bestätigst du, zu welchem Konto dieser Shop gehört."
+
+#: admin/class-flizpay-connect.php
+msgid "Connect with FLIZpay"
+msgstr "Mit FLIZpay verbinden"
+
+#: admin/class-flizpay-connect.php
+msgid "This connection attempt expired. Start it again."
+msgstr "Dieser Verbindungsversuch ist abgelaufen. Starte ihn erneut."
+
+#: admin/class-flizpay-connect.php
+msgid "Waiting for you to confirm this shop in your FLIZpay dashboard."
+msgstr "Warten auf deine Bestätigung dieses Shops in deinem FLIZpay-Dashboard."
+
+#: admin/class-flizpay-connect.php
+msgid "If the dashboard did not open, paste this connection code there instead:"
+msgstr "Falls das Dashboard nicht geöffnet wurde, füge dort stattdessen diesen Verbindungscode ein:"
+
+#: admin/class-flizpay-connect.php
+msgid "Copy code"
+msgstr "Code kopieren"
+
+#: admin/class-flizpay-connect.php
+msgid "Open my FLIZpay dashboard"
+msgstr "Mein FLIZpay-Dashboard öffnen"
+
+#: admin/class-flizpay-connect.php
+msgid "I confirmed it, finish the connection"
+msgstr "Ich habe bestätigt, Verbindung abschließen"
+
+#: includes/class-flizpay-api-service.php
+msgid "This shop is not confirmed in your FLIZpay dashboard yet."
+msgstr "Dieser Shop ist in deinem FLIZpay-Dashboard noch nicht bestätigt."
