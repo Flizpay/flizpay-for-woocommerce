@@ -8,6 +8,11 @@
  * where the account is authenticated, and the shop exchanges its own code for that
  * account's API key. A code minted elsewhere cannot be redeemed here.
  *
+ * Confirming returns a redemption token, which FLIZpay delivers only through the
+ * redirect back to this shop. The exchange needs both, so the two secrets cover each
+ * other: the code stops a stranger starting a connection for a shop they cannot
+ * administer, and the token stops whoever supplied a code from redeeming it themselves.
+ *
  * @package    Flizpay
  * @subpackage Flizpay/admin
  */
@@ -21,6 +26,11 @@ class Flizpay_Connect
     private const CHALLENGE_LIFETIME = 900;
 
     private const CODE_LENGTH = 12;
+
+    /** Query argument FLIZpay returns the redemption token in. */
+    private const REDEMPTION_TOKEN_PARAM = 'flizpay_rt';
+
+    private const CHALLENGE_REDEMPTION_TOKEN = 'redemption_token';
 
     /** Crockford-style alphabet: no 0/O/1/I, so the code survives being read aloud. */
     private const CODE_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -121,25 +131,32 @@ class Flizpay_Connect
             return;
         }
 
+        $token_in_url = isset($_GET[self::REDEMPTION_TOKEN_PARAM]);
         $challenge = $this->read_challenge();
-        if (!$challenge) {
-            return;
-        }
 
-        if ($this->has_expired($challenge)) {
+        if ($challenge && $this->has_expired($challenge)) {
             delete_option(self::CHALLENGE_OPTION);
-            return;
+            $challenge = null;
         }
 
-        if (!$this->claim($challenge, false)) {
-            return;
+        // The dashboard hands the redemption token over on the way back. Keep it with the
+        // challenge so a retry does not need another round trip.
+        $returned_token = $this->read_returned_redemption_token();
+        if ($challenge && $returned_token !== '') {
+            $challenge[self::CHALLENGE_REDEMPTION_TOKEN] = $returned_token;
+            update_option(self::CHALLENGE_OPTION, $challenge, false);
         }
 
-        // WooCommerce already cached the gateway settings before admin_init, so this
-        // request would still render an empty API key. Reload so the merchant sees the
-        // stored connection instead of having to refresh.
-        wp_safe_redirect($this->get_settings_screen_url());
-        exit;
+        $claimed = $challenge !== null && $this->claim($challenge, false);
+
+        // Reload when the claim succeeded, because WooCommerce cached the gateway settings
+        // before admin_init and this request would still render an empty API key. Reload
+        // whenever a token was in the URL too, so it does not linger in the address bar or
+        // leak through a referrer, including when no pending connection matches it.
+        if ($claimed || $token_in_url) {
+            wp_safe_redirect($this->get_settings_screen_url());
+            exit;
+        }
     }
 
     public function render_admin_notice()
@@ -189,33 +206,39 @@ class Flizpay_Connect
 
     private function render_pending_panel(array $challenge)
     {
+        // Confirming hands this shop the redemption token it needs to finish. Until that
+        // arrives there is nothing to complete, so retrying would only report an error.
+        $awaiting_confirmation = (string) ($challenge[self::CHALLENGE_REDEMPTION_TOKEN] ?? '') === '';
         ?>
         <div class="notice notice-info">
-            <p><?php echo esc_html__('Confirm your shop’s connection in your FLIZpay account.', 'flizpay-for-woocommerce'); ?></p>
-            <p><?php echo esc_html__('If you’re not redirected automatically, open the FLIZpay setup and paste the connection code below.', 'flizpay-for-woocommerce'); ?></p>
-            <p>
-                <input type="text" id="flizpay-connect-code" readonly
-                    value="<?php echo esc_attr($challenge['code']); ?>"
-                    style="font-family: monospace; letter-spacing: 1px; width: 14em;"
-                    onclick="this.select();">
-                <button type="button" class="button" id="flizpay-copy-connect-code">
-                    <?php echo esc_html__('Copy code', 'flizpay-for-woocommerce'); ?>
-                </button>
-                <a class="button" href="<?php echo esc_url($this->build_confirm_url($challenge['code'], $challenge['shop_url'], $this->challenge_language($challenge))); ?>">
-                    <?php echo esc_html__('Open FLIZpay setup', 'flizpay-for-woocommerce'); ?>
-                </a>
-            </p>
-            <hr>
-            <p><?php echo esc_html__('Once you’ve entered the code and confirmed the connection in your FLIZ account, return here and click “Complete connection”.', 'flizpay-for-woocommerce'); ?></p>
-            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                <input type="hidden" name="action" value="flizpay_finish_connect">
-                <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('flizpay_finish_connect')); ?>">
+            <?php if ($awaiting_confirmation) : ?>
+                <p><?php echo esc_html__('Confirm your shop’s connection in your FLIZpay account.', 'flizpay-for-woocommerce'); ?></p>
+                <p><?php echo esc_html__('If you’re not redirected automatically, open the FLIZpay setup and paste the connection code below.', 'flizpay-for-woocommerce'); ?></p>
                 <p>
-                    <button type="submit" class="button button-primary">
-                        <?php echo esc_html__('Complete connection', 'flizpay-for-woocommerce'); ?>
+                    <input type="text" id="flizpay-connect-code" readonly
+                        value="<?php echo esc_attr($challenge['code']); ?>"
+                        style="font-family: monospace; letter-spacing: 1px; width: 14em;"
+                        onclick="this.select();">
+                    <button type="button" class="button" id="flizpay-copy-connect-code">
+                        <?php echo esc_html__('Copy code', 'flizpay-for-woocommerce'); ?>
                     </button>
+                    <a class="button" href="<?php echo esc_url($this->build_confirm_url($challenge['code'], $challenge['shop_url'], $this->challenge_language($challenge))); ?>">
+                        <?php echo esc_html__('Open FLIZpay setup', 'flizpay-for-woocommerce'); ?>
+                    </a>
                 </p>
-            </form>
+                <p><?php echo esc_html__('Confirming sends you back here and finishes the connection automatically.', 'flizpay-for-woocommerce'); ?></p>
+            <?php else : ?>
+                <p><?php echo esc_html__('You confirmed this shop, but the connection could not be completed. Try again.', 'flizpay-for-woocommerce'); ?></p>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                    <input type="hidden" name="action" value="flizpay_finish_connect">
+                    <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('flizpay_finish_connect')); ?>">
+                    <p>
+                        <button type="submit" class="button button-primary">
+                            <?php echo esc_html__('Complete connection', 'flizpay-for-woocommerce'); ?>
+                        </button>
+                    </p>
+                </form>
+            <?php endif; ?>
         </div>
         <script>
             (() => {
@@ -237,7 +260,21 @@ class Flizpay_Connect
      */
     private function claim(array $challenge, $report_pending)
     {
-        $api_key = Flizpay_API_Service::exchange_pairing($challenge['code'], $challenge['shop_url']);
+        // Without the token the merchant has not confirmed yet, or the return trip never
+        // reached us. Attempting the exchange would only be rejected.
+        $redemption_token = (string) ($challenge[self::CHALLENGE_REDEMPTION_TOKEN] ?? '');
+        if ($redemption_token === '') {
+            if ($report_pending) {
+                $this->set_notice(__('Confirm this shop in your FLIZpay account first.', 'flizpay-for-woocommerce'));
+            }
+            return false;
+        }
+
+        $api_key = Flizpay_API_Service::exchange_pairing(
+            $challenge['code'],
+            $challenge['shop_url'],
+            $redemption_token
+        );
 
         if (is_wp_error($api_key)) {
             // Not confirmed in the dashboard yet, which is the normal state while waiting.
@@ -334,6 +371,22 @@ class Flizpay_Connect
         $locale = function_exists('get_user_locale') ? get_user_locale() : get_locale();
 
         return stripos((string) $locale, 'de') === 0 ? 'de' : 'en';
+    }
+
+    /**
+     * Reads the redemption token FLIZpay appended to the return URL. Bounds mirror the
+     * backend's schema rather than the current token format, so a change there cannot
+     * silently break the exchange here.
+     */
+    private function read_returned_redemption_token()
+    {
+        if (!isset($_GET[self::REDEMPTION_TOKEN_PARAM])) {
+            return '';
+        }
+
+        $token = sanitize_text_field(wp_unslash((string) $_GET[self::REDEMPTION_TOKEN_PARAM]));
+
+        return preg_match('/^[A-Za-z0-9_-]{12,128}$/', $token) === 1 ? $token : '';
     }
 
     /**

@@ -103,10 +103,19 @@ msgstr "Falls Du nicht automatisch weitergeleitet wirst, öffne FLIZ einrichten 
 msgid "Open FLIZpay setup"
 msgstr "FLIZ einrichten öffnen"
 
-#: admin/class-flizpay-connect.php
-msgid "Once you’ve entered the code and confirmed the connection in your FLIZ account, return here and click “Complete connection”."
-msgstr "Sobald du den Code in deinem FLIZ-Konto eingegeben und die Verbindung bestätigt hast, kehre hierher zurück und klicke auf „Verbindung abschließen“."
 
 #: admin/class-flizpay-connect.php
 msgid "Complete connection"
 msgstr "Verbindung abschließen"
+
+#: admin/class-flizpay-connect.php
+msgid "Confirming sends you back here and finishes the connection automatically."
+msgstr "Nach dem Bestätigen wirst du hierher zurückgeleitet und die Verbindung wird automatisch abgeschlossen."
+
+#: admin/class-flizpay-connect.php
+msgid "You confirmed this shop, but the connection could not be completed. Try again."
+msgstr "Du hast diesen Shop bestätigt, aber die Verbindung konnte nicht abgeschlossen werden. Versuche es erneut."
+
+#: admin/class-flizpay-connect.php
+msgid "Confirm this shop in your FLIZpay account first."
+msgstr "Bestätige diesen Shop zuerst in deinem FLIZpay-Konto."
