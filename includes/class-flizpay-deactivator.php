@@ -34,6 +34,8 @@ class Flizpay_Deactivator
 			as_unschedule_all_actions('flizpay_reconciliation_scan', array(), 'flizpay');
 		}
 
+		delete_option('flizpay_connect_challenge');
+
 		require_once('class-flizpay-api.php');
 
 		$flizpay_settings = get_option('woocommerce_flizpay_settings');

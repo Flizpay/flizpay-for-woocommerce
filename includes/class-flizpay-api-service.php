@@ -53,20 +53,19 @@ class Flizpay_API_Service
     /**
      * @return string|WP_Error
      */
-    public static function exchange_pairing(string $token, string $shop_url)
+    public static function exchange_pairing(string $code, string $shop_url, string $redemption_token)
     {
         $response = WC_Flizpay_API::get_instance('')->dispatch(
             'pairing_exchange',
-            array('shopUrl' => $shop_url, 'token' => $token)
+            array('shopUrl' => $shop_url, 'code' => $code, 'redemptionToken' => $redemption_token)
         );
 
-        if (is_wp_error($response)) {
+        $status = is_array($response) ? (int) ($response['_http_status'] ?? 0) : 0;
+        if (is_wp_error($response) || $status >= 500) {
             return new WP_Error('flizpay_connect_unreachable', __('FLIZpay could not be reached.', 'flizpay-for-woocommerce'));
         }
 
-        $status = is_array($response) ? (int) ($response['_http_status'] ?? 0) : 0;
         $api_key = is_array($response) && isset($response['apiKey']) ? (string) $response['apiKey'] : '';
-
         if ($status < 200 || $status >= 300 || $api_key === '') {
             $message = is_array($response) && !empty($response['message'])
                 ? sanitize_text_field($response['message'])
@@ -100,8 +99,6 @@ class Flizpay_API_Service
      */
     public function generate_webhook_url(): ?string
     {
-        // Local/dev sites may only serve plain http; the FLIZpay backend allows
-        // http webhooks for local development hosts, so only force https elsewhere.
         $is_local_environment = in_array(
             wp_get_environment_type(),
             ["local", "development"],
@@ -123,7 +120,12 @@ class Flizpay_API_Service
 
         $response = $client->dispatch(
             "edit_business",
-            ["webhookUrl" => $webhookUrl, "integrationType" => "WooCommerce"]
+            [
+                "webhookUrl" => $webhookUrl,
+                "integrationType" => "WooCommerce",
+                "isActive" => true,
+                "pluginVersion" => FLIZPAY_VERSION,
+            ]
         );
 
         $webhookUrlResponse = is_array($response) && isset($response["webhookUrl"])
