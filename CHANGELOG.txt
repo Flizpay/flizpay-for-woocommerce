@@ -1,5 +1,11 @@
 == FLIZpay for WooCommerce Changelog ==
 
+2026-10-28 - version 2.8.0
+* Changed - Dashboard connection now starts from the shop: the plugin generates a connect code, sends the admin to the FLIZpay dashboard to confirm it, and completes the connection only with the redemption token delivered through the redirect back to the shop.
+* Changed - The connection panel follows the language chosen in the FLIZpay dashboard after the redirect, and offers the dashboard round trip instead of a retry while no redemption token has arrived.
+* Changed - The plugin now reports its version and active state to FLIZpay when registering the webhook URL.
+* Fixed   - Pending connect challenges are cleaned up when the plugin is deactivated.
+
 2026-10-20 - version 2.7.1
 * Fixed   - Mini-cart discount messages now appear below the subtotal and align with the cart buttons instead of colliding with totals in some themes.
 * Changed - Removed obsolete local cashback handling now that hosted FLIZpay components provide the current discount information.

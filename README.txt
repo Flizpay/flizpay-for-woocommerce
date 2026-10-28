@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, discount, no-fee
 Requires at least: 6.4
 Tested up to: 7.0
-Stable tag: 2.7.1
+Stable tag: 2.8.0
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -347,7 +347,18 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - Fixed   - Mini-cart discount messages now appear below the subtotal and align with the cart buttons instead of colliding with totals in some themes.
   - Changed - Removed obsolete local cashback handling now that hosted FLIZpay components provide the current discount information.
 
+- v2.8.0
+  - Changed - Dashboard connection now starts from the shop: the plugin generates a connect code, sends the admin to the FLIZpay dashboard to confirm it, and completes the connection only with the redemption token delivered through the redirect back to the shop.
+  - Changed - The connection panel follows the language chosen in the FLIZpay dashboard after the redirect, and offers the dashboard round trip instead of a retry while no redemption token has arrived.
+  - Changed - The plugin now reports its version and active state to FLIZpay when registering the webhook URL.
+  - Fixed   - Pending connect challenges are cleaned up when the plugin is deactivated.
+
 == Upgrade Notice ==
+
+= v2.8.0 =
+* Changed - Dashboard connection is now started from the shop and secured with a redemption token delivered via redirect.
+* Changed - Plugin version and active state are reported to FLIZpay on webhook registration.
+* Fixed   - Pending connect challenges are removed on deactivation.
 
 = v2.7.1 =
 Fixes mini-cart widget placement and alignment and removes obsolete local cashback handling. No settings changes are required.
