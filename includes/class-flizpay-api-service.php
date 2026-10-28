@@ -57,23 +57,15 @@ class Flizpay_API_Service
     {
         $response = WC_Flizpay_API::get_instance('')->dispatch(
             'pairing_exchange',
-            array('shopUrl' => $shop_url, 'token' => $code, 'redemptionToken' => $redemption_token)
+            array('shopUrl' => $shop_url, 'code' => $code, 'redemptionToken' => $redemption_token)
         );
 
-        if (is_wp_error($response)) {
+        $status = is_array($response) ? (int) ($response['_http_status'] ?? 0) : 0;
+        if (is_wp_error($response) || $status >= 500) {
             return new WP_Error('flizpay_connect_unreachable', __('FLIZpay could not be reached.', 'flizpay-for-woocommerce'));
         }
 
-        $status = is_array($response) ? (int) ($response['_http_status'] ?? 0) : 0;
         $api_key = is_array($response) && isset($response['apiKey']) ? (string) $response['apiKey'] : '';
-
-        if ($status === 404) {
-            return new WP_Error(
-                'flizpay_connect_unconfirmed',
-                __('This shop is not confirmed in your FLIZpay dashboard yet.', 'flizpay-for-woocommerce')
-            );
-        }
-
         if ($status < 200 || $status >= 300 || $api_key === '') {
             $message = is_array($response) && !empty($response['message'])
                 ? sanitize_text_field($response['message'])

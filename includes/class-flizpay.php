@@ -219,7 +219,6 @@ class Flizpay
         $this->loader->add_action('admin_init', $plugin_connect, 'maybe_claim');
         $this->loader->add_action('admin_footer', $plugin_connect, 'render_connect_panel');
         $this->loader->add_action('admin_post_flizpay_start_connect', $plugin_connect, 'handle_start_connect');
-        $this->loader->add_action('admin_post_flizpay_finish_connect', $plugin_connect, 'handle_finish_connect');
         $this->loader->add_action('admin_notices', $plugin_connect, 'render_admin_notice');
 
         $plugin_auto_update = new Flizpay_Auto_Update();

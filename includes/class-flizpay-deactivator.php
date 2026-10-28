@@ -23,33 +23,34 @@
 class Flizpay_Deactivator
 {
 
-    /**
-     * Delete the FLIZpay payment failure page
-     *
-     * @since    1.0.0
-     */
-    public static function deactivate()
-    {
-        if (function_exists('as_unschedule_all_actions')) {
-            as_unschedule_all_actions('flizpay_reconciliation_scan', array(), 'flizpay');
-        }
+	/**
+	 * Delete the FLIZpay payment failure page
+	 *
+	 * @since    1.0.0
+	 */
+	public static function deactivate()
+	{
+		if (function_exists('as_unschedule_all_actions')) {
+			as_unschedule_all_actions('flizpay_reconciliation_scan', array(), 'flizpay');
+		}
 
-        delete_option('flizpay_connect_challenge');
+		delete_option('flizpay_connect_challenge');
 
-        require_once('class-flizpay-api.php');
+		require_once('class-flizpay-api.php');
 
-        $flizpay_settings = get_option('woocommerce_flizpay_settings');
+		$flizpay_settings = get_option('woocommerce_flizpay_settings');
 
-        if (!$flizpay_settings)
-            return;
+		if (!$flizpay_settings)
+			return;
 
-        $api_key = $flizpay_settings['flizpay_api_key'];
+		$api_key = $flizpay_settings['flizpay_api_key'];
 
-        if (!$api_key)
-            return;
+		if (!$api_key)
+			return;
 
-        $api_client = WC_Flizpay_API::get_instance($api_key);
+		$api_client = WC_Flizpay_API::get_instance($api_key);
 
-        $api_client->dispatch('edit_business', array("isActive" => false));
-    }
+		$api_client->dispatch('edit_business', array("isActive" => false));
+	}
+
 }

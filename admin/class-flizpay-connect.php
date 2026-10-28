@@ -71,27 +71,7 @@ class Flizpay_Connect
             'expires_at' => time() + self::CHALLENGE_LIFETIME,
         ), false);
 
-        // wp_safe_redirect() would refuse an external host; the dashboard is a known FLIZpay host.
         wp_redirect($this->build_confirm_url($code, $shop_url, $language));
-        exit;
-    }
-
-    public function handle_finish_connect()
-    {
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(esc_html__('You are not allowed to connect FLIZpay.', 'flizpay-for-woocommerce'), 403);
-        }
-        check_admin_referer('flizpay_finish_connect');
-
-        $challenge = $this->read_challenge();
-        if (!$challenge || $this->has_expired($challenge)) {
-            delete_option(self::CHALLENGE_OPTION);
-            $this->set_notice(__('This connection attempt expired. Start it again.', 'flizpay-for-woocommerce'));
-        } else {
-            $this->claim($challenge, true);
-        }
-
-        wp_safe_redirect($this->get_settings_screen_url());
         exit;
     }
 
@@ -115,7 +95,7 @@ class Flizpay_Connect
             update_option(self::CHALLENGE_OPTION, $challenge, false);
         }
 
-        $claimed = $challenge !== null && $this->claim($challenge, false);
+        $claimed = $challenge !== null && $this->claim($challenge);
 
         if ($claimed || $token_in_url) {
             wp_safe_redirect($this->get_settings_screen_url());
@@ -170,8 +150,6 @@ class Flizpay_Connect
 
     private function render_pending_panel(array $challenge)
     {
-        // Confirming hands this shop the redemption token it needs to finish. Until that
-        // arrives there is nothing to complete, so retrying would only report an error.
         $awaiting_confirmation = (string) ($challenge[self::CHALLENGE_REDEMPTION_TOKEN] ?? '') === '';
     ?>
         <div class="notice notice-info">
@@ -192,16 +170,7 @@ class Flizpay_Connect
                 </p>
                 <p><?php echo esc_html__('Confirming sends you back here and finishes the connection automatically.', 'flizpay-for-woocommerce'); ?></p>
             <?php else : ?>
-                <p><?php echo esc_html__('You confirmed this shop, but the connection could not be completed. Try again.', 'flizpay-for-woocommerce'); ?></p>
-                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                    <input type="hidden" name="action" value="flizpay_finish_connect">
-                    <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('flizpay_finish_connect')); ?>">
-                    <p>
-                        <button type="submit" class="button button-primary">
-                            <?php echo esc_html__('Complete connection', 'flizpay-for-woocommerce'); ?>
-                        </button>
-                    </p>
-                </form>
+                <p><?php echo esc_html__('You confirmed this shop, but FLIZpay could not be reached. Reload this page to try again.', 'flizpay-for-woocommerce'); ?></p>
             <?php endif; ?>
         </div>
         <script>
@@ -218,19 +187,10 @@ class Flizpay_Connect
 <?php
     }
 
-    /**
-     * @return bool True once the code was redeemed, so the caller can reload the screen.
-     *              A code the merchant has not confirmed yet leaves the challenge in place.
-     */
-    private function claim(array $challenge, $report_pending)
+    private function claim(array $challenge)
     {
-        // Without the token the merchant has not confirmed yet, or the return trip never
-        // reached us. Attempting the exchange would only be rejected.
         $redemption_token = (string) ($challenge[self::CHALLENGE_REDEMPTION_TOKEN] ?? '');
         if ($redemption_token === '') {
-            if ($report_pending) {
-                $this->set_notice(__('Confirm this shop in your FLIZpay account first.', 'flizpay-for-woocommerce'));
-            }
             return false;
         }
 
@@ -241,12 +201,8 @@ class Flizpay_Connect
         );
 
         if (is_wp_error($api_key)) {
-            // Not confirmed in the dashboard yet, which is the normal state while waiting.
-            if ($api_key->get_error_code() === 'flizpay_connect_unconfirmed') {
-                if ($report_pending) {
-                    $this->set_notice($api_key->get_error_message());
-                }
-                return false;
+            if ($api_key->get_error_code() !== Flizpay_API_Service::ERROR_UNREACHABLE) {
+                delete_option(self::CHALLENGE_OPTION);
             }
             $this->set_notice($api_key->get_error_message());
             return false;
@@ -269,8 +225,6 @@ class Flizpay_Connect
         $settings['flizpay_public_id'] = '';
         delete_transient('flizpay_public_id_retry');
         if (!isset($settings['enabled'])) {
-            // WooCommerce defaults the field to 'yes', so leaving the key absent would
-            // switch the gateway on. The merchant enables it explicitly.
             $settings['enabled'] = 'no';
         }
         update_option(self::SETTINGS_OPTION, $settings);
@@ -299,12 +253,10 @@ class Flizpay_Connect
 
     private function build_confirm_url($code, $shop_url, $language)
     {
-        // FLIZPAY_DASHBOARD_BASE_URL (wp-config.php) points the plugin at a staging or local dashboard.
         $dashboard_base_url = defined('FLIZPAY_DASHBOARD_BASE_URL')
             ? untrailingslashit(FLIZPAY_DASHBOARD_BASE_URL)
             : 'https://app.flizpay.de';
 
-        // add_query_arg() does not encode values, and the shop URL carries a scheme and slashes.
         $query = array(
             'platform=' . rawurlencode('WooCommerce'),
             'shop=' . rawurlencode($shop_url),
@@ -314,14 +266,6 @@ class Flizpay_Connect
         return $dashboard_base_url . '/' . $language . '/installation?' . implode('&', $query);
     }
 
-    /**
-     * The dashboard reads its language from the path, so returning the merchant to an
-     * unprefixed URL would switch them to German. The dashboard hands its language over
-     * in `flizpay_lang` when it links here; otherwise fall back to the language of the
-     * admin who started the connection.
-     *
-     * @param array<string, mixed> $source
-     */
     private function read_dashboard_language(array $source)
     {
         $requested = isset($source['flizpay_lang'])
@@ -337,11 +281,6 @@ class Flizpay_Connect
         return stripos((string) $locale, 'de') === 0 ? 'de' : 'en';
     }
 
-    /**
-     * Reads the redemption token FLIZpay appended to the return URL. Bounds mirror the
-     * backend's schema rather than the current token format, so a change there cannot
-     * silently break the exchange here.
-     */
     private function read_returned_redemption_token()
     {
         if (!isset($_GET[self::REDEMPTION_TOKEN_PARAM])) {
@@ -353,9 +292,6 @@ class Flizpay_Connect
         return preg_match('/^[A-Za-z0-9_-]{12,128}$/', $token) === 1 ? $token : '';
     }
 
-    /**
-     * @return array<string, mixed>|null
-     */
     private function read_challenge()
     {
         $challenge = get_option(self::CHALLENGE_OPTION);
@@ -387,10 +323,6 @@ class Flizpay_Connect
         return admin_url('admin.php?page=wc-settings&tab=checkout&section=flizpay');
     }
 
-    /**
-     * True when the current request targets the FLIZpay gateway settings screen. Works
-     * before `get_current_screen()` exists, so `admin_init` can use it too.
-     */
     private function is_flizpay_settings_request()
     {
         $page = isset($_GET['page']) ? sanitize_text_field(wp_unslash($_GET['page'])) : '';

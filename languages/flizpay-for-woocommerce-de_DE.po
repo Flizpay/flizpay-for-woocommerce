@@ -87,10 +87,6 @@ msgstr "Dieser Verbindungsversuch ist abgelaufen. Starte ihn erneut."
 msgid "Copy code"
 msgstr "Code kopieren"
 
-#: includes/class-flizpay-api-service.php
-msgid "This shop is not confirmed in your FLIZpay dashboard yet."
-msgstr "Dieser Shop ist in deinem FLIZpay-Dashboard noch nicht bestätigt."
-
 #: admin/class-flizpay-connect.php
 msgid "Confirm your shop’s connection in your FLIZpay account."
 msgstr "Bestätige die Verbindung Deines Shops in Deinem FLIZpay-Konto."
@@ -103,19 +99,10 @@ msgstr "Falls Du nicht automatisch weitergeleitet wirst, öffne FLIZ einrichten 
 msgid "Open FLIZpay setup"
 msgstr "FLIZ einrichten öffnen"
 
-
-#: admin/class-flizpay-connect.php
-msgid "Complete connection"
-msgstr "Verbindung abschließen"
-
 #: admin/class-flizpay-connect.php
 msgid "Confirming sends you back here and finishes the connection automatically."
 msgstr "Nach dem Bestätigen wirst du hierher zurückgeleitet und die Verbindung wird automatisch abgeschlossen."
 
 #: admin/class-flizpay-connect.php
-msgid "You confirmed this shop, but the connection could not be completed. Try again."
-msgstr "Du hast diesen Shop bestätigt, aber die Verbindung konnte nicht abgeschlossen werden. Versuche es erneut."
-
-#: admin/class-flizpay-connect.php
-msgid "Confirm this shop in your FLIZpay account first."
-msgstr "Bestätige diesen Shop zuerst in deinem FLIZpay-Konto."
+msgid "You confirmed this shop, but FLIZpay could not be reached. Reload this page to try again."
+msgstr "Du hast diesen Shop bestätigt, aber FLIZpay war nicht erreichbar. Lade die Seite neu, um es erneut zu versuchen."
