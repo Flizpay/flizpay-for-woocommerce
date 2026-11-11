@@ -80,6 +80,7 @@ Nach der aktuellen Beschreibung gehören dazu:
 * Name des Käufers
 * Name des Händlers
 * Konfigurierter Rabattwert
+* Version des Plugins und von WooCommerce
 
 Weitere Informationen:
 
