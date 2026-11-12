@@ -3,7 +3,7 @@ Contributors: Flizpay
 Tags: kostenlos, payments, Zahlung, discount, no-fee
 Requires at least: 6.4
 Tested up to: 7.0
-Stable tag: 2.8.0
+Stable tag: 2.8.1
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.txt
@@ -354,7 +354,13 @@ Der erste Schritt, um FLIZpay in deinem Checkout zu installieren, ist die Erstel
   - Changed - The plugin now reports its version and active state to FLIZpay when registering the webhook URL.
   - Fixed   - Pending connect challenges are cleaned up when the plugin is deactivated.
 
+- v2.8.1
+  - Changed - The plugin now reports the WooCommerce version to FLIZpay with every API request.
+
 == Upgrade Notice ==
+
+= v2.8.1 =
+* Changed - The plugin now reports the WooCommerce version to FLIZpay with every API request.
 
 = v2.8.0 =
 * Changed - Dashboard connection is now started from the shop and secured with a redemption token delivered via redirect.
